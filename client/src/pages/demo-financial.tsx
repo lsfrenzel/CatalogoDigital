@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "wouter";
 import Header from "@/components/Header";
 import CustomSystemsMessage from "@/components/CustomSystemsMessage";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
 
 export default function DemoFinancial() {
   const [selectedModule, setSelectedModule] = useState('dashboard');
@@ -47,9 +48,9 @@ export default function DemoFinancial() {
   return (
     <>
       <Header />
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 dark:from-slate-900 dark:to-slate-800">
+      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900">
         {/* Demo Header */}
-        <div className="bg-white dark:bg-slate-800 border-b border-emerald-200 dark:border-slate-700 shadow-sm">
+        <div className="bg-blue-800/90 backdrop-blur-sm border-b border-blue-700 shadow-lg">
           <div className="max-w-7xl mx-auto px-6 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
