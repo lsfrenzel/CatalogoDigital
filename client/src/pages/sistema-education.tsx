@@ -154,6 +154,17 @@ export default function SistemaEducation() {
                 {systemData.description}
               </p>
               
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Link 
+                  href="/demo/education"
+                  className="inline-flex items-center justify-center px-8 py-4 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 transition-colors"
+                  data-testid="button-demo"
+                >
+                  <i className="fas fa-play mr-2"></i>
+                  Testar Demo
+                </Link>
+              </div>
+              
             </div>
           </div>
         </section>
