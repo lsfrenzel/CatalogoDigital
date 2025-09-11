@@ -224,65 +224,66 @@ export default function DemoRestaurant() {
             </div>
           </div>
 
-          {/* Alertas e Notificações */}
-          <div className="bg-amber-950/80 border-b border-amber-900">
-            <div className="p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-amber-100 flex items-center">
-                  <i className="fas fa-bell mr-2 text-amber-400"></i>
-                  Central de Alertas
-                </h3>
-                <span className="text-xs text-amber-400 bg-amber-900/50 px-2 py-1 rounded-full">
-                  {alertas.filter(a => a.urgente).length} urgentes
-                </span>
-              </div>
-              <div className="flex space-x-3 overflow-x-auto pb-2">
-                {alertas.map((alerta) => (
-                  <div key={alerta.id} className={`flex-shrink-0 p-3 rounded-lg border transition-all hover:scale-105 ${
-                    alerta.urgente ? 'bg-red-950/70 border-red-800 animate-pulse' : 'bg-amber-950/60 border-amber-800'
-                  }`} data-testid={`alerta-${alerta.id}`}>
-                    <div className="flex items-center space-x-3">
-                      <i className={`fas fa-${alerta.tipo === 'pedido' ? 'clock' : alerta.tipo === 'estoque' ? 'box' : 'calendar'} text-sm ${
-                        alerta.urgente ? 'text-red-400' : 'text-amber-400'
-                      }`}></i>
-                      <div className="flex-1">
-                        <p className="text-xs text-amber-200 font-medium">{alerta.mensagem}</p>
-                        <p className="text-xs text-amber-400 mt-1">{alerta.tempo} atrás</p>
+          {/* Main Content */}
+          <div className="flex-1 bg-gradient-to-br from-amber-950 to-orange-950">
+            {/* Alertas e Notificações */}
+            <div className="bg-amber-950/80 border-b border-amber-900">
+              <div className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-semibold text-amber-100 flex items-center">
+                    <i className="fas fa-bell mr-2 text-amber-400"></i>
+                    Central de Alertas
+                  </h3>
+                  <span className="text-xs text-amber-400 bg-amber-900/50 px-2 py-1 rounded-full">
+                    {alertas.filter(a => a.urgente).length} urgentes
+                  </span>
+                </div>
+                <div className="flex space-x-3 overflow-x-auto pb-2 snap-x">
+                  {alertas.map((alerta) => (
+                    <div key={alerta.id} className={`snap-start shrink-0 p-3 rounded-lg border transition-all hover:scale-105 ${
+                      alerta.urgente ? 'bg-red-950/70 border-red-800 animate-pulse' : 'bg-amber-950/60 border-amber-800'
+                    }`} data-testid={`alerta-${alerta.id}`}>
+                      <div className="flex items-center space-x-3">
+                        <i className={`fas fa-${alerta.tipo === 'pedido' ? 'clock' : alerta.tipo === 'estoque' ? 'box' : 'calendar'} text-sm ${
+                          alerta.urgente ? 'text-red-400' : 'text-amber-400'
+                        }`}></i>
+                        <div className="flex-1">
+                          <p className="text-xs text-amber-200 font-medium">{alerta.mensagem}</p>
+                          <p className="text-xs text-amber-400 mt-1">{alerta.tempo} atrás</p>
+                        </div>
+                        <button 
+                          onClick={() => setAlertas(prev => prev.filter(a => a.id !== alerta.id))}
+                          className="text-amber-400 hover:text-amber-200 text-sm font-bold transition-colors"
+                          data-testid={`button-dismiss-${alerta.id}`}
+                        >
+                          ✕
+                        </button>
                       </div>
-                      <button 
-                        onClick={() => setAlertas(prev => prev.filter(a => a.id !== alerta.id))}
-                        className="text-amber-400 hover:text-amber-200 text-sm font-bold transition-colors"
-                        data-testid={`button-dismiss-${alerta.id}`}
-                      >
-                        ✕
-                      </button>
                     </div>
-                  </div>
-                ))}
-                <button 
-                  className="flex-shrink-0 p-3 border-2 border-dashed border-amber-800 rounded-lg text-amber-400 hover:bg-amber-950/30 transition-colors"
-                  onClick={() => {
-                    const novoAlerta = {
-                      id: Math.max(...alertas.map(a => a.id)) + 1,
-                      tipo: 'pedido',
-                      mensagem: `Mesa ${Math.floor(Math.random() * 12) + 1} precisa de atenção`,
-                      tempo: 'agora',
-                      urgente: Math.random() > 0.5
-                    };
-                    setAlertas(prev => [...prev, novoAlerta]);
-                  }}
-                  data-testid="button-add-alert"
-                >
-                  <i className="fas fa-plus text-sm mr-2"></i>
-                  <span className="text-xs">Simular Alerta</span>
-                </button>
+                  ))}
+                  <button 
+                    className="snap-start shrink-0 p-3 border-2 border-dashed border-amber-800 rounded-lg text-amber-400 hover:bg-amber-950/30 transition-colors"
+                    onClick={() => {
+                      const novoAlerta = {
+                        id: Math.max(...alertas.map(a => a.id)) + 1,
+                        tipo: 'pedido',
+                        mensagem: `Mesa ${Math.floor(Math.random() * 12) + 1} precisa de atenção`,
+                        tempo: 'agora',
+                        urgente: Math.random() > 0.5
+                      };
+                      setAlertas(prev => [...prev, novoAlerta]);
+                    }}
+                    data-testid="button-add-alert"
+                  >
+                    <i className="fas fa-plus text-sm mr-2"></i>
+                    <span className="text-xs">Simular Alerta</span>
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Main Content */}
-          <div className="flex-1 p-6 bg-gradient-to-br from-amber-950 to-orange-950">
-            {selectedModule === 'dashboard' && (
+            <div className="p-6">
+              {selectedModule === 'dashboard' && (
               <div>
                 <div className="mb-6">
                   <h2 className="text-2xl font-bold text-amber-100 mb-2 raleway">Dashboard do Restaurante</h2>
@@ -937,7 +938,8 @@ export default function DemoRestaurant() {
                   </div>
                 </div>
               </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </div>
