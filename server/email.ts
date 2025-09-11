@@ -56,7 +56,13 @@ class EmailService {
       // Skip email sending if SMTP credentials are not configured
       if (!this.config.smtp_user || !this.config.smtp_pass) {
         console.log('SMTP credentials not configured, skipping email send');
-        return true;
+        return false;
+      }
+
+      // Validate email to prevent header injection
+      if (!this.isValidEmail(contact.email)) {
+        console.error('Invalid email format detected, rejecting request');
+        return false;
       }
 
       const systemName = this.getSystemDisplayName(contact.systemOfInterest || '');
@@ -84,7 +90,13 @@ class EmailService {
       // Skip email sending if SMTP credentials are not configured
       if (!this.config.smtp_user || !this.config.smtp_pass || !contact.email) {
         console.log('SMTP credentials not configured or no email provided, skipping confirmation email');
-        return true;
+        return false;
+      }
+
+      // Validate email to prevent header injection
+      if (!this.isValidEmail(contact.email)) {
+        console.error('Invalid email format detected, rejecting confirmation email');
+        return false;
       }
 
       const systemName = this.getSystemDisplayName(contact.systemOfInterest || '');
@@ -104,6 +116,22 @@ class EmailService {
       console.error('Error sending contact confirmation email:', error);
       return false;
     }
+  }
+
+  private isValidEmail(email: string): boolean {
+    // Basic email validation and header injection prevention
+    if (!email || typeof email !== 'string') {
+      return false;
+    }
+    
+    // Check for newlines, carriage returns, and other header injection characters
+    if (/[\r\n\0]/.test(email)) {
+      return false;
+    }
+    
+    // Basic email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email) && email.length <= 254;
   }
 
   private getSystemDisplayName(systemId: string): string {
