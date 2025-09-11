@@ -24,13 +24,10 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           <div className="md:col-span-2">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                <i className="fas fa-code text-primary-foreground text-lg"></i>
-              </div>
+            <div className="mb-4">
               <div>
                 <h3 className="text-2xl font-bold text-foreground" data-testid="footer-company-name">
-                  TechSolutions
+                  Catálogo de Soluções Digitais
                 </h3>
                 <p className="text-sm text-muted-foreground lato">
                   Soluções digitais que transformam seu negócio
@@ -80,7 +77,7 @@ export default function Footer() {
 
         <div className="border-t border-border pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-sm text-muted-foreground mb-4 md:mb-0" data-testid="footer-copyright">
-            © 2024 TechSolutions. Todos os direitos reservados.
+            © 2024 Catálogo de Soluções Digitais. Todos os direitos reservados.
           </p>
           <div className="flex space-x-6 text-sm">
             <a 

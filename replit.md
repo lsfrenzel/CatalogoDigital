@@ -1,6 +1,6 @@
 # Overview
 
-TechSolutions is a modern business-to-business landing page application designed to showcase enterprise software solutions. The project serves as a commercial catalog presenting various business systems including ERP, CRM, restaurant management, financial systems, inventory management, and educational platforms. The application features a clean, minimalist design inspired by modern e-commerce aesthetics with smooth scrolling, interactive animations, and a comprehensive contact system.
+Catálogo de Soluções Digitais is a modern business-to-business landing page application designed to showcase enterprise software solutions. The project serves as a commercial catalog presenting various business systems including ERP, CRM, restaurant management, financial systems, inventory management, and educational platforms. The application features a clean, minimalist design inspired by modern e-commerce aesthetics with smooth scrolling, interactive animations, and a comprehensive contact system.
 
 # User Preferences
 

@@ -104,7 +104,7 @@ class EmailService {
       const mailOptions = {
         from: this.config.from_email,
         to: contact.email,
-        subject: 'Solicitação Recebida - TechSolutions',
+        subject: 'Solicitação Recebida - Catálogo de Soluções Digitais',
         html: this.generateConfirmationEmailTemplate(contact, systemName),
         text: this.generateConfirmationEmailText(contact, systemName),
       };
@@ -174,7 +174,7 @@ class EmailService {
       `Data/Hora: ${contact.createdAt ? new Date(contact.createdAt).toLocaleString('pt-BR') : 'N/A'}`,
       '',
       '-------------------------------------',
-      'TechSolutions - Soluções digitais que transformam seu negócio',
+      'Catálogo de Soluções Digitais - Soluções digitais que transformam seu negócio',
       'Este e-mail foi gerado automaticamente pelo sistema de contato.'
     );
 
@@ -253,7 +253,7 @@ class EmailService {
                 </div>
             </div>
             <div class="footer">
-                <p><strong>TechSolutions</strong> - Soluções digitais que transformam seu negócio</p>
+                <p><strong>Catálogo de Soluções Digitais</strong> - Soluções digitais que transformam seu negócio</p>
                 <p>Este e-mail foi gerado automaticamente pelo sistema de contato.</p>
             </div>
         </div>
@@ -269,7 +269,7 @@ class EmailService {
       '',
       `Olá ${contact.name},`,
       '',
-      'Obrigado por entrar em contato com a TechSolutions!',
+      'Obrigado por entrar em contato com o Catálogo de Soluções Digitais!',
       '',
       `Recebemos sua solicitação de demonstração para ${systemName} e nossa equipe entrará em contato com você em breve.`,
       '',
@@ -287,7 +287,7 @@ class EmailService {
       '📧 contato@techsolutions.com.br',
       '',
       '-------------------------------------',
-      'TechSolutions - Soluções digitais que transformam seu negócio',
+      'Catálogo de Soluções Digitais - Soluções digitais que transformam seu negócio',
       'Rua da Tecnologia, 123 - São Paulo - SP'
     ];
 
@@ -318,7 +318,7 @@ class EmailService {
             <div class="content">
                 <p>Olá <strong>${he.encode(contact.name)}</strong>,</p>
                 
-                <p>Obrigado por entrar em contato com a <strong>TechSolutions</strong>!</p>
+                <p>Obrigado por entrar em contato com o <strong>Catálogo de Soluções Digitais</strong>!</p>
                 
                 <p>Recebemos sua solicitação de demonstração para <strong>${he.encode(systemName)}</strong> e nossa equipe entrará em contato com você em breve.</p>
                 
@@ -345,7 +345,7 @@ class EmailService {
                 </ul>
             </div>
             <div class="footer">
-                <p><strong>TechSolutions</strong> - Soluções digitais que transformam seu negócio</p>
+                <p><strong>Catálogo de Soluções Digitais</strong> - Soluções digitais que transformam seu negócio</p>
                 <p>Rua da Tecnologia, 123 - São Paulo - SP</p>
             </div>
         </div>

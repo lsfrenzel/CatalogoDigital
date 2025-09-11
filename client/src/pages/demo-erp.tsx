@@ -58,7 +58,7 @@ export default function DemoERP() {
                   Voltar
                 </Link>
                 <div className="w-px h-6 bg-slate-300 dark:bg-slate-600"></div>
-                <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 raleway">ERP Demo - TechSolutions</h1>
+                <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 raleway">ERP Demo - Sistema Empresarial</h1>
               </div>
               <div className="bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400 px-3 py-1 rounded-full text-sm font-medium">
                 <i className="fas fa-circle text-green-500 mr-2 text-xs"></i>
