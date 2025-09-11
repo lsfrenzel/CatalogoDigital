@@ -179,6 +179,62 @@ export default function SistemaCRM() {
           </div>
         </section>
 
+        {/* Sistema Interface Screenshots */}
+        <section className="py-20 bg-card">
+          <div className="max-w-7xl mx-auto px-6">
+            <h2 className="raleway text-4xl font-bold text-center mb-16" data-testid="interface-title">
+              Interface do Sistema
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="group cursor-pointer" data-testid="interface-image-1">
+                <div className="relative overflow-hidden rounded-lg bg-background border">
+                  <img 
+                    src="https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
+                    alt="Dashboard do CRM"
+                    className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <span className="text-white font-semibold">Dashboard CRM</span>
+                  </div>
+                </div>
+                <h3 className="text-lg font-semibold mt-4 raleway">Dashboard de Vendas</h3>
+                <p className="text-sm text-muted-foreground">Visão geral de oportunidades e conversões</p>
+              </div>
+              
+              <div className="group cursor-pointer" data-testid="interface-image-2">
+                <div className="relative overflow-hidden rounded-lg bg-background border">
+                  <img 
+                    src="https://images.unsplash.com/photo-1611224923853-80b023f02d71?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
+                    alt="Funil de Vendas do CRM"
+                    className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <span className="text-white font-semibold">Funil de Vendas</span>
+                  </div>
+                </div>
+                <h3 className="text-lg font-semibold mt-4 raleway">Pipeline de Oportunidades</h3>
+                <p className="text-sm text-muted-foreground">Acompanhe cada lead até o fechamento</p>
+              </div>
+              
+              <div className="group cursor-pointer" data-testid="interface-image-3">
+                <div className="relative overflow-hidden rounded-lg bg-background border">
+                  <img 
+                    src="https://images.unsplash.com/photo-1553729459-efe14ef6055d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
+                    alt="Relatórios do CRM"
+                    className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <span className="text-white font-semibold">Relatórios</span>
+                  </div>
+                </div>
+                <h3 className="text-lg font-semibold mt-4 raleway">Análise de Performance</h3>
+                <p className="text-sm text-muted-foreground">Relatórios detalhados de vendas e equipe</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Detailed Features */}
         <section className="py-20 bg-card">
           <div className="max-w-7xl mx-auto px-6">

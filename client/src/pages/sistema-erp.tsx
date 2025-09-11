@@ -179,6 +179,62 @@ export default function SistemaERP() {
           </div>
         </section>
 
+        {/* Sistema Interface Screenshots */}
+        <section className="py-20 bg-card">
+          <div className="max-w-7xl mx-auto px-6">
+            <h2 className="raleway text-4xl font-bold text-center mb-16" data-testid="interface-title">
+              Interface do Sistema
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="group cursor-pointer" data-testid="interface-image-1">
+                <div className="relative overflow-hidden rounded-lg bg-background border">
+                  <img 
+                    src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
+                    alt="Dashboard Principal do ERP"
+                    className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <span className="text-white font-semibold">Dashboard Principal</span>
+                  </div>
+                </div>
+                <h3 className="text-lg font-semibold mt-4 raleway">Dashboard Executivo</h3>
+                <p className="text-sm text-muted-foreground">Visão geral de vendas, estoque e financeiro</p>
+              </div>
+              
+              <div className="group cursor-pointer" data-testid="interface-image-2">
+                <div className="relative overflow-hidden rounded-lg bg-background border">
+                  <img 
+                    src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
+                    alt="Módulo Financeiro do ERP"
+                    className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <span className="text-white font-semibold">Gestão Financeira</span>
+                  </div>
+                </div>
+                <h3 className="text-lg font-semibold mt-4 raleway">Módulo Financeiro</h3>
+                <p className="text-sm text-muted-foreground">Controle completo de receitas e despesas</p>
+              </div>
+              
+              <div className="group cursor-pointer" data-testid="interface-image-3">
+                <div className="relative overflow-hidden rounded-lg bg-background border">
+                  <img 
+                    src="https://images.unsplash.com/photo-1586953208448-b95a79798f07?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
+                    alt="Módulo de Estoque do ERP"
+                    className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <span className="text-white font-semibold">Controle de Estoque</span>
+                  </div>
+                </div>
+                <h3 className="text-lg font-semibold mt-4 raleway">Gestão de Estoque</h3>
+                <p className="text-sm text-muted-foreground">Controle de produtos e movimentações</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Detailed Features */}
         <section className="py-20 bg-card">
           <div className="max-w-7xl mx-auto px-6">

@@ -179,6 +179,62 @@ export default function SistemaInventory() {
           </div>
         </section>
 
+        {/* Sistema Interface Screenshots */}
+        <section className="py-20 bg-card">
+          <div className="max-w-7xl mx-auto px-6">
+            <h2 className="raleway text-4xl font-bold text-center mb-16" data-testid="interface-title">
+              Interface do Sistema
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="group cursor-pointer" data-testid="interface-image-1">
+                <div className="relative overflow-hidden rounded-lg bg-background border">
+                  <img 
+                    src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
+                    alt="Controle de Estoque"
+                    className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <span className="text-white font-semibold">Controle de Estoque</span>
+                  </div>
+                </div>
+                <h3 className="text-lg font-semibold mt-4 raleway">Gestão de Inventário</h3>
+                <p className="text-sm text-muted-foreground">Controle de produtos e movimentações</p>
+              </div>
+              
+              <div className="group cursor-pointer" data-testid="interface-image-2">
+                <div className="relative overflow-hidden rounded-lg bg-background border">
+                  <img 
+                    src="https://images.unsplash.com/photo-1494412574643-ff11b0a5c1c3?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
+                    alt="Gestão de Fornecedores"
+                    className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <span className="text-white font-semibold">Fornecedores</span>
+                  </div>
+                </div>
+                <h3 className="text-lg font-semibold mt-4 raleway">Gestão de Compras</h3>
+                <p className="text-sm text-muted-foreground">Controle de fornecedores e cotações</p>
+              </div>
+              
+              <div className="group cursor-pointer" data-testid="interface-image-3">
+                <div className="relative overflow-hidden rounded-lg bg-background border">
+                  <img 
+                    src="https://images.unsplash.com/photo-1565043589221-1a6fd9ae45c7?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
+                    alt="Rastreamento Logístico"
+                    className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <span className="text-white font-semibold">Logística</span>
+                  </div>
+                </div>
+                <h3 className="text-lg font-semibold mt-4 raleway">Controle Logístico</h3>
+                <p className="text-sm text-muted-foreground">Rastreamento e otimização de entregas</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Detailed Features */}
         <section className="py-20 bg-card">
           <div className="max-w-7xl mx-auto px-6">
