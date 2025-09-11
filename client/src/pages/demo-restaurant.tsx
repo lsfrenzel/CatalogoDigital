@@ -1,74 +1,121 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import Header from "@/components/Header";
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, PieChart, Pie, Cell, LineChart, Line, AreaChart, Area } from 'recharts';
 
 export default function DemoRestaurant() {
   const [selectedModule, setSelectedModule] = useState('dashboard');
+  
+  // Estados dinâmicos
+  const [mesas, setMesas] = useState([
+    { numero: 1, status: "ocupada", garcom: "Maria", pedido: 145, tempo: "25min", pessoas: 4 },
+    { numero: 2, status: "livre", garcom: "-", pedido: 0, tempo: "-", pessoas: 0 },
+    { numero: 3, status: "reservada", garcom: "João", pedido: 0, tempo: "19:30", pessoas: 2 },
+    { numero: 4, status: "ocupada", garcom: "Ana", pedido: 89, tempo: "10min", pessoas: 3 },
+    { numero: 5, status: "ocupada", garcom: "Carlos", pedido: 234, tempo: "35min", pessoas: 6 },
+    { numero: 6, status: "livre", garcom: "-", pedido: 0, tempo: "-", pessoas: 0 },
+    { numero: 7, status: "conta", garcom: "Maria", pedido: 167, tempo: "Finalizada", pessoas: 2 },
+    { numero: 8, status: "ocupada", garcom: "Pedro", pedido: 98, tempo: "15min", pessoas: 4 },
+    { numero: 9, status: "livre", garcom: "-", pedido: 0, tempo: "-", pessoas: 0 },
+    { numero: 10, status: "ocupada", garcom: "Ana", pedido: 156, tempo: "5min", pessoas: 2 },
+    { numero: 11, status: "reservada", garcom: "Carlos", pedido: 0, tempo: "20:00", pessoas: 4 },
+    { numero: 12, status: "livre", garcom: "-", pedido: 0, tempo: "-", pessoas: 0 }
+  ]);
+  
+  const [pratosPopulares, setPratosPopulares] = useState([
+    { nome: "Salmão Grelhado", categoria: "Prato Principal", vendas: 23, valor: 48.90, disponivel: true },
+    { nome: "Risotto de Funghi", categoria: "Prato Principal", vendas: 18, valor: 42.50, disponivel: true },
+    { nome: "Tiramisu da Casa", categoria: "Sobremesa", vendas: 31, valor: 16.90, disponivel: true },
+    { nome: "Bruschetta Especial", categoria: "Entrada", vendas: 42, valor: 18.50, disponivel: false }
+  ]);
+  
+  const [pedidosCozinha, setPedidosCozinha] = useState([
+    { id: 1, mesa: 1, item: "Salmão Grelhado", quantidade: 2, tempo: "8min", status: "preparando", prioridade: "normal" },
+    { id: 2, mesa: 4, item: "Risotto de Funghi", quantidade: 1, tempo: "12min", status: "preparando", prioridade: "normal" },
+    { id: 3, mesa: 5, item: "Bruschetta Especial", quantidade: 3, tempo: "5min", status: "pronto", prioridade: "alta" },
+    { id: 4, mesa: 8, item: "Tiramisu da Casa", quantidade: 2, tempo: "3min", status: "pronto", prioridade: "normal" },
+    { id: 5, mesa: 1, item: "Vinho Tinto", quantidade: 1, tempo: "Imediato", status: "pendente", prioridade: "baixa" },
+    { id: 6, mesa: 10, item: "Salmão Grelhado", quantidade: 1, tempo: "15min", status: "preparando", prioridade: "normal" }
+  ]);
+  
+  const [funcionarios] = useState([
+    { nome: "Maria Silva", cargo: "Garçom", mesas: [1, 7], vendas: 456, status: "ativa" },
+    { nome: "João Santos", cargo: "Garçom", mesas: [3], vendas: 123, status: "pausa" },
+    { nome: "Ana Costa", cargo: "Garçom", mesas: [4, 10], vendas: 289, status: "ativa" },
+    { nome: "Carlos Lima", cargo: "Garçom", mesas: [5, 11], vendas: 567, status: "ativa" },
+    { nome: "Pedro Oliveira", cargo: "Garçom", mesas: [8], vendas: 198, status: "ativa" }
+  ]);
+  
+  // Form states
+  const [novoPedido, setNovoPedido] = useState({ mesa: '', prato: '', quantidade: 1 });
+  const [novoItemCardapio, setNovoItemCardapio] = useState({ nome: '', categoria: 'Entrada', valor: '', disponivel: true });
 
-  const restaurantData = {
-    vendas: "R$ 23.847",
-    pedidos: 87,
-    mesa: 24,
-    garcons: 8,
-    pratos: 45,
-    tempo: "18min"
-  };
-
-  const mesas = [
-    { numero: 1, status: "ocupada", garcom: "Maria", pedido: "R$ 145", tempo: "25min", pessoas: 4 },
-    { numero: 2, status: "livre", garcom: "-", pedido: "-", tempo: "-", pessoas: 0 },
-    { numero: 3, status: "reservada", garcom: "João", pedido: "-", tempo: "19:30", pessoas: 2 },
-    { numero: 4, status: "ocupada", garcom: "Ana", pedido: "R$ 89", tempo: "10min", pessoas: 3 },
-    { numero: 5, status: "ocupada", garcom: "Carlos", pedido: "R$ 234", tempo: "35min", pessoas: 6 },
-    { numero: 6, status: "livre", garcom: "-", pedido: "-", tempo: "-", pessoas: 0 },
-    { numero: 7, status: "conta", garcom: "Maria", pedido: "R$ 167", tempo: "Finalizada", pessoas: 2 },
-    { numero: 8, status: "ocupada", garcom: "Pedro", pedido: "R$ 98", tempo: "15min", pessoas: 4 }
+  // Dados calculados dinamicamente
+  const totalVendas = mesas.reduce((sum, mesa) => sum + (mesa.pedido || 0), 0);
+  const mesasOcupadas = mesas.filter(m => m.status === 'ocupada').length;
+  const mesasLivres = mesas.filter(m => m.status === 'livre').length;
+  const mesasReservadas = mesas.filter(m => m.status === 'reservada').length;
+  const totalPedidos = pedidosCozinha.length;
+  const pedidosProntos = pedidosCozinha.filter(p => p.status === 'pronto').length;
+  const tempoMedio = Math.round((15 + 8 + 12 + 5 + 3) / 5);
+  const ocupacaoPercent = Math.round((mesasOcupadas / mesas.length) * 100);
+  
+  // Chart data
+  const statusMesasData = [
+    { name: 'Ocupadas', value: mesasOcupadas, color: '#EF4444' },
+    { name: 'Livres', value: mesasLivres, color: '#10B981' },
+    { name: 'Reservadas', value: mesasReservadas, color: '#3B82F6' },
+    { name: 'Conta', value: mesas.filter(m => m.status === 'conta').length, color: '#F59E0B' }
   ];
-
-  const pratosPopulares = [
-    { nome: "Salmão Grelhado", categoria: "Prato Principal", vendas: 23, valor: "R$ 48,90" },
-    { nome: "Risotto de Funghi", categoria: "Prato Principal", vendas: 18, valor: "R$ 42,50" },
-    { nome: "Tiramisu da Casa", categoria: "Sobremesa", vendas: 31, valor: "R$ 16,90" },
-    { nome: "Bruschetta Especial", categoria: "Entrada", vendas: 42, valor: "R$ 18,50" }
+  
+  const vendasDiariasData = [
+    { hora: '18h', vendas: totalVendas * 0.15 },
+    { hora: '19h', vendas: totalVendas * 0.35 },
+    { hora: '20h', vendas: totalVendas * 0.60 },
+    { hora: '21h', vendas: totalVendas * 0.85 },
+    { hora: '22h', vendas: totalVendas },
+    { hora: '23h', vendas: totalVendas * 0.95 }
   ];
-
-  const pedidosCozinha = [
-    { mesa: 1, item: "Salmão Grelhado", quantidade: 2, tempo: "8min", status: "preparando", prioridade: "normal" },
-    { mesa: 4, item: "Risotto de Funghi", quantidade: 1, tempo: "12min", status: "preparando", prioridade: "normal" },
-    { mesa: 5, item: "Bruschetta Especial", quantidade: 3, tempo: "5min", status: "pronto", prioridade: "alta" },
-    { mesa: 8, item: "Tiramisu da Casa", quantidade: 2, tempo: "3min", status: "pronto", prioridade: "normal" },
-    { mesa: 1, item: "Vinho Tinto", quantidade: 1, tempo: "Imediato", status: "pendente", prioridade: "baixa" }
-  ];
-
-  const funcionarios = [
-    { nome: "Maria Silva", cargo: "Garçom", mesas: [1, 7], vendas: "R$ 456", status: "ativa" },
-    { nome: "João Santos", cargo: "Garçom", mesas: [3], vendas: "R$ 123", status: "pausa" },
-    { nome: "Ana Costa", cargo: "Garçom", mesas: [4], vendas: "R$ 289", status: "ativa" },
-    { nome: "Carlos Lima", cargo: "Garçom", mesas: [5], vendas: "R$ 567", status: "ativa" },
-    { nome: "Pedro Oliveira", cargo: "Garçom", mesas: [8], vendas: "R$ 198", status: "ativa" }
-  ];
+  
+  const pratosCategoriaData = pratosPopulares.reduce((acc, prato) => {
+    const categoria = acc.find(c => c.name === prato.categoria);
+    if (categoria) {
+      categoria.value += prato.vendas;
+    } else {
+      acc.push({ name: prato.categoria, value: prato.vendas });
+    }
+    return acc;
+  }, [] as { name: string; value: number }[]);
+  
+  const performanceFuncionarios = funcionarios.map(func => ({
+    nome: func.nome.split(' ')[0],
+    vendas: func.vendas,
+    mesas: func.mesas.length
+  }));
+  
+  const COLORS = ['#EF4444', '#10B981', '#3B82F6', '#F59E0B', '#8B5CF6'];
 
   return (
     <>
       <Header />
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-yellow-50 dark:from-slate-900 dark:to-slate-800">
+      <div className="min-h-screen bg-gradient-to-br from-orange-900 via-red-900 to-amber-900">
         {/* Demo Header */}
-        <div className="bg-white dark:bg-slate-800 border-b border-orange-200 dark:border-slate-700 shadow-sm">
+        <div className="bg-orange-800 border-b border-orange-700 shadow-sm">
           <div className="max-w-7xl mx-auto px-6 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <Link 
                   href="/sistema/restaurant"
-                  className="text-orange-600 dark:text-orange-400 hover:text-orange-800 dark:hover:text-orange-300 flex items-center"
+                  className="text-orange-200 hover:text-orange-100 flex items-center"
                 >
                   <i className="fas fa-arrow-left mr-2"></i>
                   Voltar
                 </Link>
-                <div className="w-px h-6 bg-orange-300 dark:bg-slate-600"></div>
-                <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 raleway">RestaurantOS - Bella Vista</h1>
+                <div className="w-px h-6 bg-orange-600"></div>
+                <h1 className="text-2xl font-bold text-orange-100 raleway">RestaurantOS - Bella Vista</h1>
               </div>
-              <div className="bg-orange-100 dark:bg-orange-900/20 text-orange-800 dark:text-orange-400 px-3 py-1 rounded-full text-sm font-medium">
-                <i className="fas fa-circle text-orange-500 mr-2 text-xs"></i>
+              <div className="bg-orange-700 text-orange-100 px-3 py-1 rounded-full text-sm font-medium">
+                <i className="fas fa-circle text-green-400 mr-2 text-xs"></i>
                 Sistema em Funcionamento
               </div>
             </div>
@@ -77,15 +124,15 @@ export default function DemoRestaurant() {
 
         <div className="flex">
           {/* Sidebar */}
-          <div className="w-64 bg-white dark:bg-slate-800 border-r border-orange-200 dark:border-slate-700 min-h-screen shadow-lg">
+          <div className="w-64 bg-orange-800 border-r border-orange-700 min-h-screen shadow-lg">
             <div className="p-4">
               <div className="flex items-center space-x-3 mb-6">
                 <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center">
                   <i className="fas fa-utensils text-white"></i>
                 </div>
                 <div>
-                  <h2 className="font-semibold text-slate-900 dark:text-slate-100">RestaurantOS</h2>
-                  <p className="text-sm text-orange-600 dark:text-orange-400">Bella Vista</p>
+                  <h2 className="font-semibold text-orange-100">RestaurantOS</h2>
+                  <p className="text-sm text-orange-300">Bella Vista</p>
                 </div>
               </div>
 
@@ -95,8 +142,9 @@ export default function DemoRestaurant() {
                   className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
                     selectedModule === 'dashboard' 
                       ? 'bg-gradient-to-r from-orange-500 to-red-600 text-white' 
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-orange-50 dark:hover:bg-slate-700'
+                      : 'text-orange-300 hover:bg-orange-700'
                   }`}
+                  data-testid="button-dashboard"
                 >
                   <i className="fas fa-tachometer-alt w-4"></i>
                   <span>Dashboard</span>
@@ -106,8 +154,9 @@ export default function DemoRestaurant() {
                   className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
                     selectedModule === 'mesas' 
                       ? 'bg-gradient-to-r from-orange-500 to-red-600 text-white' 
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-orange-50 dark:hover:bg-slate-700'
+                      : 'text-orange-300 hover:bg-orange-700'
                   }`}
+                  data-testid="button-mesas"
                 >
                   <i className="fas fa-chair w-4"></i>
                   <span>Mesas</span>
@@ -117,8 +166,9 @@ export default function DemoRestaurant() {
                   className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
                     selectedModule === 'cozinha' 
                       ? 'bg-gradient-to-r from-orange-500 to-red-600 text-white' 
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-orange-50 dark:hover:bg-slate-700'
+                      : 'text-orange-300 hover:bg-orange-700'
                   }`}
+                  data-testid="button-cozinha"
                 >
                   <i className="fas fa-fire w-4"></i>
                   <span>Cozinha</span>
@@ -128,8 +178,9 @@ export default function DemoRestaurant() {
                   className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
                     selectedModule === 'cardapio' 
                       ? 'bg-gradient-to-r from-orange-500 to-red-600 text-white' 
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-orange-50 dark:hover:bg-slate-700'
+                      : 'text-orange-300 hover:bg-orange-700'
                   }`}
+                  data-testid="button-cardapio"
                 >
                   <i className="fas fa-book-open w-4"></i>
                   <span>Cardápio</span>
@@ -159,103 +210,234 @@ export default function DemoRestaurant() {
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 p-6">
+          <div className="flex-1 p-6 bg-orange-900">
             {selectedModule === 'dashboard' && (
               <div>
                 <div className="mb-6">
-                  <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2 raleway">Dashboard do Restaurante</h2>
-                  <p className="text-slate-600 dark:text-slate-400">Visão geral das operações do turno atual</p>
+                  <h2 className="text-2xl font-bold text-orange-100 mb-2 raleway">Dashboard do Restaurante</h2>
+                  <p className="text-orange-300">Visão geral das operações do turno atual</p>
                 </div>
 
                 {/* KPI Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                  <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-orange-200 dark:border-slate-700 shadow-lg">
+                  <div className="bg-orange-800 p-6 rounded-xl border border-orange-700 shadow-lg" data-testid="card-vendas">
                     <div className="flex items-center justify-between mb-4">
                       <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-lg flex items-center justify-center">
                         <i className="fas fa-dollar-sign text-white"></i>
                       </div>
-                      <span className="text-green-600 dark:text-green-400 text-sm font-medium">+18.5%</span>
+                      <span className="text-green-400 text-sm font-medium">+18.5%</span>
                     </div>
-                    <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-1">{restaurantData.vendas}</h3>
-                    <p className="text-slate-600 dark:text-slate-400 text-sm">Vendas do Turno</p>
+                    <h3 className="text-2xl font-bold text-orange-100 mb-1" data-testid="text-vendas-total">
+                      R$ {totalVendas.toLocaleString('pt-BR')}
+                    </h3>
+                    <p className="text-orange-300 text-sm">Vendas do Turno</p>
                   </div>
 
-                  <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-orange-200 dark:border-slate-700 shadow-lg">
+                  <div className="bg-orange-800 p-6 rounded-xl border border-orange-700 shadow-lg" data-testid="card-pedidos">
                     <div className="flex items-center justify-between mb-4">
                       <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-lg flex items-center justify-center">
                         <i className="fas fa-receipt text-white"></i>
                       </div>
-                      <span className="text-blue-600 dark:text-blue-400 text-sm font-medium">+{restaurantData.pedidos}</span>
+                      <span className="text-blue-400 text-sm font-medium">+{totalPedidos}</span>
                     </div>
-                    <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-1">{restaurantData.pedidos}</h3>
-                    <p className="text-slate-600 dark:text-slate-400 text-sm">Pedidos Atendidos</p>
+                    <h3 className="text-2xl font-bold text-orange-100 mb-1" data-testid="text-pedidos-total">
+                      {totalPedidos}
+                    </h3>
+                    <p className="text-orange-300 text-sm">Pedidos Atendidos</p>
                   </div>
 
-                  <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-orange-200 dark:border-slate-700 shadow-lg">
+                  <div className="bg-orange-800 p-6 rounded-xl border border-orange-700 shadow-lg" data-testid="card-mesas">
                     <div className="flex items-center justify-between mb-4">
                       <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-red-500 rounded-lg flex items-center justify-center">
                         <i className="fas fa-chair text-white"></i>
                       </div>
                     </div>
-                    <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-1">{restaurantData.mesa}</h3>
-                    <p className="text-slate-600 dark:text-slate-400 text-sm">Mesas Disponíveis</p>
-                    <p className="text-orange-600 dark:text-orange-400 text-xs mt-2">68% ocupação</p>
+                    <h3 className="text-2xl font-bold text-orange-100 mb-1" data-testid="text-mesas-livres">
+                      {mesasLivres}
+                    </h3>
+                    <p className="text-orange-300 text-sm">Mesas Livres</p>
+                    <p className="text-orange-400 text-xs mt-2">{ocupacaoPercent}% ocupação</p>
                   </div>
 
-                  <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-orange-200 dark:border-slate-700 shadow-lg">
+                  <div className="bg-orange-800 p-6 rounded-xl border border-orange-700 shadow-lg" data-testid="card-tempo">
                     <div className="flex items-center justify-between mb-4">
                       <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-500 rounded-lg flex items-center justify-center">
                         <i className="fas fa-clock text-white"></i>
                       </div>
                     </div>
-                    <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-1">{restaurantData.tempo}</h3>
-                    <p className="text-slate-600 dark:text-slate-400 text-sm">Tempo Médio</p>
-                    <p className="text-purple-600 dark:text-purple-400 text-xs mt-2">Por pedido</p>
+                    <h3 className="text-2xl font-bold text-orange-100 mb-1" data-testid="text-tempo-medio">
+                      {tempoMedio}min
+                    </h3>
+                    <p className="text-orange-300 text-sm">Tempo Médio</p>
+                    <p className="text-purple-400 text-xs mt-2">Por pedido</p>
+                  </div>
+                </div>
+
+                {/* Gráfico Layout de Mesas */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                  <div className="bg-orange-800 rounded-xl border border-orange-700 p-6">
+                    <h3 className="text-lg font-semibold text-orange-100 mb-4 raleway">Layout do Restaurante</h3>
+                    <div className="grid grid-cols-4 gap-3 max-w-md mx-auto">
+                      {mesas.map((mesa) => (
+                        <div 
+                          key={mesa.numero}
+                          className={`relative w-16 h-16 rounded-lg border-2 flex items-center justify-center text-sm font-bold cursor-pointer transition-all duration-200 hover:scale-105 ${
+                            mesa.status === 'ocupada' ? 'bg-red-600 border-red-500 text-white' :
+                            mesa.status === 'livre' ? 'bg-green-600 border-green-500 text-white hover:bg-green-500' :
+                            mesa.status === 'reservada' ? 'bg-blue-600 border-blue-500 text-white' :
+                            'bg-yellow-600 border-yellow-500 text-white'
+                          }`}
+                          title={`Mesa ${mesa.numero} - ${mesa.status}${mesa.pedido ? ` - R$ ${mesa.pedido}` : ''}`}
+                          data-testid={`mesa-layout-${mesa.numero}`}
+                          onClick={() => {
+                            const novoStatus = mesa.status === 'livre' ? 'ocupada' : 
+                                            mesa.status === 'ocupada' ? 'conta' : 
+                                            mesa.status === 'conta' ? 'livre' : mesa.status;
+                            setMesas(prev => prev.map(m => 
+                              m.numero === mesa.numero 
+                                ? { ...m, status: novoStatus, pedido: novoStatus === 'ocupada' ? Math.floor(Math.random() * 200) + 50 : novoStatus === 'livre' ? 0 : m.pedido }
+                                : m
+                            ));
+                          }}
+                        >
+                          {mesa.numero}
+                          {mesa.status === 'ocupada' && (
+                            <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-400 rounded-full border border-white"></div>
+                          )}
+                          {mesa.status === 'reservada' && (
+                            <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-400 rounded-full border border-white"></div>
+                          )}
+                          {mesa.status === 'conta' && (
+                            <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full border border-white"></div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex items-center justify-center space-x-4 mt-4 text-xs">
+                      <div className="flex items-center space-x-1">
+                        <div className="w-3 h-3 bg-green-600 rounded"></div>
+                        <span className="text-orange-300">Livre</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <div className="w-3 h-3 bg-red-600 rounded"></div>
+                        <span className="text-orange-300">Ocupada</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <div className="w-3 h-3 bg-blue-600 rounded"></div>
+                        <span className="text-orange-300">Reservada</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <div className="w-3 h-3 bg-yellow-600 rounded"></div>
+                        <span className="text-orange-300">Conta</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-orange-800 rounded-xl border border-orange-700 p-6">
+                    <h3 className="text-lg font-semibold text-orange-100 mb-4 raleway">Status das Mesas</h3>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <PieChart>
+                        <Pie
+                          data={statusMesasData}
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={80}
+                          fill="#8884d8"
+                          dataKey="value"
+                          label={({ name, value }) => `${name}: ${value}`}
+                        >
+                          {statusMesasData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip 
+                          contentStyle={{ backgroundColor: '#C2410C', border: '1px solid #EA580C', borderRadius: '8px' }}
+                          labelStyle={{ color: '#FED7AA' }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                {/* Gráficos de Performance */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                  <div className="bg-orange-800 rounded-xl border border-orange-700 p-6">
+                    <h3 className="text-lg font-semibold text-orange-100 mb-4 raleway">Vendas por Hora</h3>
+                    <ResponsiveContainer width="100%" height={250}>
+                      <AreaChart data={vendasDiariasData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#C2410C" />
+                        <XAxis dataKey="hora" stroke="#FED7AA" />
+                        <YAxis stroke="#FED7AA" />
+                        <Tooltip 
+                          formatter={(value: number) => [`R$ ${value.toFixed(0)}`, 'Vendas']}
+                          contentStyle={{ backgroundColor: '#C2410C', border: '1px solid #EA580C', borderRadius: '8px' }}
+                          labelStyle={{ color: '#FED7AA' }}
+                        />
+                        <Area type="monotone" dataKey="vendas" stroke="#10B981" fill="#10B981" fillOpacity={0.3} />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  <div className="bg-orange-800 rounded-xl border border-orange-700 p-6">
+                    <h3 className="text-lg font-semibold text-orange-100 mb-4 raleway">Performance da Equipe</h3>
+                    <ResponsiveContainer width="100%" height={250}>
+                      <BarChart data={performanceFuncionarios}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#C2410C" />
+                        <XAxis dataKey="nome" stroke="#FED7AA" />
+                        <YAxis stroke="#FED7AA" />
+                        <Tooltip 
+                          formatter={(value: number, name: string) => [`R$ ${value}`, name === 'vendas' ? 'Vendas' : 'Mesas']}
+                          contentStyle={{ backgroundColor: '#C2410C', border: '1px solid #EA580C', borderRadius: '8px' }}
+                          labelStyle={{ color: '#FED7AA' }}
+                        />
+                        <Bar dataKey="vendas" fill="#3B82F6" name="Vendas" />
+                      </BarChart>
+                    </ResponsiveContainer>
                   </div>
                 </div>
 
                 {/* Popular Items and Staff */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                  <div className="bg-white dark:bg-slate-800 rounded-xl border border-orange-200 dark:border-slate-700 shadow-lg p-6">
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4 raleway">Pratos Populares Hoje</h3>
+                  <div className="bg-orange-800 rounded-xl border border-orange-700 shadow-lg p-6">
+                    <h3 className="text-lg font-semibold text-orange-100 mb-4 raleway">Pratos Populares Hoje</h3>
                     <div className="space-y-4">
                       {pratosPopulares.map((prato, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 bg-gradient-to-r from-orange-50 to-red-50 dark:from-slate-700 dark:to-slate-600 rounded-lg">
+                        <div key={index} className="flex items-center justify-between p-3 bg-gradient-to-r from-orange-700 to-red-700 rounded-lg">
                           <div>
-                            <p className="font-medium text-slate-900 dark:text-slate-100">{prato.nome}</p>
-                            <p className="text-sm text-slate-500 dark:text-slate-400">{prato.categoria}</p>
+                            <p className="font-medium text-orange-100">{prato.nome}</p>
+                            <p className="text-sm text-orange-300">{prato.categoria}</p>
                           </div>
                           <div className="text-right">
-                            <p className="font-semibold text-slate-900 dark:text-slate-100">{prato.vendas} vendas</p>
-                            <p className="text-sm text-orange-600 dark:text-orange-400">{prato.valor}</p>
+                            <p className="font-semibold text-orange-100">{prato.vendas} vendas</p>
+                            <p className="text-sm text-orange-400">R$ {prato.valor.toFixed(2).replace('.', ',')}</p>
                           </div>
                         </div>
                       ))}
                     </div>
                   </div>
 
-                  <div className="bg-white dark:bg-slate-800 rounded-xl border border-orange-200 dark:border-slate-700 shadow-lg p-6">
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4 raleway">Equipe em Serviço</h3>
+                  <div className="bg-orange-800 rounded-xl border border-orange-700 shadow-lg p-6">
+                    <h3 className="text-lg font-semibold text-orange-100 mb-4 raleway">Equipe em Serviço</h3>
                     <div className="space-y-4">
                       {funcionarios.map((funcionario, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-slate-700 dark:to-slate-600 rounded-lg">
+                        <div key={index} className="flex items-center justify-between p-3 bg-gradient-to-r from-orange-700 to-red-700 rounded-lg">
                           <div className="flex items-center space-x-3">
                             <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center">
                               <span className="text-white text-sm font-medium">{funcionario.nome.split(' ')[0][0]}</span>
                             </div>
                             <div>
-                              <p className="font-medium text-slate-900 dark:text-slate-100">{funcionario.nome}</p>
-                              <p className="text-sm text-slate-500 dark:text-slate-400">
+                              <p className="font-medium text-orange-100">{funcionario.nome}</p>
+                              <p className="text-sm text-orange-300">
                                 Mesas: {funcionario.mesas.length > 0 ? funcionario.mesas.join(', ') : 'Nenhuma'}
                               </p>
                             </div>
                           </div>
                           <div className="text-right">
-                            <p className="font-semibold text-slate-900 dark:text-slate-100">{funcionario.vendas}</p>
+                            <p className="font-semibold text-orange-100">R$ {funcionario.vendas}</p>
                             <span className={`text-xs px-2 py-1 rounded-full ${
                               funcionario.status === 'ativa' 
-                                ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400' 
-                                : 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400'
+                                ? 'bg-green-600 text-green-100' 
+                                : 'bg-yellow-600 text-yellow-100'
                             }`}>
                               {funcionario.status === 'ativa' ? 'Ativo' : 'Pausa'}
                             </span>
@@ -267,28 +449,28 @@ export default function DemoRestaurant() {
                 </div>
 
                 {/* Kitchen Orders */}
-                <div className="bg-white dark:bg-slate-800 rounded-xl border border-orange-200 dark:border-slate-700 shadow-lg p-6">
-                  <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4 raleway">Pedidos na Cozinha</h3>
+                <div className="bg-orange-800 rounded-xl border border-orange-700 shadow-lg p-6">
+                  <h3 className="text-lg font-semibold text-orange-100 mb-4 raleway">Pedidos na Cozinha</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {pedidosCozinha.map((pedido, index) => (
                       <div key={index} className={`p-4 rounded-lg border-l-4 ${
-                        pedido.status === 'pronto' ? 'bg-green-50 dark:bg-green-900/10 border-green-500' :
-                        pedido.status === 'preparando' ? 'bg-orange-50 dark:bg-orange-900/10 border-orange-500' :
-                        'bg-blue-50 dark:bg-blue-900/10 border-blue-500'
+                        pedido.status === 'pronto' ? 'bg-green-700 border-green-500' :
+                        pedido.status === 'preparando' ? 'bg-orange-700 border-orange-500' :
+                        'bg-blue-700 border-blue-500'
                       }`}>
                         <div className="flex items-center justify-between mb-2">
-                          <span className="font-medium text-slate-900 dark:text-slate-100">Mesa {pedido.mesa}</span>
+                          <span className="font-medium text-orange-100">Mesa {pedido.mesa}</span>
                           <span className={`text-xs px-2 py-1 rounded-full ${
-                            pedido.status === 'pronto' ? 'bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200' :
-                            pedido.status === 'preparando' ? 'bg-orange-200 dark:bg-orange-800 text-orange-800 dark:text-orange-200' :
-                            'bg-blue-200 dark:bg-blue-800 text-blue-800 dark:text-blue-200'
+                            pedido.status === 'pronto' ? 'bg-green-600 text-green-100' :
+                            pedido.status === 'preparando' ? 'bg-orange-600 text-orange-100' :
+                            'bg-blue-600 text-blue-100'
                           }`}>
                             {pedido.status}
                           </span>
                         </div>
-                        <p className="text-sm text-slate-900 dark:text-slate-100 font-medium">{pedido.item}</p>
-                        <p className="text-xs text-slate-600 dark:text-slate-400">Qtd: {pedido.quantidade}</p>
-                        <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                        <p className="text-sm text-orange-100 font-medium">{pedido.item}</p>
+                        <p className="text-xs text-orange-300">Qtd: {pedido.quantidade}</p>
+                        <p className="text-xs text-orange-300 mt-1">
                           <i className="fas fa-clock mr-1"></i>
                           {pedido.tempo}
                         </p>
@@ -301,29 +483,109 @@ export default function DemoRestaurant() {
 
             {selectedModule === 'mesas' && (
               <div>
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-6 raleway">Controle de Mesas</h2>
+                <h2 className="text-2xl font-bold text-orange-100 mb-6 raleway">Controle de Mesas</h2>
+                
+                {/* Ações Rápidas */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <div className="bg-orange-800 p-4 rounded-xl border border-orange-700">
+                    <h3 className="font-semibold text-orange-100 mb-2">Ocupar Mesa</h3>
+                    <div className="flex space-x-2">
+                      <select 
+                        className="flex-1 px-3 py-2 bg-orange-700 text-orange-100 rounded-lg border border-orange-600"
+                        value=""
+                        onChange={(e) => {
+                          if (e.target.value) {
+                            setMesas(prev => prev.map(m => 
+                              m.numero === parseInt(e.target.value) 
+                                ? { ...m, status: 'ocupada', pedido: Math.floor(Math.random() * 200) + 50, garcom: funcionarios[Math.floor(Math.random() * funcionarios.length)].nome.split(' ')[0] }
+                                : m
+                            ));
+                          }
+                        }}
+                        data-testid="select-ocupar-mesa"
+                      >
+                        <option value="">Selecionar mesa...</option>
+                        {mesas.filter(m => m.status === 'livre').map(mesa => (
+                          <option key={mesa.numero} value={mesa.numero}>Mesa {mesa.numero}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-orange-800 p-4 rounded-xl border border-orange-700">
+                    <h3 className="font-semibold text-orange-100 mb-2">Liberar Mesa</h3>
+                    <div className="flex space-x-2">
+                      <select 
+                        className="flex-1 px-3 py-2 bg-orange-700 text-orange-100 rounded-lg border border-orange-600"
+                        value=""
+                        onChange={(e) => {
+                          if (e.target.value) {
+                            setMesas(prev => prev.map(m => 
+                              m.numero === parseInt(e.target.value) 
+                                ? { ...m, status: 'livre', pedido: 0, garcom: '-', tempo: '-', pessoas: 0 }
+                                : m
+                            ));
+                          }
+                        }}
+                        data-testid="select-liberar-mesa"
+                      >
+                        <option value="">Selecionar mesa...</option>
+                        {mesas.filter(m => m.status === 'ocupada' || m.status === 'conta').map(mesa => (
+                          <option key={mesa.numero} value={mesa.numero}>Mesa {mesa.numero}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-orange-800 p-4 rounded-xl border border-orange-700">
+                    <h3 className="font-semibold text-orange-100 mb-2">Reservar Mesa</h3>
+                    <div className="flex space-x-2">
+                      <select 
+                        className="flex-1 px-3 py-2 bg-orange-700 text-orange-100 rounded-lg border border-orange-600"
+                        value=""
+                        onChange={(e) => {
+                          if (e.target.value) {
+                            setMesas(prev => prev.map(m => 
+                              m.numero === parseInt(e.target.value) 
+                                ? { ...m, status: 'reservada', garcom: funcionarios[Math.floor(Math.random() * funcionarios.length)].nome.split(' ')[0], tempo: '20:00', pessoas: Math.floor(Math.random() * 4) + 2 }
+                                : m
+                            ));
+                          }
+                        }}
+                        data-testid="select-reservar-mesa"
+                      >
+                        <option value="">Selecionar mesa...</option>
+                        {mesas.filter(m => m.status === 'livre').map(mesa => (
+                          <option key={mesa.numero} value={mesa.numero}>Mesa {mesa.numero}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Grid de Mesas */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   {mesas.map((mesa) => (
-                    <div key={mesa.numero} className={`p-4 rounded-xl border-2 ${
-                      mesa.status === 'ocupada' ? 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800' :
-                      mesa.status === 'livre' ? 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800' :
-                      mesa.status === 'reservada' ? 'bg-blue-50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800' :
-                      'bg-yellow-50 dark:bg-yellow-900/10 border-yellow-200 dark:border-yellow-800'
-                    }`}>
+                    <div key={mesa.numero} className={`p-4 rounded-xl border-2 cursor-pointer transition-all hover:scale-105 ${
+                      mesa.status === 'ocupada' ? 'bg-red-700 border-red-600' :
+                      mesa.status === 'livre' ? 'bg-green-700 border-green-600' :
+                      mesa.status === 'reservada' ? 'bg-blue-700 border-blue-600' :
+                      'bg-yellow-700 border-yellow-600'
+                    }`} data-testid={`card-mesa-${mesa.numero}`}>
                       <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Mesa {mesa.numero}</h3>
+                        <h3 className="text-lg font-bold text-orange-100">Mesa {mesa.numero}</h3>
                         <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                          mesa.status === 'ocupada' ? 'bg-red-200 dark:bg-red-800 text-red-800 dark:text-red-200' :
-                          mesa.status === 'livre' ? 'bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200' :
-                          mesa.status === 'reservada' ? 'bg-blue-200 dark:bg-blue-800 text-blue-800 dark:text-blue-200' :
-                          'bg-yellow-200 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200'
+                          mesa.status === 'ocupada' ? 'bg-red-600 text-red-100' :
+                          mesa.status === 'livre' ? 'bg-green-600 text-green-100' :
+                          mesa.status === 'reservada' ? 'bg-blue-600 text-blue-100' :
+                          'bg-yellow-600 text-yellow-100'
                         }`}>
                           {mesa.status}
                         </span>
                       </div>
-                      <div className="space-y-1 text-sm text-slate-600 dark:text-slate-400">
+                      <div className="space-y-1 text-sm text-orange-300">
                         <p><strong>Garçom:</strong> {mesa.garcom}</p>
-                        <p><strong>Pedido:</strong> {mesa.pedido}</p>
+                        <p><strong>Pedido:</strong> {mesa.pedido ? `R$ ${mesa.pedido}` : '-'}</p>
                         <p><strong>Tempo:</strong> {mesa.tempo}</p>
                         <p><strong>Pessoas:</strong> {mesa.pessoas || '-'}</p>
                       </div>
@@ -335,22 +597,272 @@ export default function DemoRestaurant() {
 
             {selectedModule === 'cozinha' && (
               <div>
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-6 raleway">Dashboard da Cozinha</h2>
-                <div className="bg-white dark:bg-slate-800 rounded-xl border border-orange-200 dark:border-slate-700 shadow-lg p-8 text-center">
-                  <i className="fas fa-fire text-4xl text-orange-600 dark:text-orange-400 mb-4"></i>
-                  <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-2">Central da Cozinha</h3>
-                  <p className="text-slate-600 dark:text-slate-400">Gestão completa dos pedidos, timing e preparos.</p>
+                <h2 className="text-2xl font-bold text-orange-100 mb-6 raleway">Dashboard da Cozinha</h2>
+                
+                {/* Novo Pedido */}
+                <div className="bg-orange-800 rounded-xl border border-orange-700 p-6 mb-6">
+                  <h3 className="text-lg font-semibold text-orange-100 mb-4">Adicionar Novo Pedido</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <select 
+                      value={novoPedido.mesa}
+                      onChange={(e) => setNovoPedido(prev => ({ ...prev, mesa: e.target.value }))}
+                      className="px-3 py-2 bg-orange-700 text-orange-100 rounded-lg border border-orange-600"
+                      data-testid="select-mesa-pedido"
+                    >
+                      <option value="">Selecionar mesa...</option>
+                      {mesas.filter(m => m.status === 'ocupada').map(mesa => (
+                        <option key={mesa.numero} value={mesa.numero}>Mesa {mesa.numero}</option>
+                      ))}
+                    </select>
+                    <select 
+                      value={novoPedido.prato}
+                      onChange={(e) => setNovoPedido(prev => ({ ...prev, prato: e.target.value }))}
+                      className="px-3 py-2 bg-orange-700 text-orange-100 rounded-lg border border-orange-600"
+                      data-testid="select-prato-pedido"
+                    >
+                      <option value="">Selecionar prato...</option>
+                      {pratosPopulares.filter(p => p.disponivel).map(prato => (
+                        <option key={prato.nome} value={prato.nome}>{prato.nome}</option>
+                      ))}
+                    </select>
+                    <input 
+                      type="number" 
+                      min="1" 
+                      max="10"
+                      value={novoPedido.quantidade}
+                      onChange={(e) => setNovoPedido(prev => ({ ...prev, quantidade: parseInt(e.target.value) }))}
+                      className="px-3 py-2 bg-orange-700 text-orange-100 rounded-lg border border-orange-600"
+                      placeholder="Quantidade"
+                      data-testid="input-quantidade-pedido"
+                    />
+                    <button 
+                      onClick={() => {
+                        if (novoPedido.mesa && novoPedido.prato) {
+                          const novoId = Math.max(...pedidosCozinha.map(p => p.id)) + 1;
+                          setPedidosCozinha(prev => [...prev, {
+                            id: novoId,
+                            mesa: parseInt(novoPedido.mesa),
+                            item: novoPedido.prato,
+                            quantidade: novoPedido.quantidade,
+                            tempo: `${Math.floor(Math.random() * 15) + 5}min`,
+                            status: 'pendente',
+                            prioridade: 'normal'
+                          }]);
+                          setNovoPedido({ mesa: '', prato: '', quantidade: 1 });
+                        }
+                      }}
+                      className="px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-lg hover:from-orange-600 hover:to-red-700 transition-colors"
+                      data-testid="button-adicionar-pedido"
+                    >
+                      <i className="fas fa-plus mr-2"></i>Adicionar
+                    </button>
+                  </div>
+                </div>
+
+                {/* Status da Cozinha */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                  <div className="bg-orange-800 p-6 rounded-xl border border-orange-700">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-lg flex items-center justify-center">
+                        <i className="fas fa-clock text-white"></i>
+                      </div>
+                    </div>
+                    <h3 className="text-2xl font-bold text-orange-100 mb-1">{pedidosCozinha.filter(p => p.status === 'pendente').length}</h3>
+                    <p className="text-orange-300 text-sm">Pedidos Pendentes</p>
+                  </div>
+                  <div className="bg-orange-800 p-6 rounded-xl border border-orange-700">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-red-500 rounded-lg flex items-center justify-center">
+                        <i className="fas fa-fire text-white"></i>
+                      </div>
+                    </div>
+                    <h3 className="text-2xl font-bold text-orange-100 mb-1">{pedidosCozinha.filter(p => p.status === 'preparando').length}</h3>
+                    <p className="text-orange-300 text-sm">Em Preparo</p>
+                  </div>
+                  <div className="bg-orange-800 p-6 rounded-xl border border-orange-700">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-lg flex items-center justify-center">
+                        <i className="fas fa-check text-white"></i>
+                      </div>
+                    </div>
+                    <h3 className="text-2xl font-bold text-orange-100 mb-1">{pedidosCozinha.filter(p => p.status === 'pronto').length}</h3>
+                    <p className="text-orange-300 text-sm">Prontos</p>
+                  </div>
+                </div>
+
+                {/* Lista de Pedidos */}
+                <div className="bg-orange-800 rounded-xl border border-orange-700 p-6">
+                  <h3 className="text-lg font-semibold text-orange-100 mb-4">Fila de Pedidos</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {pedidosCozinha.map((pedido) => (
+                      <div key={pedido.id} className={`p-4 rounded-lg border-l-4 ${
+                        pedido.status === 'pronto' ? 'bg-green-700 border-green-500' :
+                        pedido.status === 'preparando' ? 'bg-orange-700 border-orange-500' :
+                        'bg-blue-700 border-blue-500'
+                      }`} data-testid={`card-pedido-${pedido.id}`}>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-medium text-orange-100">Mesa {pedido.mesa}</span>
+                          <select 
+                            value={pedido.status}
+                            onChange={(e) => {
+                              setPedidosCozinha(prev => prev.map(p => 
+                                p.id === pedido.id ? { ...p, status: e.target.value as any } : p
+                              ));
+                            }}
+                            className={`text-xs px-2 py-1 rounded-full border-0 ${
+                              pedido.status === 'pronto' ? 'bg-green-600 text-green-100' :
+                              pedido.status === 'preparando' ? 'bg-orange-600 text-orange-100' :
+                              'bg-blue-600 text-blue-100'
+                            }`}
+                            data-testid={`select-status-${pedido.id}`}
+                          >
+                            <option value="pendente">Pendente</option>
+                            <option value="preparando">Preparando</option>
+                            <option value="pronto">Pronto</option>
+                          </select>
+                        </div>
+                        <p className="text-sm text-orange-100 font-medium">{pedido.item}</p>
+                        <p className="text-xs text-orange-300">Qtd: {pedido.quantidade}</p>
+                        <p className="text-xs text-orange-300 mt-1">
+                          <i className="fas fa-clock mr-1"></i>
+                          {pedido.tempo}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
 
             {selectedModule === 'cardapio' && (
               <div>
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-6 raleway">Gestão do Cardápio</h2>
-                <div className="bg-white dark:bg-slate-800 rounded-xl border border-orange-200 dark:border-slate-700 shadow-lg p-8 text-center">
-                  <i className="fas fa-book-open text-4xl text-red-600 dark:text-red-400 mb-4"></i>
-                  <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-2">Menu Digital</h3>
-                  <p className="text-slate-600 dark:text-slate-400">Controle de pratos, ingredientes, preços e disponibilidade.</p>
+                <h2 className="text-2xl font-bold text-orange-100 mb-6 raleway">Gestão do Cardápio</h2>
+                
+                {/* Adicionar Novo Item */}
+                <div className="bg-orange-800 rounded-xl border border-orange-700 p-6 mb-6">
+                  <h3 className="text-lg font-semibold text-orange-100 mb-4">Adicionar Novo Item</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                    <input 
+                      type="text" 
+                      value={novoItemCardapio.nome}
+                      onChange={(e) => setNovoItemCardapio(prev => ({ ...prev, nome: e.target.value }))}
+                      className="px-3 py-2 bg-orange-700 text-orange-100 rounded-lg border border-orange-600"
+                      placeholder="Nome do prato"
+                      data-testid="input-nome-prato"
+                    />
+                    <select 
+                      value={novoItemCardapio.categoria}
+                      onChange={(e) => setNovoItemCardapio(prev => ({ ...prev, categoria: e.target.value }))}
+                      className="px-3 py-2 bg-orange-700 text-orange-100 rounded-lg border border-orange-600"
+                      data-testid="select-categoria-prato"
+                    >
+                      <option value="Entrada">Entrada</option>
+                      <option value="Prato Principal">Prato Principal</option>
+                      <option value="Sobremesa">Sobremesa</option>
+                      <option value="Bebida">Bebida</option>
+                    </select>
+                    <input 
+                      type="number" 
+                      step="0.01"
+                      value={novoItemCardapio.valor}
+                      onChange={(e) => setNovoItemCardapio(prev => ({ ...prev, valor: e.target.value }))}
+                      className="px-3 py-2 bg-orange-700 text-orange-100 rounded-lg border border-orange-600"
+                      placeholder="Preço (R$)"
+                      data-testid="input-valor-prato"
+                    />
+                    <label className="flex items-center space-x-2 text-orange-100">
+                      <input 
+                        type="checkbox" 
+                        checked={novoItemCardapio.disponivel}
+                        onChange={(e) => setNovoItemCardapio(prev => ({ ...prev, disponivel: e.target.checked }))}
+                        className="rounded"
+                        data-testid="checkbox-disponivel-prato"
+                      />
+                      <span>Disponível</span>
+                    </label>
+                    <button 
+                      onClick={() => {
+                        if (novoItemCardapio.nome && novoItemCardapio.valor) {
+                          setPratosPopulares(prev => [...prev, {
+                            nome: novoItemCardapio.nome,
+                            categoria: novoItemCardapio.categoria,
+                            vendas: 0,
+                            valor: parseFloat(novoItemCardapio.valor),
+                            disponivel: novoItemCardapio.disponivel
+                          }]);
+                          setNovoItemCardapio({ nome: '', categoria: 'Entrada', valor: '', disponivel: true });
+                        }
+                      }}
+                      className="px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-lg hover:from-orange-600 hover:to-red-700 transition-colors"
+                      data-testid="button-adicionar-item"
+                    >
+                      <i className="fas fa-plus mr-2"></i>Adicionar
+                    </button>
+                  </div>
+                </div>
+
+                {/* Estatísticas do Cardápio */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                  <div className="bg-orange-800 p-6 rounded-xl border border-orange-700">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-lg flex items-center justify-center mb-4">
+                      <i className="fas fa-utensils text-white"></i>
+                    </div>
+                    <h3 className="text-2xl font-bold text-orange-100 mb-1">{pratosPopulares.length}</h3>
+                    <p className="text-orange-300 text-sm">Total de Pratos</p>
+                  </div>
+                  <div className="bg-orange-800 p-6 rounded-xl border border-orange-700">
+                    <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-lg flex items-center justify-center mb-4">
+                      <i className="fas fa-check-circle text-white"></i>
+                    </div>
+                    <h3 className="text-2xl font-bold text-orange-100 mb-1">{pratosPopulares.filter(p => p.disponivel).length}</h3>
+                    <p className="text-orange-300 text-sm">Disponíveis</p>
+                  </div>
+                  <div className="bg-orange-800 p-6 rounded-xl border border-orange-700">
+                    <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-500 rounded-lg flex items-center justify-center mb-4">
+                      <i className="fas fa-star text-white"></i>
+                    </div>
+                    <h3 className="text-2xl font-bold text-orange-100 mb-1">{Math.max(...pratosPopulares.map(p => p.vendas))}</h3>
+                    <p className="text-orange-300 text-sm">Mais Vendido</p>
+                  </div>
+                  <div className="bg-orange-800 p-6 rounded-xl border border-orange-700">
+                    <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-red-500 rounded-lg flex items-center justify-center mb-4">
+                      <i className="fas fa-dollar-sign text-white"></i>
+                    </div>
+                    <h3 className="text-2xl font-bold text-orange-100 mb-1">R$ {(pratosPopulares.reduce((sum, p) => sum + p.valor, 0) / pratosPopulares.length).toFixed(0)}</h3>
+                    <p className="text-orange-300 text-sm">Preço Médio</p>
+                  </div>
+                </div>
+
+                {/* Lista do Cardápio */}
+                <div className="bg-orange-800 rounded-xl border border-orange-700 p-6">
+                  <h3 className="text-lg font-semibold text-orange-100 mb-4">Itens do Cardápio</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {pratosPopulares.map((prato, index) => (
+                      <div key={index} className="bg-orange-700 p-4 rounded-lg" data-testid={`card-prato-${index}`}>
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-medium text-orange-100">{prato.nome}</h4>
+                          <button 
+                            onClick={() => {
+                              setPratosPopulares(prev => prev.map((p, i) => 
+                                i === index ? { ...p, disponivel: !p.disponivel } : p
+                              ));
+                            }}
+                            className={`text-xs px-2 py-1 rounded-full ${
+                              prato.disponivel ? 'bg-green-600 text-green-100' : 'bg-red-600 text-red-100'
+                            }`}
+                            data-testid={`button-toggle-${index}`}
+                          >
+                            {prato.disponivel ? 'Disponível' : 'Indisponível'}
+                          </button>
+                        </div>
+                        <p className="text-sm text-orange-300 mb-2">{prato.categoria}</p>
+                        <div className="flex items-center justify-between">
+                          <span className="text-lg font-bold text-orange-100">R$ {prato.valor.toFixed(2).replace('.', ',')}</span>
+                          <span className="text-sm text-orange-400">{prato.vendas} vendas</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
