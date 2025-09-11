@@ -10,6 +10,12 @@ import SistemaRestaurant from "@/pages/sistema-restaurant";
 import SistemaFinancial from "@/pages/sistema-financial";
 import SistemaInventory from "@/pages/sistema-inventory";
 import SistemaEducation from "@/pages/sistema-education";
+import DemoERP from "@/pages/demo-erp";
+import DemoCRM from "@/pages/demo-crm";
+import DemoRestaurant from "@/pages/demo-restaurant";
+import DemoFinancial from "@/pages/demo-financial";
+import DemoInventory from "@/pages/demo-inventory";
+import DemoEducation from "@/pages/demo-education";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -22,6 +28,12 @@ function Router() {
       <Route path="/sistema/financial" component={SistemaFinancial} />
       <Route path="/sistema/inventory" component={SistemaInventory} />
       <Route path="/sistema/education" component={SistemaEducation} />
+      <Route path="/demo/erp" component={DemoERP} />
+      <Route path="/demo/crm" component={DemoCRM} />
+      <Route path="/demo/restaurant" component={DemoRestaurant} />
+      <Route path="/demo/financial" component={DemoFinancial} />
+      <Route path="/demo/inventory" component={DemoInventory} />
+      <Route path="/demo/education" component={DemoEducation} />
       <Route component={NotFound} />
     </Switch>
   );
