@@ -604,7 +604,16 @@ export default function DemoFinancial() {
                     <p className="text-blue-200">Controle de entradas e saídas financeiras</p>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition-colors" data-testid="button-add-transaction">
+                    <button 
+                      onClick={() => {
+                        toast({ 
+                          title: "Nova Transação", 
+                          description: "Funcionalidade para adicionar nova transação financeira em desenvolvimento."
+                        });
+                      }}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition-colors" 
+                      data-testid="button-add-transaction"
+                    >
                       <i className="fas fa-plus mr-2"></i>
                       Nova Transação
                     </button>
@@ -680,11 +689,29 @@ export default function DemoFinancial() {
                     <p className="text-blue-200">Controle de contas a pagar e receber</p>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm transition-colors" data-testid="button-add-receivable">
+                    <button 
+                      onClick={() => {
+                        toast({ 
+                          title: "Nova Conta a Receber", 
+                          description: "Modal para cadastrar nova conta a receber abriria aqui."
+                        });
+                      }}
+                      className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm transition-colors" 
+                      data-testid="button-add-receivable"
+                    >
                       <i className="fas fa-plus mr-2"></i>
                       Nova Conta a Receber
                     </button>
-                    <button className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm transition-colors" data-testid="button-add-payable">
+                    <button 
+                      onClick={() => {
+                        toast({ 
+                          title: "Nova Conta a Pagar", 
+                          description: "Modal para cadastrar nova conta a pagar abriria aqui."
+                        });
+                      }}
+                      className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm transition-colors" 
+                      data-testid="button-add-payable"
+                    >
                       <i className="fas fa-plus mr-2"></i>
                       Nova Conta a Pagar
                     </button>
@@ -807,7 +834,16 @@ export default function DemoFinancial() {
                     <p className="text-blue-200">Análises e relatórios detalhados</p>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <button className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm transition-colors" data-testid="button-generate-report">
+                    <button 
+                      onClick={() => {
+                        toast({ 
+                          title: "Exportar PDF", 
+                          description: "Relatório financeiro seria gerado e baixado em formato PDF."
+                        });
+                      }}
+                      className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm transition-colors" 
+                      data-testid="button-generate-report"
+                    >
                       <i className="fas fa-download mr-2"></i>
                       Exportar PDF
                     </button>
