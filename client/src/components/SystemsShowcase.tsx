@@ -1,3 +1,5 @@
+import { Link } from "wouter";
+
 export default function SystemsShowcase() {
   const systems = [
     {
@@ -88,9 +90,10 @@ export default function SystemsShowcase() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {systems.map((system) => (
-            <div 
+            <Link 
               key={system.id}
-              className="fade-in hover-lift bg-card border border-border rounded-xl p-8 group"
+              href={`/sistema/${system.id}`}
+              className="fade-in hover-lift bg-card border border-border rounded-xl p-8 group block transition-all hover:scale-105 hover:shadow-xl"
               data-testid={`system-card-${system.id}`}
             >
               <img 
@@ -109,7 +112,7 @@ export default function SystemsShowcase() {
               <p className="text-muted-foreground mb-6" data-testid={`system-description-${system.id}`}>
                 {system.description}
               </p>
-              <ul className="space-y-2 text-sm text-muted-foreground">
+              <ul className="space-y-2 text-sm text-muted-foreground mb-4">
                 {system.features.map((feature, index) => (
                   <li key={index} className="flex items-center">
                     <i className="fas fa-check text-primary mr-2"></i>
@@ -117,7 +120,11 @@ export default function SystemsShowcase() {
                   </li>
                 ))}
               </ul>
-            </div>
+              <div className="flex items-center text-primary font-semibold mt-auto">
+                <span>Ver detalhes</span>
+                <i className="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+              </div>
+            </Link>
           ))}
         </div>
       </div>
