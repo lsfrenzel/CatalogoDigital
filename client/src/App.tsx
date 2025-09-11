@@ -31,6 +31,7 @@ function Router() {
       <Route path="/demo/erp" component={DemoERP} />
       <Route path="/demo/crm" component={DemoCRM} />
       <Route path="/demo/restaurant" component={DemoRestaurant} />
+      <Route path="/demo-restaurant" component={DemoRestaurant} />
       <Route path="/demo/financial" component={DemoFinancial} />
       <Route path="/demo/inventory" component={DemoInventory} />
       <Route path="/demo/education" component={DemoEducation} />
