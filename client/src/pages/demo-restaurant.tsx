@@ -38,10 +38,10 @@ export default function DemoRestaurant() {
   ]);
   
   const [pratosPopulares, setPratosPopulares] = useState([
-    { nome: "Salmão Grelhado", categoria: "Prato Principal", vendas: 23, valor: 48.90, disponivel: true },
-    { nome: "Risotto de Funghi", categoria: "Prato Principal", vendas: 18, valor: 42.50, disponivel: true },
-    { nome: "Tiramisu da Casa", categoria: "Sobremesa", vendas: 31, valor: 16.90, disponivel: true },
-    { nome: "Bruschetta Especial", categoria: "Entrada", vendas: 42, valor: 18.50, disponivel: false }
+    { nome: "Salmão Grelhado", categoria: "Prato Principal", vendas: 23, valor: 48.90, disponivel: true, estoque: 12 },
+    { nome: "Risotto de Funghi", categoria: "Prato Principal", vendas: 18, valor: 42.50, disponivel: true, estoque: 8 },
+    { nome: "Tiramisu da Casa", categoria: "Sobremesa", vendas: 31, valor: 16.90, disponivel: true, estoque: 15 },
+    { nome: "Bruschetta Especial", categoria: "Entrada", vendas: 42, valor: 18.50, disponivel: false, estoque: 0 }
   ]);
   
   const [pedidosCozinha, setPedidosCozinha] = useState([
@@ -54,16 +54,16 @@ export default function DemoRestaurant() {
   ]);
   
   const [funcionarios] = useState([
-    { nome: "Maria Silva", cargo: "Garçom", mesas: [1, 7], vendas: 456, status: "ativa" },
-    { nome: "João Santos", cargo: "Garçom", mesas: [3], vendas: 123, status: "pausa" },
-    { nome: "Ana Costa", cargo: "Garçom", mesas: [4, 10], vendas: 289, status: "ativa" },
-    { nome: "Carlos Lima", cargo: "Garçom", mesas: [5, 11], vendas: 567, status: "ativa" },
-    { nome: "Pedro Oliveira", cargo: "Garçom", mesas: [8], vendas: 198, status: "ativa" }
+    { nome: "Maria Silva", cargo: "Garçom", mesas: [1, 7], vendas: 456, status: "ativa", comissao: 45.60, horasTrabalhadas: 8 },
+    { nome: "João Santos", cargo: "Garçom", mesas: [3], vendas: 123, status: "pausa", comissao: 12.30, horasTrabalhadas: 4 },
+    { nome: "Ana Costa", cargo: "Garçom", mesas: [4, 10], vendas: 289, status: "ativa", comissao: 28.90, horasTrabalhadas: 6 },
+    { nome: "Carlos Lima", cargo: "Garçom", mesas: [5, 11], vendas: 567, status: "ativa", comissao: 56.70, horasTrabalhadas: 8 },
+    { nome: "Pedro Oliveira", cargo: "Garçom", mesas: [8], vendas: 198, status: "ativa", comissao: 19.80, horasTrabalhadas: 5 }
   ]);
   
   // Form states
   const [novoPedido, setNovoPedido] = useState({ mesa: '', prato: '', quantidade: 1 });
-  const [novoItemCardapio, setNovoItemCardapio] = useState({ nome: '', categoria: 'Entrada', valor: '', disponivel: true });
+  const [novoItemCardapio, setNovoItemCardapio] = useState({ nome: '', categoria: 'Entrada', valor: '', disponivel: true, estoque: 10 });
 
   // Dados calculados dinamicamente
   const totalVendas = mesas.reduce((sum, mesa) => sum + (mesa.pedido || 0), 0);
@@ -668,7 +668,7 @@ export default function DemoRestaurant() {
 
             {selectedModule === 'cozinha' && (
               <div>
-                <h2 className="text-2xl font-bold text-orange-100 mb-6 raleway">Dashboard da Cozinha</h2>
+                <h2 className="text-2xl font-bold text-amber-100 mb-6 raleway">Dashboard da Cozinha</h2>
                 
                 {/* Novo Pedido */}
                 <div className="bg-orange-800 rounded-xl border border-orange-700 p-6 mb-6">
@@ -859,9 +859,10 @@ export default function DemoRestaurant() {
                             categoria: novoItemCardapio.categoria,
                             vendas: 0,
                             valor: parseFloat(novoItemCardapio.valor),
-                            disponivel: novoItemCardapio.disponivel
+                            disponivel: novoItemCardapio.disponivel,
+                            estoque: novoItemCardapio.estoque
                           }]);
-                          setNovoItemCardapio({ nome: '', categoria: 'Entrada', valor: '', disponivel: true });
+                          setNovoItemCardapio({ nome: '', categoria: 'Entrada', valor: '', disponivel: true, estoque: 10 });
                         }
                       }}
                       className="px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-lg hover:from-orange-600 hover:to-red-700 transition-colors"
