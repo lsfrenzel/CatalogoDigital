@@ -6,6 +6,21 @@ import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Toolti
 export default function DemoRestaurant() {
   const [selectedModule, setSelectedModule] = useState('dashboard');
   
+  // Estados avançados
+  const [alertas, setAlertas] = useState([
+    { id: 1, tipo: 'pedido', mensagem: 'Mesa 3 aguardando há 15min', tempo: '15min', urgente: true },
+    { id: 2, tipo: 'estoque', mensagem: 'Salmão com baixo estoque', tempo: '5min', urgente: false },
+    { id: 3, tipo: 'reserva', mensagem: 'Nova reserva para 20:30', tempo: '2min', urgente: false }
+  ]);
+  const [cronometros, setCronometros] = useState({});
+  const [clientes, setClientes] = useState([
+    { nome: 'João Silva', telefone: '11999887766', email: 'joao@email.com' },
+    { nome: 'Maria Santos', telefone: '11988776655', email: 'maria@email.com' }
+  ]);
+  const [novaReserva, setNovaReserva] = useState({ 
+    mesa: '', cliente: '', data: '', hora: '', pessoas: 2, telefone: '', observacoes: '' 
+  });
+  
   // Estados dinâmicos
   const [mesas, setMesas] = useState([
     { numero: 1, status: "ocupada", garcom: "Maria", pedido: 145, tempo: "25min", pessoas: 4 },
@@ -98,23 +113,23 @@ export default function DemoRestaurant() {
   return (
     <>
       <Header />
-      <div className="min-h-screen bg-gradient-to-br from-orange-900 via-red-900 to-amber-900">
+      <div className="min-h-screen bg-gradient-to-br from-amber-950 via-orange-950 to-red-950">
         {/* Demo Header */}
-        <div className="bg-orange-800 border-b border-orange-700 shadow-sm">
+        <div className="bg-amber-950/90 border-b border-amber-900 shadow-sm">
           <div className="max-w-7xl mx-auto px-6 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <Link 
                   href="/sistema/restaurant"
-                  className="text-orange-200 hover:text-orange-100 flex items-center"
+                  className="text-amber-200 hover:text-amber-100 flex items-center"
                 >
                   <i className="fas fa-arrow-left mr-2"></i>
                   Voltar
                 </Link>
-                <div className="w-px h-6 bg-orange-600"></div>
-                <h1 className="text-2xl font-bold text-orange-100 raleway">RestaurantOS - Bella Vista</h1>
+                <div className="w-px h-6 bg-amber-600"></div>
+                <h1 className="text-2xl font-bold text-amber-100 raleway">RestaurantOS - Bella Vista</h1>
               </div>
-              <div className="bg-orange-700 text-orange-100 px-3 py-1 rounded-full text-sm font-medium">
+              <div className="bg-amber-900 text-amber-100 px-3 py-1 rounded-full text-sm font-medium">
                 <i className="fas fa-circle text-green-400 mr-2 text-xs"></i>
                 Sistema em Funcionamento
               </div>
@@ -124,15 +139,15 @@ export default function DemoRestaurant() {
 
         <div className="flex">
           {/* Sidebar */}
-          <div className="w-64 bg-orange-800 border-r border-orange-700 min-h-screen shadow-lg">
+          <div className="w-64 bg-amber-950/90 border-r border-amber-900 min-h-screen shadow-lg">
             <div className="p-4">
               <div className="flex items-center space-x-3 mb-6">
-                <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center">
+                <div className="w-10 h-10 bg-gradient-to-br from-amber-600 to-orange-700 rounded-lg flex items-center justify-center">
                   <i className="fas fa-utensils text-white"></i>
                 </div>
                 <div>
-                  <h2 className="font-semibold text-orange-100">RestaurantOS</h2>
-                  <p className="text-sm text-orange-300">Bella Vista</p>
+                  <h2 className="font-semibold text-amber-100">RestaurantOS</h2>
+                  <p className="text-sm text-amber-300">Bella Vista</p>
                 </div>
               </div>
 
@@ -141,8 +156,8 @@ export default function DemoRestaurant() {
                   onClick={() => setSelectedModule('dashboard')}
                   className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
                     selectedModule === 'dashboard' 
-                      ? 'bg-gradient-to-r from-orange-500 to-red-600 text-white' 
-                      : 'text-orange-300 hover:bg-orange-700'
+                      ? 'bg-gradient-to-r from-amber-600 to-orange-700 text-white' 
+                      : 'text-amber-300 hover:bg-amber-900/60'
                   }`}
                   data-testid="button-dashboard"
                 >
@@ -153,8 +168,8 @@ export default function DemoRestaurant() {
                   onClick={() => setSelectedModule('mesas')}
                   className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
                     selectedModule === 'mesas' 
-                      ? 'bg-gradient-to-r from-orange-500 to-red-600 text-white' 
-                      : 'text-orange-300 hover:bg-orange-700'
+                      ? 'bg-gradient-to-r from-amber-600 to-orange-700 text-white' 
+                      : 'text-amber-300 hover:bg-amber-900/60'
                   }`}
                   data-testid="button-mesas"
                 >
@@ -165,8 +180,8 @@ export default function DemoRestaurant() {
                   onClick={() => setSelectedModule('cozinha')}
                   className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
                     selectedModule === 'cozinha' 
-                      ? 'bg-gradient-to-r from-orange-500 to-red-600 text-white' 
-                      : 'text-orange-300 hover:bg-orange-700'
+                      ? 'bg-gradient-to-r from-amber-600 to-orange-700 text-white' 
+                      : 'text-amber-300 hover:bg-amber-900/60'
                   }`}
                   data-testid="button-cozinha"
                 >
@@ -177,8 +192,8 @@ export default function DemoRestaurant() {
                   onClick={() => setSelectedModule('cardapio')}
                   className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
                     selectedModule === 'cardapio' 
-                      ? 'bg-gradient-to-r from-orange-500 to-red-600 text-white' 
-                      : 'text-orange-300 hover:bg-orange-700'
+                      ? 'bg-gradient-to-r from-amber-600 to-orange-700 text-white' 
+                      : 'text-amber-300 hover:bg-amber-900/60'
                   }`}
                   data-testid="button-cardapio"
                 >
@@ -187,96 +202,152 @@ export default function DemoRestaurant() {
                 </button>
               </nav>
 
-              <div className="mt-8 p-3 bg-gradient-to-br from-orange-100 to-red-100 dark:from-slate-700 dark:to-slate-600 rounded-lg">
-                <h3 className="font-medium text-slate-900 dark:text-slate-100 mb-2">Turno Atual</h3>
+              <div className="mt-8 p-3 bg-gradient-to-br from-amber-900 to-orange-900 rounded-lg border border-amber-800">
+                <h3 className="font-medium text-amber-100 mb-2">Turno Atual</h3>
                 <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center">
+                  <div className="w-8 h-8 bg-gradient-to-br from-amber-600 to-orange-700 rounded-full flex items-center justify-center">
                     <span className="text-white text-sm font-medium">J</span>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100">Jantar</p>
-                    <p className="text-xs text-orange-600 dark:text-orange-400">19:30 - 23:00</p>
+                    <p className="text-sm font-medium text-amber-100">Jantar</p>
+                    <p className="text-xs text-amber-300">19:30 - 23:00</p>
                   </div>
                 </div>
-                <div className="mt-2 pt-2 border-t border-orange-200 dark:border-slate-500">
-                  <p className="text-xs text-slate-600 dark:text-slate-400">Ocupação</p>
+                <div className="mt-2 pt-2 border-t border-amber-700">
+                  <p className="text-xs text-amber-300">Ocupação</p>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">68%</span>
-                    <span className="text-xs text-green-600 dark:text-green-400">24 mesas</span>
+                    <span className="text-sm font-semibold text-amber-100">{ocupacaoPercent}%</span>
+                    <span className="text-xs text-green-400">{mesas.length} mesas</span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
+          {/* Alertas e Notificações */}
+          <div className="bg-amber-950/80 border-b border-amber-900">
+            <div className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-amber-100 flex items-center">
+                  <i className="fas fa-bell mr-2 text-amber-400"></i>
+                  Central de Alertas
+                </h3>
+                <span className="text-xs text-amber-400 bg-amber-900/50 px-2 py-1 rounded-full">
+                  {alertas.filter(a => a.urgente).length} urgentes
+                </span>
+              </div>
+              <div className="flex space-x-3 overflow-x-auto pb-2">
+                {alertas.map((alerta) => (
+                  <div key={alerta.id} className={`flex-shrink-0 p-3 rounded-lg border transition-all hover:scale-105 ${
+                    alerta.urgente ? 'bg-red-950/70 border-red-800 animate-pulse' : 'bg-amber-950/60 border-amber-800'
+                  }`} data-testid={`alerta-${alerta.id}`}>
+                    <div className="flex items-center space-x-3">
+                      <i className={`fas fa-${alerta.tipo === 'pedido' ? 'clock' : alerta.tipo === 'estoque' ? 'box' : 'calendar'} text-sm ${
+                        alerta.urgente ? 'text-red-400' : 'text-amber-400'
+                      }`}></i>
+                      <div className="flex-1">
+                        <p className="text-xs text-amber-200 font-medium">{alerta.mensagem}</p>
+                        <p className="text-xs text-amber-400 mt-1">{alerta.tempo} atrás</p>
+                      </div>
+                      <button 
+                        onClick={() => setAlertas(prev => prev.filter(a => a.id !== alerta.id))}
+                        className="text-amber-400 hover:text-amber-200 text-sm font-bold transition-colors"
+                        data-testid={`button-dismiss-${alerta.id}`}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                <button 
+                  className="flex-shrink-0 p-3 border-2 border-dashed border-amber-800 rounded-lg text-amber-400 hover:bg-amber-950/30 transition-colors"
+                  onClick={() => {
+                    const novoAlerta = {
+                      id: Math.max(...alertas.map(a => a.id)) + 1,
+                      tipo: 'pedido',
+                      mensagem: `Mesa ${Math.floor(Math.random() * 12) + 1} precisa de atenção`,
+                      tempo: 'agora',
+                      urgente: Math.random() > 0.5
+                    };
+                    setAlertas(prev => [...prev, novoAlerta]);
+                  }}
+                  data-testid="button-add-alert"
+                >
+                  <i className="fas fa-plus text-sm mr-2"></i>
+                  <span className="text-xs">Simular Alerta</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
           {/* Main Content */}
-          <div className="flex-1 p-6 bg-orange-900">
+          <div className="flex-1 p-6 bg-gradient-to-br from-amber-950 to-orange-950">
             {selectedModule === 'dashboard' && (
               <div>
                 <div className="mb-6">
-                  <h2 className="text-2xl font-bold text-orange-100 mb-2 raleway">Dashboard do Restaurante</h2>
-                  <p className="text-orange-300">Visão geral das operações do turno atual</p>
+                  <h2 className="text-2xl font-bold text-amber-100 mb-2 raleway">Dashboard do Restaurante</h2>
+                  <p className="text-amber-300">Visão geral das operações do turno atual</p>
                 </div>
 
                 {/* KPI Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                  <div className="bg-orange-800 p-6 rounded-xl border border-orange-700 shadow-lg" data-testid="card-vendas">
+                  <div className="bg-amber-950/80 p-6 rounded-xl border border-amber-900 shadow-lg hover:shadow-xl transition-shadow" data-testid="card-vendas">
                     <div className="flex items-center justify-between mb-4">
                       <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-lg flex items-center justify-center">
                         <i className="fas fa-dollar-sign text-white"></i>
                       </div>
                       <span className="text-green-400 text-sm font-medium">+18.5%</span>
                     </div>
-                    <h3 className="text-2xl font-bold text-orange-100 mb-1" data-testid="text-vendas-total">
+                    <h3 className="text-2xl font-bold text-amber-100 mb-1" data-testid="text-vendas-total">
                       R$ {totalVendas.toLocaleString('pt-BR')}
                     </h3>
-                    <p className="text-orange-300 text-sm">Vendas do Turno</p>
+                    <p className="text-amber-300 text-sm">Vendas do Turno</p>
                   </div>
 
-                  <div className="bg-orange-800 p-6 rounded-xl border border-orange-700 shadow-lg" data-testid="card-pedidos">
+                  <div className="bg-amber-950/80 p-6 rounded-xl border border-amber-900 shadow-lg hover:shadow-xl transition-shadow" data-testid="card-pedidos">
                     <div className="flex items-center justify-between mb-4">
                       <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-lg flex items-center justify-center">
                         <i className="fas fa-receipt text-white"></i>
                       </div>
                       <span className="text-blue-400 text-sm font-medium">+{totalPedidos}</span>
                     </div>
-                    <h3 className="text-2xl font-bold text-orange-100 mb-1" data-testid="text-pedidos-total">
+                    <h3 className="text-2xl font-bold text-amber-100 mb-1" data-testid="text-pedidos-total">
                       {totalPedidos}
                     </h3>
-                    <p className="text-orange-300 text-sm">Pedidos Atendidos</p>
+                    <p className="text-amber-300 text-sm">Pedidos Atendidos</p>
                   </div>
 
-                  <div className="bg-orange-800 p-6 rounded-xl border border-orange-700 shadow-lg" data-testid="card-mesas">
+                  <div className="bg-amber-950/80 p-6 rounded-xl border border-amber-900 shadow-lg hover:shadow-xl transition-shadow" data-testid="card-mesas">
                     <div className="flex items-center justify-between mb-4">
                       <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-red-500 rounded-lg flex items-center justify-center">
                         <i className="fas fa-chair text-white"></i>
                       </div>
                     </div>
-                    <h3 className="text-2xl font-bold text-orange-100 mb-1" data-testid="text-mesas-livres">
+                    <h3 className="text-2xl font-bold text-amber-100 mb-1" data-testid="text-mesas-livres">
                       {mesasLivres}
                     </h3>
-                    <p className="text-orange-300 text-sm">Mesas Livres</p>
-                    <p className="text-orange-400 text-xs mt-2">{ocupacaoPercent}% ocupação</p>
+                    <p className="text-amber-300 text-sm">Mesas Livres</p>
+                    <p className="text-amber-400 text-xs mt-2">{ocupacaoPercent}% ocupação</p>
                   </div>
 
-                  <div className="bg-orange-800 p-6 rounded-xl border border-orange-700 shadow-lg" data-testid="card-tempo">
+                  <div className="bg-amber-950/80 p-6 rounded-xl border border-amber-900 shadow-lg hover:shadow-xl transition-shadow" data-testid="card-tempo">
                     <div className="flex items-center justify-between mb-4">
                       <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-500 rounded-lg flex items-center justify-center">
                         <i className="fas fa-clock text-white"></i>
                       </div>
                     </div>
-                    <h3 className="text-2xl font-bold text-orange-100 mb-1" data-testid="text-tempo-medio">
+                    <h3 className="text-2xl font-bold text-amber-100 mb-1" data-testid="text-tempo-medio">
                       {tempoMedio}min
                     </h3>
-                    <p className="text-orange-300 text-sm">Tempo Médio</p>
+                    <p className="text-amber-300 text-sm">Tempo Médio</p>
                     <p className="text-purple-400 text-xs mt-2">Por pedido</p>
                   </div>
                 </div>
 
                 {/* Gráfico Layout de Mesas */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                  <div className="bg-orange-800 rounded-xl border border-orange-700 p-6">
-                    <h3 className="text-lg font-semibold text-orange-100 mb-4 raleway">Layout do Restaurante</h3>
+                  <div className="bg-amber-950/80 rounded-xl border border-amber-900 p-6">
+                    <h3 className="text-lg font-semibold text-amber-100 mb-4 raleway">Layout do Restaurante</h3>
                     <div className="grid grid-cols-4 gap-3 max-w-md mx-auto">
                       {mesas.map((mesa) => (
                         <div 
@@ -316,25 +387,25 @@ export default function DemoRestaurant() {
                     <div className="flex items-center justify-center space-x-4 mt-4 text-xs">
                       <div className="flex items-center space-x-1">
                         <div className="w-3 h-3 bg-green-600 rounded"></div>
-                        <span className="text-orange-300">Livre</span>
+                        <span className="text-amber-300">Livre</span>
                       </div>
                       <div className="flex items-center space-x-1">
                         <div className="w-3 h-3 bg-red-600 rounded"></div>
-                        <span className="text-orange-300">Ocupada</span>
+                        <span className="text-amber-300">Ocupada</span>
                       </div>
                       <div className="flex items-center space-x-1">
                         <div className="w-3 h-3 bg-blue-600 rounded"></div>
-                        <span className="text-orange-300">Reservada</span>
+                        <span className="text-amber-300">Reservada</span>
                       </div>
                       <div className="flex items-center space-x-1">
                         <div className="w-3 h-3 bg-yellow-600 rounded"></div>
-                        <span className="text-orange-300">Conta</span>
+                        <span className="text-amber-300">Conta</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-orange-800 rounded-xl border border-orange-700 p-6">
-                    <h3 className="text-lg font-semibold text-orange-100 mb-4 raleway">Status das Mesas</h3>
+                  <div className="bg-amber-950/80 rounded-xl border border-amber-900 p-6">
+                    <h3 className="text-lg font-semibold text-amber-100 mb-4 raleway">Status das Mesas</h3>
                     <ResponsiveContainer width="100%" height={300}>
                       <PieChart>
                         <Pie
