@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { emailService } from "./email";
 import { insertContactSchema } from "@shared/schema";
 import { z } from "zod";
 
@@ -10,6 +11,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = insertContactSchema.parse(req.body);
       const contact = await storage.createContactSubmission(validatedData);
+      
+      // Send emails asynchronously (don't wait for completion to respond to user)
+      Promise.all([
+        emailService.sendContactNotification(contact),
+        emailService.sendContactConfirmation(contact)
+      ]).catch(error => {
+        console.error('Error sending emails:', error);
+      });
       
       res.json({ 
         success: true, 
