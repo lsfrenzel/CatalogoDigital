@@ -14,9 +14,9 @@ export const contactSubmissions = pgTable("contact_submissions", {
   name: text("name").notNull(),
   email: text("email").notNull(),
   company: text("company").notNull(),
-  phone: text("phone"),
-  systemOfInterest: text("system_of_interest"),
-  message: text("message"),
+  phone: text("phone").default(""),
+  systemOfInterest: text("system_of_interest").default(""),
+  message: text("message").default(""),
   acceptsMarketing: text("accepts_marketing").default("false"),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -29,6 +29,10 @@ export const insertUserSchema = createInsertSchema(users).pick({
 export const insertContactSchema = createInsertSchema(contactSubmissions).omit({
   id: true,
   createdAt: true,
+}).extend({
+  phone: z.string().optional(),
+  systemOfInterest: z.string().optional(),
+  message: z.string().optional(),
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;

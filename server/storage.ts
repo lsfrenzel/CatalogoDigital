@@ -40,6 +40,10 @@ export class MemStorage implements IStorage {
     const contact: ContactSubmission = {
       ...insertContact,
       id,
+      phone: insertContact.phone || "",
+      systemOfInterest: insertContact.systemOfInterest || "",
+      message: insertContact.message || "",
+      acceptsMarketing: insertContact.acceptsMarketing || "false",
       createdAt: new Date(),
     };
     this.contacts.set(id, contact);
