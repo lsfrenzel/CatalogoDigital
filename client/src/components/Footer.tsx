@@ -18,12 +18,6 @@ export default function Footer() {
     { name: 'Plataforma EAD', section: 'sistemas' }
   ];
 
-  const socialLinks = [
-    { icon: 'fab fa-linkedin-in', href: '#', label: 'LinkedIn' },
-    { icon: 'fab fa-instagram', href: '#', label: 'Instagram' },
-    { icon: 'fab fa-facebook-f', href: '#', label: 'Facebook' },
-    { icon: 'fab fa-youtube', href: '#', label: 'YouTube' }
-  ];
 
   return (
     <footer className="bg-card border-t border-border py-16">
@@ -46,19 +40,6 @@ export default function Footer() {
             <p className="text-muted-foreground mb-4 max-w-md" data-testid="footer-description">
               Desenvolvemos sistemas inteligentes que ajudam empresas a crescer, otimizar processos e aumentar sua competitividade no mercado digital.
             </p>
-            <div className="flex space-x-4">
-              {socialLinks.map((social, index) => (
-                <a 
-                  key={index}
-                  href={social.href}
-                  className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
-                  aria-label={social.label}
-                  data-testid={`social-${social.label.toLowerCase()}`}
-                >
-                  <i className={social.icon}></i>
-                </a>
-              ))}
-            </div>
           </div>
 
           <div>
@@ -84,41 +65,16 @@ export default function Footer() {
             <h4 className="text-lg font-semibold text-foreground mb-4" data-testid="footer-contact-title">
               Contato
             </h4>
-            <ul className="space-y-3 text-sm">
-              <li className="flex items-start" data-testid="footer-address">
-                <i className="fas fa-map-marker-alt text-primary mr-3 mt-1"></i>
-                <span className="text-muted-foreground">
-                  Rua da Tecnologia, 123<br />
-                  São Paulo - SP, 01234-567
-                </span>
-              </li>
-              <li className="flex items-center">
-                <i className="fas fa-phone text-primary mr-3"></i>
-                <a 
-                  href="tel:+551199999999" 
-                  className="text-muted-foreground hover:text-primary transition-colors"
-                  data-testid="footer-phone"
-                >
-                  (11) 99999-9999
-                </a>
-              </li>
-              <li className="flex items-center">
-                <i className="fas fa-envelope text-primary mr-3"></i>
-                <a 
-                  href="mailto:contato@techsolutions.com.br" 
-                  className="text-muted-foreground hover:text-primary transition-colors"
-                  data-testid="footer-email"
-                >
-                  contato@techsolutions.com.br
-                </a>
-              </li>
-              <li className="flex items-center" data-testid="footer-hours">
-                <i className="fas fa-clock text-primary mr-3"></i>
-                <span className="text-muted-foreground">
-                  Segunda a Sexta: 8h às 18h
-                </span>
-              </li>
-            </ul>
+            <div className="flex items-center">
+              <i className="fas fa-phone text-primary mr-3"></i>
+              <a 
+                href="tel:+5511975363887" 
+                className="text-muted-foreground hover:text-primary transition-colors"
+                data-testid="footer-phone"
+              >
+                (11) 97536-3887
+              </a>
+            </div>
           </div>
         </div>
 

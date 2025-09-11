@@ -4,8 +4,6 @@ import Hero from "@/components/Hero";
 import SystemsShowcase from "@/components/SystemsShowcase";
 import Benefits from "@/components/Benefits";
 import Comparison from "@/components/Comparison";
-import Testimonials from "@/components/Testimonials";
-import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 
 export default function Home() {
@@ -40,8 +38,6 @@ export default function Home() {
         <SystemsShowcase />
         <Benefits />
         <Comparison />
-        <Testimonials />
-        <Contact />
       </main>
       <Footer />
     </>
