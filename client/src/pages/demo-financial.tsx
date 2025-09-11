@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "wouter";
 import Header from "@/components/Header";
 import CustomSystemsMessage from "@/components/CustomSystemsMessage";
+import { useToast } from "@/hooks/use-toast";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
 
 export default function DemoFinancial() {
@@ -9,6 +10,7 @@ export default function DemoFinancial() {
   const [selectedPeriod, setSelectedPeriod] = useState('mes');
   const [selectedAccount, setSelectedAccount] = useState<any>(null);
   const [showAccountModal, setShowAccountModal] = useState(false);
+  const { toast } = useToast();
 
   // Open account detail modal
   const openAccountModal = (account: any) => {
