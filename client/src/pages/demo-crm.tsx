@@ -1,84 +1,216 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import Header from "@/components/Header";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area, FunnelChart, Funnel, LabelList } from 'recharts';
+
+interface Lead {
+  id: string;
+  nome: string;
+  empresa: string;
+  email: string;
+  telefone: string;
+  fonte: string;
+  status: 'Novo' | 'Qualificado' | 'Oportunidade' | 'Perdido';
+  score: number;
+  data: string;
+}
+
+interface Opportunity {
+  id: string;
+  cliente: string;
+  valor: number;
+  probabilidade: number;
+  etapa: 'Prospecção' | 'Qualificação' | 'Proposta' | 'Negociação' | 'Fechamento';
+  vendedor: string;
+  prazo: string;
+  produto: string;
+}
+
+interface Customer {
+  id: string;
+  nome: string;
+  empresa: string;
+  email: string;
+  telefone: string;
+  valorTotal: number;
+  ultimaCompra: string;
+  status: 'Ativo' | 'Inativo' | 'VIP';
+  vendedor: string;
+}
+
+interface Activity {
+  id: string;
+  tipo: 'call' | 'email' | 'meeting' | 'deal';
+  acao: string;
+  cliente: string;
+  vendedor: string;
+  tempo: string;
+}
 
 export default function DemoCRM() {
   const [selectedModule, setSelectedModule] = useState('dashboard');
+  
+  // Estados para dados dinâmicos
+  const [leads, setLeads] = useState<Lead[]>([
+    { id: "1", nome: "João Silva", empresa: "TechCorp Ltda", email: "joao@techcorp.com", telefone: "(11) 99999-0001", fonte: "Website", status: "Qualificado", score: 85, data: "11/11" },
+    { id: "2", nome: "Maria Santos", empresa: "Innovation Hub", email: "maria@innovation.com", telefone: "(11) 99999-0002", fonte: "LinkedIn", status: "Novo", score: 60, data: "10/11" },
+    { id: "3", nome: "Carlos Lima", empresa: "Digital Solutions", email: "carlos@digital.com", telefone: "(11) 99999-0003", fonte: "Indicação", status: "Oportunidade", score: 90, data: "09/11" },
+    { id: "4", nome: "Ana Costa", empresa: "StartupXYZ", email: "ana@startup.com", telefone: "(11) 99999-0004", fonte: "Google Ads", status: "Qualificado", score: 75, data: "08/11" }
+  ]);
 
-  const salesData = {
-    totalMes: "R$ 847.320",
-    variacao: "+23.5%",
-    metaMes: "78%",
-    leadsNovos: 127,
-    conversao: "18.3%",
-    clientesAtivos: 1543,
-    ticketMedio: "R$ 2.847"
+  const [opportunities, setOpportunities] = useState<Opportunity[]>([
+    { id: "#OPP-2847", cliente: "TechCorp Ltda", valor: 45000, probabilidade: 85, etapa: "Proposta", vendedor: "Ana Silva", prazo: "5 dias", produto: "ERP Empresarial" },
+    { id: "#OPP-2846", cliente: "Innovation Hub", valor: 28900, probabilidade: 60, etapa: "Negociação", vendedor: "Carlos Ferreira", prazo: "12 dias", produto: "CRM Premium" },
+    { id: "#OPP-2845", cliente: "Digital Solutions", valor: 67500, probabilidade: 90, etapa: "Fechamento", vendedor: "Mariana Costa", prazo: "2 dias", produto: "Suite Completa" },
+    { id: "#OPP-2844", cliente: "StartupXYZ", valor: 15000, probabilidade: 40, etapa: "Qualificação", vendedor: "Roberto Lima", prazo: "20 dias", produto: "CRM Básico" }
+  ]);
+
+  const [customers, setCustomers] = useState<Customer[]>([
+    { id: "1", nome: "Pedro Oliveira", empresa: "Empresa Moderna SA", email: "pedro@moderna.com", telefone: "(11) 99999-1001", valorTotal: 120000, ultimaCompra: "05/11", status: "VIP", vendedor: "Ana Silva" },
+    { id: "2", nome: "Julia Ferreira", empresa: "TechStart Solutions", email: "julia@techstart.com", telefone: "(11) 99999-1002", valorTotal: 85000, ultimaCompra: "01/11", status: "Ativo", vendedor: "Carlos Ferreira" },
+    { id: "3", nome: "Roberto Silva", empresa: "Inovação Digital", email: "roberto@inovacao.com", telefone: "(11) 99999-1003", valorTotal: 45000, ultimaCompra: "15/10", status: "Ativo", vendedor: "Mariana Costa" },
+    { id: "4", nome: "Fernanda Lima", empresa: "NextGen Corp", email: "fernanda@nextgen.com", telefone: "(11) 99999-1004", valorTotal: 12000, ultimaCompra: "20/09", status: "Inativo", vendedor: "Roberto Lima" }
+  ]);
+
+  const [activities, setActivities] = useState<Activity[]>([
+    { id: "1", tipo: "call", acao: "Ligação realizada", cliente: "TechCorp Ltda", vendedor: "Ana S.", tempo: "5 min atrás" },
+    { id: "2", tipo: "email", acao: "Proposta enviada", cliente: "Innovation Hub", vendedor: "Carlos F.", tempo: "23 min atrás" },
+    { id: "3", tipo: "meeting", acao: "Reunião agendada", cliente: "Digital Solutions", vendedor: "Mariana C.", tempo: "1h atrás" },
+    { id: "4", tipo: "deal", acao: "Negócio fechado", cliente: "StartupXYZ", vendedor: "Roberto L.", tempo: "2h atrás" }
+  ]);
+
+  // Form states
+  const [newLead, setNewLead] = useState({ nome: '', empresa: '', email: '', telefone: '', fonte: 'Website' });
+  const [newOpportunity, setNewOpportunity] = useState<{cliente: string, valor: string, probabilidade: string, etapa: Opportunity['etapa'], vendedor: string, produto: string}>({ cliente: '', valor: '', probabilidade: '50', etapa: 'Prospecção', vendedor: '', produto: '' });
+  const [newCustomer, setNewCustomer] = useState({ nome: '', empresa: '', email: '', telefone: '', vendedor: '' });
+
+  // Calculated dashboard data
+  const totalOpportunityValue = opportunities.reduce((sum, opp) => sum + opp.valor, 0);
+  const avgProbability = opportunities.reduce((sum, opp) => sum + opp.probabilidade, 0) / opportunities.length;
+  const totalRevenue = customers.reduce((sum, customer) => sum + customer.valorTotal, 0);
+  const activeCustomers = customers.filter(c => c.status === 'Ativo' || c.status === 'VIP').length;
+  const qualifiedLeads = leads.filter(l => l.status === 'Qualificado' || l.status === 'Oportunidade').length;
+  const conversionRate = leads.length > 0 ? (qualifiedLeads / leads.length * 100).toFixed(1) : '0';
+  const avgTicket = customers.length > 0 ? (totalRevenue / customers.length) : 0;
+
+  // Chart data
+  const pipelineData = [
+    { stage: 'Prospecção', count: opportunities.filter(o => o.etapa === 'Prospecção').length, value: opportunities.filter(o => o.etapa === 'Prospecção').reduce((sum, o) => sum + o.valor, 0) },
+    { stage: 'Qualificação', count: opportunities.filter(o => o.etapa === 'Qualificação').length, value: opportunities.filter(o => o.etapa === 'Qualificação').reduce((sum, o) => sum + o.valor, 0) },
+    { stage: 'Proposta', count: opportunities.filter(o => o.etapa === 'Proposta').length, value: opportunities.filter(o => o.etapa === 'Proposta').reduce((sum, o) => sum + o.valor, 0) },
+    { stage: 'Negociação', count: opportunities.filter(o => o.etapa === 'Negociação').length, value: opportunities.filter(o => o.etapa === 'Negociação').reduce((sum, o) => sum + o.valor, 0) },
+    { stage: 'Fechamento', count: opportunities.filter(o => o.etapa === 'Fechamento').length, value: opportunities.filter(o => o.etapa === 'Fechamento').reduce((sum, o) => sum + o.valor, 0) }
+  ];
+
+  const leadSourceData = leads.reduce((acc, lead) => {
+    const source = acc.find(s => s.name === lead.fonte);
+    if (source) {
+      source.value += 1;
+    } else {
+      acc.push({ name: lead.fonte, value: 1 });
+    }
+    return acc;
+  }, [] as { name: string; value: number }[]);
+
+  const revenueData = [
+    { mes: 'Jul', receita: totalRevenue * 0.7 / 1000, oportunidades: totalOpportunityValue * 0.6 / 1000 },
+    { mes: 'Ago', receita: totalRevenue * 0.8 / 1000, oportunidades: totalOpportunityValue * 0.7 / 1000 },
+    { mes: 'Set', receita: totalRevenue * 0.9 / 1000, oportunidades: totalOpportunityValue * 0.85 / 1000 },
+    { mes: 'Out', receita: totalRevenue / 1000, oportunidades: totalOpportunityValue / 1000 }
+  ];
+
+  const performanceData = opportunities.slice(0, 7).reverse().map((opp, index) => ({
+    day: `Dia ${index + 1}`,
+    vendas: opportunities.slice(0, index + 1).reduce((sum, o) => sum + o.valor, 0) / 1000
+  }));
+
+  const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4'];
+
+  const addLead = () => {
+    if (newLead.nome && newLead.empresa && newLead.email) {
+      const lead: Lead = {
+        id: String(leads.length + 1),
+        nome: newLead.nome,
+        empresa: newLead.empresa,
+        email: newLead.email,
+        telefone: newLead.telefone,
+        fonte: newLead.fonte,
+        status: 'Novo',
+        score: Math.floor(Math.random() * 40) + 60,
+        data: new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+      };
+      setLeads([lead, ...leads]);
+      setNewLead({ nome: '', empresa: '', email: '', telefone: '', fonte: 'Website' });
+    }
   };
 
-  const recentOpportunities = [
-    { 
-      id: "#OPP-2847", 
-      cliente: "Inovação Digital Ltda", 
-      valor: "R$ 45.000", 
-      probabilidade: "85%", 
-      etapa: "Proposta",
-      vendedor: "Ana Silva",
-      prazo: "5 dias"
-    },
-    { 
-      id: "#OPP-2846", 
-      cliente: "TechStart Solutions", 
-      valor: "R$ 28.900", 
-      probabilidade: "60%", 
-      etapa: "Negociação",
-      vendedor: "Carlos Ferreira",
-      prazo: "12 dias"
-    },
-    { 
-      id: "#OPP-2845", 
-      cliente: "Empresa Moderna SA", 
-      valor: "R$ 67.500", 
-      probabilidade: "90%", 
-      etapa: "Fechamento",
-      vendedor: "Mariana Costa",
-      prazo: "2 dias"
+  const addOpportunity = () => {
+    if (newOpportunity.cliente && newOpportunity.valor && newOpportunity.vendedor) {
+      const opportunity: Opportunity = {
+        id: `#OPP-${2848 + opportunities.length}`,
+        cliente: newOpportunity.cliente,
+        valor: parseFloat(newOpportunity.valor),
+        probabilidade: parseInt(newOpportunity.probabilidade),
+        etapa: newOpportunity.etapa,
+        vendedor: newOpportunity.vendedor,
+        produto: newOpportunity.produto,
+        prazo: `${Math.floor(Math.random() * 20) + 1} dias`
+      };
+      setOpportunities([opportunity, ...opportunities]);
+      setNewOpportunity({ cliente: '', valor: '', probabilidade: '50', etapa: 'Prospecção', vendedor: '', produto: '' });
     }
-  ];
+  };
 
-  const topPerformers = [
-    { nome: "Ana Silva", vendas: "R$ 234.500", metas: "112%", deals: 18 },
-    { nome: "Carlos Ferreira", vendas: "R$ 198.200", metas: "94%", deals: 15 },
-    { nome: "Mariana Costa", vendas: "R$ 267.800", metas: "127%", deals: 21 },
-    { nome: "Roberto Lima", vendas: "R$ 156.400", metas: "85%", deals: 12 }
-  ];
+  const addCustomer = () => {
+    if (newCustomer.nome && newCustomer.empresa && newCustomer.email) {
+      const customer: Customer = {
+        id: String(customers.length + 1),
+        nome: newCustomer.nome,
+        empresa: newCustomer.empresa,
+        email: newCustomer.email,
+        telefone: newCustomer.telefone,
+        valorTotal: Math.floor(Math.random() * 50000) + 10000,
+        ultimaCompra: new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
+        status: 'Ativo',
+        vendedor: newCustomer.vendedor
+      };
+      setCustomers([customer, ...customers]);
+      setNewCustomer({ nome: '', empresa: '', email: '', telefone: '', vendedor: '' });
+    }
+  };
 
-  const recentActivities = [
-    { tipo: "call", acao: "Ligação realizada", cliente: "TechStart Solutions", vendedor: "Carlos F.", tempo: "5 min atrás" },
-    { tipo: "email", acao: "Proposta enviada", cliente: "Inovação Digital", vendedor: "Ana S.", tempo: "23 min atrás" },
-    { tipo: "meeting", acao: "Reunião agendada", cliente: "Empresa Moderna", vendedor: "Mariana C.", tempo: "1h atrás" },
-    { tipo: "deal", acao: "Negócio fechado", cliente: "StartupXYZ", vendedor: "Roberto L.", tempo: "2h atrás" }
-  ];
+  const updateLeadStatus = (leadId: string, newStatus: Lead['status']) => {
+    setLeads(leads.map(lead => 
+      lead.id === leadId ? { ...lead, status: newStatus } : lead
+    ));
+  };
+
+  const updateOpportunityStage = (opportunityId: string, newStage: Opportunity['etapa']) => {
+    setOpportunities(opportunities.map(opp => 
+      opp.id === opportunityId ? { ...opp, etapa: newStage } : opp
+    ));
+  };
 
   return (
     <>
       <Header />
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-slate-900 dark:to-slate-800">
+      <div className="min-h-screen bg-black">
         {/* Demo Header */}
-        <div className="bg-white dark:bg-slate-800 border-b border-blue-200 dark:border-slate-700 shadow-sm">
+        <div className="bg-zinc-900 border-b border-zinc-700 shadow-sm">
           <div className="max-w-7xl mx-auto px-6 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <Link 
                   href="/sistema/crm"
-                  className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center"
+                  className="text-blue-400 hover:text-blue-300 flex items-center"
                 >
                   <i className="fas fa-arrow-left mr-2"></i>
                   Voltar
                 </Link>
-                <div className="w-px h-6 bg-blue-300 dark:bg-slate-600"></div>
-                <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 raleway">CRM Demo - TechSolutions</h1>
+                <div className="w-px h-6 bg-zinc-600"></div>
+                <h1 className="text-2xl font-bold text-white raleway">CRM Demo - Sistema Empresarial</h1>
               </div>
-              <div className="bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-400 px-3 py-1 rounded-full text-sm font-medium">
+              <div className="bg-blue-900/30 text-blue-400 px-3 py-1 rounded-full text-sm font-medium">
                 <i className="fas fa-circle text-blue-500 mr-2 text-xs"></i>
                 Ambiente de Vendas
               </div>
@@ -88,15 +220,15 @@ export default function DemoCRM() {
 
         <div className="flex">
           {/* Sidebar */}
-          <div className="w-64 bg-white dark:bg-slate-800 border-r border-blue-200 dark:border-slate-700 min-h-screen shadow-lg">
+          <div className="w-64 bg-zinc-900 border-r border-zinc-700 min-h-screen shadow-lg">
             <div className="p-4">
               <div className="flex items-center space-x-3 mb-6">
                 <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
                   <i className="fas fa-users text-white"></i>
                 </div>
                 <div>
-                  <h2 className="font-semibold text-slate-900 dark:text-slate-100">Sistema CRM</h2>
-                  <p className="text-sm text-blue-600 dark:text-blue-400">Sales Edition</p>
+                  <h2 className="font-semibold text-white">Sistema CRM</h2>
+                  <p className="text-sm text-blue-400">Sales Edition</p>
                 </div>
               </div>
 
@@ -106,8 +238,9 @@ export default function DemoCRM() {
                   className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
                     selectedModule === 'dashboard' 
                       ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white' 
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-slate-700'
+                      : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'
                   }`}
+                  data-testid="button-dashboard"
                 >
                   <i className="fas fa-chart-pie w-4"></i>
                   <span>Dashboard</span>
@@ -117,8 +250,9 @@ export default function DemoCRM() {
                   className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
                     selectedModule === 'leads' 
                       ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white' 
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-slate-700'
+                      : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'
                   }`}
+                  data-testid="button-leads"
                 >
                   <i className="fas fa-user-plus w-4"></i>
                   <span>Leads</span>
@@ -128,8 +262,9 @@ export default function DemoCRM() {
                   className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
                     selectedModule === 'pipeline' 
                       ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white' 
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-slate-700'
+                      : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'
                   }`}
+                  data-testid="button-pipeline"
                 >
                   <i className="fas fa-chart-line w-4"></i>
                   <span>Pipeline</span>
@@ -139,30 +274,31 @@ export default function DemoCRM() {
                   className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
                     selectedModule === 'clientes' 
                       ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white' 
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-slate-700'
+                      : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'
                   }`}
+                  data-testid="button-clientes"
                 >
                   <i className="fas fa-heart w-4"></i>
                   <span>Clientes</span>
                 </button>
               </nav>
 
-              <div className="mt-8 p-3 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-slate-700 dark:to-slate-600 rounded-lg">
-                <h3 className="font-medium text-slate-900 dark:text-slate-100 mb-2">Vendedor</h3>
+              <div className="mt-8 p-3 bg-zinc-800 rounded-lg">
+                <h3 className="font-medium text-white mb-2">Vendedor</h3>
                 <div className="flex items-center space-x-2">
                   <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
                     <span className="text-white text-sm font-medium">VS</span>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100">Vendedor Silva</p>
-                    <p className="text-xs text-blue-600 dark:text-blue-400">Gerente Comercial</p>
+                    <p className="text-sm font-medium text-white">Vendedor Silva</p>
+                    <p className="text-xs text-blue-400">Gerente Comercial</p>
                   </div>
                 </div>
-                <div className="mt-2 pt-2 border-t border-blue-200 dark:border-slate-500">
-                  <p className="text-xs text-slate-600 dark:text-slate-400">Meta Mensal</p>
+                <div className="mt-2 pt-2 border-t border-zinc-600">
+                  <p className="text-xs text-zinc-400">Meta Mensal</p>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">78%</span>
-                    <span className="text-xs text-green-600 dark:text-green-400">+23.5%</span>
+                    <span className="text-sm font-semibold text-white">78%</span>
+                    <span className="text-xs text-green-400">+23.5%</span>
                   </div>
                 </div>
               </div>
@@ -170,125 +306,138 @@ export default function DemoCRM() {
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 p-6">
+          <div className="flex-1 p-6 bg-black">
             {selectedModule === 'dashboard' && (
               <div>
                 <div className="mb-6">
-                  <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2 raleway">Dashboard de Vendas</h2>
-                  <p className="text-slate-600 dark:text-slate-400">Acompanhe o desempenho da sua equipe comercial</p>
+                  <h2 className="text-2xl font-bold text-white mb-2 raleway">Dashboard de Vendas</h2>
+                  <p className="text-zinc-400">Acompanhe o desempenho da sua equipe comercial em tempo real</p>
                 </div>
 
                 {/* KPI Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                  <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-blue-200 dark:border-slate-700 shadow-lg">
+                  <div className="bg-zinc-900 p-6 rounded-xl border border-zinc-700 shadow-lg">
                     <div className="flex items-center justify-between mb-4">
                       <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-lg flex items-center justify-center">
                         <i className="fas fa-dollar-sign text-white"></i>
                       </div>
-                      <span className="text-green-600 dark:text-green-400 text-sm font-medium">{salesData.variacao}</span>
+                      <span className="text-green-400 text-sm font-medium">+23.5%</span>
                     </div>
-                    <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-1">{salesData.totalMes}</h3>
-                    <p className="text-slate-600 dark:text-slate-400 text-sm">Vendas do Mês</p>
-                    <div className="mt-3 bg-slate-100 dark:bg-slate-700 rounded-full h-2">
-                      <div className="bg-gradient-to-r from-green-400 to-emerald-500 h-2 rounded-full" style={{width: salesData.metaMes}}></div>
+                    <h3 className="text-2xl font-bold text-white mb-1" data-testid="text-receita-total">
+                      R$ {totalRevenue.toLocaleString('pt-BR')}
+                    </h3>
+                    <p className="text-zinc-400 text-sm">Receita Total</p>
+                    <div className="mt-3 bg-zinc-800 rounded-full h-2">
+                      <div className="bg-gradient-to-r from-green-400 to-emerald-500 h-2 rounded-full" style={{width: '78%'}}></div>
                     </div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{salesData.metaMes} da meta</p>
+                    <p className="text-xs text-zinc-500 mt-1">78% da meta</p>
                   </div>
 
-                  <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-blue-200 dark:border-slate-700 shadow-lg">
+                  <div className="bg-zinc-900 p-6 rounded-xl border border-zinc-700 shadow-lg">
                     <div className="flex items-center justify-between mb-4">
                       <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-lg flex items-center justify-center">
                         <i className="fas fa-user-plus text-white"></i>
                       </div>
-                      <span className="text-blue-600 dark:text-blue-400 text-sm font-medium">+{salesData.leadsNovos}</span>
+                      <span className="text-blue-400 text-sm font-medium">+{leads.length}</span>
                     </div>
-                    <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-1">{salesData.leadsNovos}</h3>
-                    <p className="text-slate-600 dark:text-slate-400 text-sm">Novos Leads</p>
-                    <p className="text-blue-600 dark:text-blue-400 text-xs mt-2">
+                    <h3 className="text-2xl font-bold text-white mb-1" data-testid="text-leads-total">
+                      {leads.length}
+                    </h3>
+                    <p className="text-zinc-400 text-sm">Novos Leads</p>
+                    <p className="text-blue-400 text-xs mt-2">
                       <i className="fas fa-percentage mr-1"></i>
-                      {salesData.conversao} conversão
+                      {conversionRate}% conversão
                     </p>
                   </div>
 
-                  <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-blue-200 dark:border-slate-700 shadow-lg">
+                  <div className="bg-zinc-900 p-6 rounded-xl border border-zinc-700 shadow-lg">
                     <div className="flex items-center justify-between mb-4">
                       <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-500 rounded-lg flex items-center justify-center">
                         <i className="fas fa-heart text-white"></i>
                       </div>
                     </div>
-                    <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-1">{salesData.clientesAtivos}</h3>
-                    <p className="text-slate-600 dark:text-slate-400 text-sm">Clientes Ativos</p>
-                    <p className="text-purple-600 dark:text-purple-400 text-xs mt-2">
+                    <h3 className="text-2xl font-bold text-white mb-1" data-testid="text-clientes-ativos">
+                      {activeCustomers}
+                    </h3>
+                    <p className="text-zinc-400 text-sm">Clientes Ativos</p>
+                    <p className="text-purple-400 text-xs mt-2">
                       <i className="fas fa-ticket-alt mr-1"></i>
-                      {salesData.ticketMedio} médio
+                      R$ {avgTicket.toLocaleString('pt-BR')} médio
                     </p>
                   </div>
 
-                  <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-blue-200 dark:border-slate-700 shadow-lg">
+                  <div className="bg-zinc-900 p-6 rounded-xl border border-zinc-700 shadow-lg">
                     <div className="flex items-center justify-between mb-4">
                       <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-red-500 rounded-lg flex items-center justify-center">
                         <i className="fas fa-chart-line text-white"></i>
                       </div>
-                      <span className="text-orange-600 dark:text-orange-400 text-sm font-medium">Pipeline</span>
+                      <span className="text-orange-400 text-sm font-medium">Pipeline</span>
                     </div>
-                    <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-1">34</h3>
-                    <p className="text-slate-600 dark:text-slate-400 text-sm">Oportunidades</p>
-                    <p className="text-orange-600 dark:text-orange-400 text-xs mt-2">R$ 1.2M em potencial</p>
+                    <h3 className="text-2xl font-bold text-white mb-1" data-testid="text-oportunidades-total">
+                      {opportunities.length}
+                    </h3>
+                    <p className="text-zinc-400 text-sm">Oportunidades</p>
+                    <p className="text-orange-400 text-xs mt-2">R$ {(totalOpportunityValue / 1000).toFixed(0)}k em potencial</p>
                   </div>
                 </div>
 
-                {/* Sales Performance and Opportunities */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                  <div className="bg-white dark:bg-slate-800 rounded-xl border border-blue-200 dark:border-slate-700 shadow-lg p-6">
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4 raleway">Top Performers</h3>
-                    <div className="space-y-4">
-                      {topPerformers.map((performer, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-700 dark:to-slate-600 rounded-lg">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                              <span className="text-white text-sm font-medium">{performer.nome.split(' ').map(n => n[0]).join('')}</span>
-                            </div>
-                            <div>
-                              <p className="font-medium text-slate-900 dark:text-slate-100">{performer.nome}</p>
-                              <p className="text-sm text-slate-500 dark:text-slate-400">{performer.deals} deals fechados</p>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-semibold text-slate-900 dark:text-slate-100">{performer.vendas}</p>
-                            <span className={`text-xs px-2 py-1 rounded-full ${
-                              parseInt(performer.metas) >= 100 
-                                ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400' 
-                                : 'bg-orange-100 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400'
-                            }`}>
-                              {performer.metas} meta
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                {/* Charts */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                  <div className="bg-zinc-900 rounded-xl border border-zinc-700 p-6">
+                    <h3 className="text-lg font-semibold text-white mb-4 raleway">Evolução de Vendas</h3>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <AreaChart data={performanceData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                        <XAxis dataKey="day" stroke="#9CA3AF" />
+                        <YAxis stroke="#9CA3AF" />
+                        <Tooltip 
+                          formatter={(value: number) => [`R$ ${value}k`, 'Vendas']} 
+                          contentStyle={{ backgroundColor: '#18181B', border: '1px solid #374151', borderRadius: '8px' }}
+                          labelStyle={{ color: '#F3F4F6' }}
+                        />
+                        <Area type="monotone" dataKey="vendas" stroke="#3B82F6" fill="#3B82F6" fillOpacity={0.3} />
+                      </AreaChart>
+                    </ResponsiveContainer>
                   </div>
 
-                  <div className="bg-white dark:bg-slate-800 rounded-xl border border-blue-200 dark:border-slate-700 shadow-lg p-6">
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4 raleway">Oportunidades Quentes</h3>
+                  <div className="bg-zinc-900 rounded-xl border border-zinc-700 p-6">
+                    <h3 className="text-lg font-semibold text-white mb-4 raleway">Pipeline de Vendas</h3>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={pipelineData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                        <XAxis dataKey="stage" stroke="#9CA3AF" />
+                        <YAxis stroke="#9CA3AF" />
+                        <Tooltip 
+                          formatter={(value: number) => [`R$ ${value.toLocaleString('pt-BR')}`]} 
+                          contentStyle={{ backgroundColor: '#18181B', border: '1px solid #374151', borderRadius: '8px' }}
+                          labelStyle={{ color: '#F3F4F6' }}
+                        />
+                        <Bar dataKey="value" fill="#10B981" name="Valor" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                {/* Performance and Sources */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div className="bg-zinc-900 rounded-xl border border-zinc-700 p-6">
+                    <h3 className="text-lg font-semibold text-white mb-4 raleway">Oportunidades Recentes</h3>
                     <div className="space-y-4">
-                      {recentOpportunities.map((opp) => (
-                        <div key={opp.id} className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-slate-700 dark:to-slate-600 rounded-lg border-l-4 border-green-500">
+                      {opportunities.slice(0, 4).map((opp) => (
+                        <div key={opp.id} className="p-4 bg-zinc-800 rounded-lg border-l-4 border-green-500" data-testid={`row-opportunity-${opp.id}`}>
                           <div className="flex items-center justify-between mb-2">
-                            <h4 className="font-medium text-slate-900 dark:text-slate-100">{opp.cliente}</h4>
-                            <span className="text-sm font-semibold text-green-600 dark:text-green-400">{opp.valor}</span>
+                            <h4 className="font-medium text-white">{opp.cliente}</h4>
+                            <span className="text-sm font-semibold text-green-400">R$ {opp.valor.toLocaleString('pt-BR')}</span>
                           </div>
-                          <div className="grid grid-cols-3 gap-2 text-xs text-slate-600 dark:text-slate-400">
+                          <div className="grid grid-cols-2 gap-2 text-xs text-zinc-400">
                             <div>
                               <span className="font-medium">Etapa:</span> {opp.etapa}
                             </div>
                             <div>
-                              <span className="font-medium">Prob:</span> {opp.probabilidade}
-                            </div>
-                            <div>
-                              <span className="font-medium">Prazo:</span> {opp.prazo}
+                              <span className="font-medium">Prob:</span> {opp.probabilidade}%
                             </div>
                           </div>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                          <p className="text-xs text-zinc-500 mt-1">
                             <i className="fas fa-user mr-1"></i>
                             {opp.vendedor}
                           </p>
@@ -296,36 +445,55 @@ export default function DemoCRM() {
                       ))}
                     </div>
                   </div>
-                </div>
 
-                {/* Recent Activities */}
-                <div className="bg-white dark:bg-slate-800 rounded-xl border border-blue-200 dark:border-slate-700 shadow-lg p-6">
-                  <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4 raleway">Atividades Recentes</h3>
-                  <div className="space-y-3">
-                    {recentActivities.map((activity, index) => (
-                      <div key={index} className="flex items-center space-x-4 p-3 hover:bg-blue-50 dark:hover:bg-slate-700 rounded-lg transition-colors">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                          activity.tipo === 'call' ? 'bg-blue-100 dark:bg-blue-900/20' :
-                          activity.tipo === 'email' ? 'bg-purple-100 dark:bg-purple-900/20' :
-                          activity.tipo === 'meeting' ? 'bg-orange-100 dark:bg-orange-900/20' :
-                          'bg-green-100 dark:bg-green-900/20'
-                        }`}>
-                          <i className={`${
-                            activity.tipo === 'call' ? 'fas fa-phone text-blue-600 dark:text-blue-400' :
-                            activity.tipo === 'email' ? 'fas fa-envelope text-purple-600 dark:text-purple-400' :
-                            activity.tipo === 'meeting' ? 'fas fa-calendar text-orange-600 dark:text-orange-400' :
-                            'fas fa-handshake text-green-600 dark:text-green-400'
-                          }`}></i>
+                  <div className="bg-zinc-900 rounded-xl border border-zinc-700 p-6">
+                    <h3 className="text-lg font-semibold text-white mb-4 raleway">Leads Recentes</h3>
+                    <div className="space-y-4">
+                      {leads.slice(0, 4).map((lead) => (
+                        <div key={lead.id} className="flex items-center justify-between p-3 bg-zinc-800 rounded-lg" data-testid={`row-lead-${lead.id}`}>
+                          <div>
+                            <p className="font-medium text-white">{lead.nome}</p>
+                            <p className="text-sm text-zinc-400">{lead.empresa} • {lead.fonte}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-semibold text-white">Score: {lead.score}</p>
+                            <span className={`text-xs px-2 py-1 rounded-full ${
+                              lead.status === 'Oportunidade' ? 'bg-green-900/20 text-green-400' :
+                              lead.status === 'Qualificado' ? 'bg-blue-900/20 text-blue-400' :
+                              lead.status === 'Novo' ? 'bg-yellow-900/20 text-yellow-400' :
+                              'bg-red-900/20 text-red-400'
+                            }`}>
+                              {lead.status}
+                            </span>
+                          </div>
                         </div>
-                        <div className="flex-1">
-                          <p className="font-medium text-slate-900 dark:text-slate-100">{activity.acao}</p>
-                          <p className="text-sm text-slate-600 dark:text-slate-400">
-                            {activity.cliente} • {activity.vendedor}
-                          </p>
-                        </div>
-                        <span className="text-xs text-slate-500 dark:text-slate-400">{activity.tempo}</span>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="bg-zinc-900 rounded-xl border border-zinc-700 p-6">
+                    <h3 className="text-lg font-semibold text-white mb-4 raleway">Fontes de Leads</h3>
+                    <ResponsiveContainer width="100%" height={250}>
+                      <PieChart>
+                        <Pie
+                          data={leadSourceData}
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={80}
+                          dataKey="value"
+                          label={({name, percent}) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        >
+                          {leadSourceData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip 
+                          formatter={(value: number) => [`${value} leads`]} 
+                          contentStyle={{ backgroundColor: '#18181B', border: '1px solid #374151', borderRadius: '8px' }}
+                          labelStyle={{ color: '#F3F4F6' }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
                   </div>
                 </div>
               </div>
@@ -333,33 +501,361 @@ export default function DemoCRM() {
 
             {selectedModule === 'leads' && (
               <div>
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-6 raleway">Gestão de Leads</h2>
-                <div className="bg-white dark:bg-slate-800 rounded-xl border border-blue-200 dark:border-slate-700 shadow-lg p-8 text-center">
-                  <i className="fas fa-user-plus text-4xl text-blue-600 dark:text-blue-400 mb-4"></i>
-                  <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-2">Captação de Leads</h3>
-                  <p className="text-slate-600 dark:text-slate-400">Sistema completo de captura, qualificação e distribuição de leads.</p>
+                <h2 className="text-2xl font-bold text-white mb-6 raleway">Gestão de Leads</h2>
+                
+                {/* Add New Lead Form */}
+                <div className="bg-zinc-900 rounded-xl border border-zinc-700 p-6 mb-6">
+                  <h3 className="text-lg font-semibold text-white mb-4">Novo Lead</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+                    <input
+                      type="text"
+                      placeholder="Nome Completo"
+                      value={newLead.nome}
+                      onChange={(e) => setNewLead({...newLead, nome: e.target.value})}
+                      className="px-3 py-2 border border-zinc-600 rounded-lg bg-zinc-800 text-white placeholder-zinc-400"
+                      data-testid="input-lead-nome"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Empresa"
+                      value={newLead.empresa}
+                      onChange={(e) => setNewLead({...newLead, empresa: e.target.value})}
+                      className="px-3 py-2 border border-zinc-600 rounded-lg bg-zinc-800 text-white placeholder-zinc-400"
+                      data-testid="input-lead-empresa"
+                    />
+                    <input
+                      type="email"
+                      placeholder="E-mail"
+                      value={newLead.email}
+                      onChange={(e) => setNewLead({...newLead, email: e.target.value})}
+                      className="px-3 py-2 border border-zinc-600 rounded-lg bg-zinc-800 text-white placeholder-zinc-400"
+                      data-testid="input-lead-email"
+                    />
+                    <input
+                      type="tel"
+                      placeholder="Telefone"
+                      value={newLead.telefone}
+                      onChange={(e) => setNewLead({...newLead, telefone: e.target.value})}
+                      className="px-3 py-2 border border-zinc-600 rounded-lg bg-zinc-800 text-white placeholder-zinc-400"
+                      data-testid="input-lead-telefone"
+                    />
+                    <select
+                      value={newLead.fonte}
+                      onChange={(e) => setNewLead({...newLead, fonte: e.target.value})}
+                      className="px-3 py-2 border border-zinc-600 rounded-lg bg-zinc-800 text-white"
+                      data-testid="select-lead-fonte"
+                    >
+                      <option value="Website">Website</option>
+                      <option value="LinkedIn">LinkedIn</option>
+                      <option value="Google Ads">Google Ads</option>
+                      <option value="Indicação">Indicação</option>
+                      <option value="Telefone">Telefone</option>
+                    </select>
+                    <button
+                      onClick={addLead}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      data-testid="button-add-lead"
+                    >
+                      <i className="fas fa-plus mr-2"></i>
+                      Adicionar Lead
+                    </button>
+                  </div>
+                </div>
+
+                {/* Leads List */}
+                <div className="bg-zinc-900 rounded-xl border border-zinc-700 p-6">
+                  <h3 className="text-lg font-semibold text-white mb-4">Lista de Leads</h3>
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-zinc-700">
+                          <th className="text-left py-3 text-white">Nome</th>
+                          <th className="text-left py-3 text-white">Empresa</th>
+                          <th className="text-left py-3 text-white">E-mail</th>
+                          <th className="text-left py-3 text-white">Fonte</th>
+                          <th className="text-left py-3 text-white">Score</th>
+                          <th className="text-left py-3 text-white">Status</th>
+                          <th className="text-left py-3 text-white">Ações</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {leads.map((lead) => (
+                          <tr key={lead.id} className="border-b border-zinc-800" data-testid={`row-lead-detail-${lead.id}`}>
+                            <td className="py-3 text-white">{lead.nome}</td>
+                            <td className="py-3 text-zinc-400">{lead.empresa}</td>
+                            <td className="py-3 text-zinc-400">{lead.email}</td>
+                            <td className="py-3 text-zinc-400">{lead.fonte}</td>
+                            <td className="py-3 text-white font-semibold">{lead.score}</td>
+                            <td className="py-3">
+                              <span className={`px-2 py-1 rounded-full text-xs ${
+                                lead.status === 'Oportunidade' ? 'bg-green-900/20 text-green-400' :
+                                lead.status === 'Qualificado' ? 'bg-blue-900/20 text-blue-400' :
+                                lead.status === 'Novo' ? 'bg-yellow-900/20 text-yellow-400' :
+                                'bg-red-900/20 text-red-400'
+                              }`}>
+                                {lead.status}
+                              </span>
+                            </td>
+                            <td className="py-3">
+                              <select
+                                value={lead.status}
+                                onChange={(e) => updateLeadStatus(lead.id, e.target.value as Lead['status'])}
+                                className="text-xs px-2 py-1 bg-zinc-800 border border-zinc-600 rounded text-white"
+                                data-testid={`select-lead-status-${lead.id}`}
+                              >
+                                <option value="Novo">Novo</option>
+                                <option value="Qualificado">Qualificado</option>
+                                <option value="Oportunidade">Oportunidade</option>
+                                <option value="Perdido">Perdido</option>
+                              </select>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             )}
 
             {selectedModule === 'pipeline' && (
               <div>
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-6 raleway">Pipeline de Vendas</h2>
-                <div className="bg-white dark:bg-slate-800 rounded-xl border border-blue-200 dark:border-slate-700 shadow-lg p-8 text-center">
-                  <i className="fas fa-chart-line text-4xl text-purple-600 dark:text-purple-400 mb-4"></i>
-                  <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-2">Funil de Vendas</h3>
-                  <p className="text-slate-600 dark:text-slate-400">Acompanhe o progresso de cada oportunidade através do funil de vendas.</p>
+                <h2 className="text-2xl font-bold text-white mb-6 raleway">Pipeline de Vendas</h2>
+                
+                {/* Add New Opportunity Form */}
+                <div className="bg-zinc-900 rounded-xl border border-zinc-700 p-6 mb-6">
+                  <h3 className="text-lg font-semibold text-white mb-4">Nova Oportunidade</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+                    <input
+                      type="text"
+                      placeholder="Nome do Cliente"
+                      value={newOpportunity.cliente}
+                      onChange={(e) => setNewOpportunity({...newOpportunity, cliente: e.target.value})}
+                      className="px-3 py-2 border border-zinc-600 rounded-lg bg-zinc-800 text-white placeholder-zinc-400"
+                      data-testid="input-opportunity-cliente"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Valor (R$)"
+                      value={newOpportunity.valor}
+                      onChange={(e) => setNewOpportunity({...newOpportunity, valor: e.target.value})}
+                      className="px-3 py-2 border border-zinc-600 rounded-lg bg-zinc-800 text-white placeholder-zinc-400"
+                      data-testid="input-opportunity-valor"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Vendedor"
+                      value={newOpportunity.vendedor}
+                      onChange={(e) => setNewOpportunity({...newOpportunity, vendedor: e.target.value})}
+                      className="px-3 py-2 border border-zinc-600 rounded-lg bg-zinc-800 text-white placeholder-zinc-400"
+                      data-testid="input-opportunity-vendedor"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Produto"
+                      value={newOpportunity.produto}
+                      onChange={(e) => setNewOpportunity({...newOpportunity, produto: e.target.value})}
+                      className="px-3 py-2 border border-zinc-600 rounded-lg bg-zinc-800 text-white placeholder-zinc-400"
+                      data-testid="input-opportunity-produto"
+                    />
+                    <select
+                      value={newOpportunity.etapa}
+                      onChange={(e) => setNewOpportunity({...newOpportunity, etapa: e.target.value as Opportunity['etapa']})}
+                      className="px-3 py-2 border border-zinc-600 rounded-lg bg-zinc-800 text-white"
+                      data-testid="select-opportunity-etapa"
+                    >
+                      <option value="Prospecção">Prospecção</option>
+                      <option value="Qualificação">Qualificação</option>
+                      <option value="Proposta">Proposta</option>
+                      <option value="Negociação">Negociação</option>
+                      <option value="Fechamento">Fechamento</option>
+                    </select>
+                    <button
+                      onClick={addOpportunity}
+                      className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                      data-testid="button-add-opportunity"
+                    >
+                      <i className="fas fa-plus mr-2"></i>
+                      Adicionar
+                    </button>
+                  </div>
+                </div>
+
+                {/* Pipeline Board */}
+                <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-6">
+                  {['Prospecção', 'Qualificação', 'Proposta', 'Negociação', 'Fechamento'].map((stage) => (
+                    <div key={stage} className="bg-zinc-900 rounded-xl border border-zinc-700 p-4">
+                      <h4 className="font-semibold text-white mb-4 text-center">{stage}</h4>
+                      <div className="space-y-3">
+                        {opportunities.filter(opp => opp.etapa === stage).map((opp) => (
+                          <div key={opp.id} className="bg-zinc-800 p-3 rounded-lg border border-zinc-600" data-testid={`card-opportunity-${opp.id}`}>
+                            <h5 className="font-medium text-white text-sm mb-1">{opp.cliente}</h5>
+                            <p className="text-green-400 font-semibold text-sm">R$ {opp.valor.toLocaleString('pt-BR')}</p>
+                            <p className="text-zinc-400 text-xs">{opp.probabilidade}% • {opp.vendedor}</p>
+                            <select
+                              value={opp.etapa}
+                              onChange={(e) => updateOpportunityStage(opp.id, e.target.value as Opportunity['etapa'])}
+                              className="text-xs px-2 py-1 bg-zinc-700 border border-zinc-600 rounded text-white mt-2 w-full"
+                              data-testid={`select-opportunity-stage-${opp.id}`}
+                            >
+                              <option value="Prospecção">Prospecção</option>
+                              <option value="Qualificação">Qualificação</option>
+                              <option value="Proposta">Proposta</option>
+                              <option value="Negociação">Negociação</option>
+                              <option value="Fechamento">Fechamento</option>
+                            </select>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="mt-3 pt-3 border-t border-zinc-700 text-center">
+                        <p className="text-xs text-zinc-400">
+                          {opportunities.filter(opp => opp.etapa === stage).length} oportunidades
+                        </p>
+                        <p className="text-xs text-zinc-500">
+                          R$ {opportunities.filter(opp => opp.etapa === stage).reduce((sum, opp) => sum + opp.valor, 0).toLocaleString('pt-BR')}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
 
             {selectedModule === 'clientes' && (
               <div>
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-6 raleway">Gestão de Clientes</h2>
-                <div className="bg-white dark:bg-slate-800 rounded-xl border border-blue-200 dark:border-slate-700 shadow-lg p-8 text-center">
-                  <i className="fas fa-heart text-4xl text-pink-600 dark:text-pink-400 mb-4"></i>
-                  <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-2">Relacionamento com Clientes</h3>
-                  <p className="text-slate-600 dark:text-slate-400">Mantenha histórico completo e fortaleça o relacionamento com seus clientes.</p>
+                <h2 className="text-2xl font-bold text-white mb-6 raleway">Gestão de Clientes</h2>
+                
+                {/* Add New Customer Form */}
+                <div className="bg-zinc-900 rounded-xl border border-zinc-700 p-6 mb-6">
+                  <h3 className="text-lg font-semibold text-white mb-4">Novo Cliente</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                    <input
+                      type="text"
+                      placeholder="Nome Completo"
+                      value={newCustomer.nome}
+                      onChange={(e) => setNewCustomer({...newCustomer, nome: e.target.value})}
+                      className="px-3 py-2 border border-zinc-600 rounded-lg bg-zinc-800 text-white placeholder-zinc-400"
+                      data-testid="input-customer-nome"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Empresa"
+                      value={newCustomer.empresa}
+                      onChange={(e) => setNewCustomer({...newCustomer, empresa: e.target.value})}
+                      className="px-3 py-2 border border-zinc-600 rounded-lg bg-zinc-800 text-white placeholder-zinc-400"
+                      data-testid="input-customer-empresa"
+                    />
+                    <input
+                      type="email"
+                      placeholder="E-mail"
+                      value={newCustomer.email}
+                      onChange={(e) => setNewCustomer({...newCustomer, email: e.target.value})}
+                      className="px-3 py-2 border border-zinc-600 rounded-lg bg-zinc-800 text-white placeholder-zinc-400"
+                      data-testid="input-customer-email"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Vendedor Responsável"
+                      value={newCustomer.vendedor}
+                      onChange={(e) => setNewCustomer({...newCustomer, vendedor: e.target.value})}
+                      className="px-3 py-2 border border-zinc-600 rounded-lg bg-zinc-800 text-white placeholder-zinc-400"
+                      data-testid="input-customer-vendedor"
+                    />
+                    <button
+                      onClick={addCustomer}
+                      className="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors"
+                      data-testid="button-add-customer"
+                    >
+                      <i className="fas fa-plus mr-2"></i>
+                      Adicionar Cliente
+                    </button>
+                  </div>
+                </div>
+
+                {/* Customer Stats */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                  <div className="bg-zinc-900 rounded-xl border border-zinc-700 p-6">
+                    <div className="flex items-center space-x-3 mb-4">
+                      <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center">
+                        <i className="fas fa-users text-white"></i>
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-white">Total de Clientes</h3>
+                        <p className="text-2xl font-bold text-green-400" data-testid="text-total-customers">
+                          {customers.length}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-zinc-900 rounded-xl border border-zinc-700 p-6">
+                    <div className="flex items-center space-x-3 mb-4">
+                      <div className="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center">
+                        <i className="fas fa-star text-white"></i>
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-white">Clientes VIP</h3>
+                        <p className="text-2xl font-bold text-purple-400" data-testid="text-vip-customers">
+                          {customers.filter(c => c.status === 'VIP').length}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-zinc-900 rounded-xl border border-zinc-700 p-6">
+                    <div className="flex items-center space-x-3 mb-4">
+                      <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
+                        <i className="fas fa-money-bill text-white"></i>
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-white">Receita Total</h3>
+                        <p className="text-2xl font-bold text-blue-400" data-testid="text-total-customer-revenue">
+                          R$ {totalRevenue.toLocaleString('pt-BR')}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Customers List */}
+                <div className="bg-zinc-900 rounded-xl border border-zinc-700 p-6">
+                  <h3 className="text-lg font-semibold text-white mb-4">Lista de Clientes</h3>
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-zinc-700">
+                          <th className="text-left py-3 text-white">Nome</th>
+                          <th className="text-left py-3 text-white">Empresa</th>
+                          <th className="text-left py-3 text-white">E-mail</th>
+                          <th className="text-left py-3 text-white">Vendedor</th>
+                          <th className="text-left py-3 text-white">Valor Total</th>
+                          <th className="text-left py-3 text-white">Última Compra</th>
+                          <th className="text-left py-3 text-white">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {customers.map((customer) => (
+                          <tr key={customer.id} className="border-b border-zinc-800" data-testid={`row-customer-${customer.id}`}>
+                            <td className="py-3 text-white font-medium">{customer.nome}</td>
+                            <td className="py-3 text-zinc-400">{customer.empresa}</td>
+                            <td className="py-3 text-zinc-400">{customer.email}</td>
+                            <td className="py-3 text-zinc-400">{customer.vendedor}</td>
+                            <td className="py-3 text-white font-semibold">R$ {customer.valorTotal.toLocaleString('pt-BR')}</td>
+                            <td className="py-3 text-zinc-400">{customer.ultimaCompra}</td>
+                            <td className="py-3">
+                              <span className={`px-2 py-1 rounded-full text-xs ${
+                                customer.status === 'VIP' ? 'bg-purple-900/20 text-purple-400' :
+                                customer.status === 'Ativo' ? 'bg-green-900/20 text-green-400' :
+                                'bg-red-900/20 text-red-400'
+                              }`}>
+                                {customer.status}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             )}
