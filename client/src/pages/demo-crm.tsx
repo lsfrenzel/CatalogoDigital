@@ -113,18 +113,70 @@ export default function DemoCRM() {
   }, [] as { name: string; value: number }[]);
 
   const revenueData = [
-    { mes: 'Jul', receita: totalRevenue * 0.7 / 1000, oportunidades: totalOpportunityValue * 0.6 / 1000 },
-    { mes: 'Ago', receita: totalRevenue * 0.8 / 1000, oportunidades: totalOpportunityValue * 0.7 / 1000 },
-    { mes: 'Set', receita: totalRevenue * 0.9 / 1000, oportunidades: totalOpportunityValue * 0.85 / 1000 },
-    { mes: 'Out', receita: totalRevenue / 1000, oportunidades: totalOpportunityValue / 1000 }
+    { mes: 'Jul', receita: totalRevenue * 0.7 / 1000, oportunidades: totalOpportunityValue * 0.6 / 1000, conversao: 12.5 },
+    { mes: 'Ago', receita: totalRevenue * 0.8 / 1000, oportunidades: totalOpportunityValue * 0.7 / 1000, conversao: 15.2 },
+    { mes: 'Set', receita: totalRevenue * 0.9 / 1000, oportunidades: totalOpportunityValue * 0.85 / 1000, conversao: 18.8 },
+    { mes: 'Out', receita: totalRevenue / 1000, oportunidades: totalOpportunityValue / 1000, conversao: parseFloat(conversionRate) }
   ];
 
-  const performanceData = opportunities.slice(0, 7).reverse().map((opp, index) => ({
-    day: `Dia ${index + 1}`,
-    vendas: opportunities.slice(0, index + 1).reduce((sum, o) => sum + o.valor, 0) / 1000
-  }));
+  const performanceData = [
+    { semana: 'Sem 1', vendas: totalRevenue * 0.2 / 1000, leads: leads.length * 0.15, oportunidades: opportunities.length * 0.2 },
+    { semana: 'Sem 2', vendas: totalRevenue * 0.35 / 1000, leads: leads.length * 0.3, oportunidades: opportunities.length * 0.4 },
+    { semana: 'Sem 3', vendas: totalRevenue * 0.65 / 1000, leads: leads.length * 0.65, oportunidades: opportunities.length * 0.7 },
+    { semana: 'Sem 4', vendas: totalRevenue / 1000, leads: leads.length, oportunidades: opportunities.length }
+  ];
+
+  // Sales team performance
+  const salesTeam = ['Ana Silva', 'Carlos Ferreira', 'Mariana Costa', 'Roberto Lima'];
+  
+  const teamPerformance = salesTeam.map(vendedor => {
+    const vendedorOpportunities = opportunities.filter(o => o.vendedor === vendedor);
+    const vendedorCustomers = customers.filter(c => c.vendedor === vendedor);
+    const vendedorRevenue = vendedorCustomers.reduce((sum, c) => sum + c.valorTotal, 0);
+    const vendedorLeads = Math.floor(leads.length / salesTeam.length) + (vendedor === 'Ana Silva' ? 1 : 0);
+    
+    const monthlyData = [
+      { mes: 'Jul', vendas: vendedorRevenue * 0.7 / 1000 },
+      { mes: 'Ago', vendas: vendedorRevenue * 0.8 / 1000 },
+      { mes: 'Set', vendas: vendedorRevenue * 0.9 / 1000 },
+      { mes: 'Out', vendas: vendedorRevenue / 1000 }
+    ];
+
+    const weeklyData = [
+      { semana: 'S1', atividades: Math.floor(Math.random() * 15) + 5 },
+      { semana: 'S2', atividades: Math.floor(Math.random() * 20) + 10 },
+      { semana: 'S3', atividades: Math.floor(Math.random() * 25) + 15 },
+      { semana: 'S4', atividades: Math.floor(Math.random() * 30) + 20 }
+    ];
+
+    const pipelineData = [
+      { etapa: 'Prosp', value: vendedorOpportunities.filter(o => o.etapa === 'Prospecção').length },
+      { etapa: 'Qual', value: vendedorOpportunities.filter(o => o.etapa === 'Qualificação').length },
+      { etapa: 'Prop', value: vendedorOpportunities.filter(o => o.etapa === 'Proposta').length },
+      { etapa: 'Neg', value: vendedorOpportunities.filter(o => o.etapa === 'Negociação').length },
+      { etapa: 'Fech', value: vendedorOpportunities.filter(o => o.etapa === 'Fechamento').length }
+    ];
+
+    return {
+      name: vendedor,
+      initials: vendedor.split(' ').map(n => n[0]).join(''),
+      revenue: vendedorRevenue,
+      opportunities: vendedorOpportunities.length,
+      customers: vendedorCustomers.length,
+      leads: vendedorLeads,
+      conversionRate: vendedorLeads > 0 ? ((vendedorCustomers.length / vendedorLeads) * 100).toFixed(1) : '0',
+      monthlyData,
+      weeklyData,
+      pipelineData,
+      goal: vendedorRevenue > 100000 ? 120 : vendedorRevenue > 50000 ? 100 : 80,
+      goalProgress: vendedorRevenue > 100000 ? Math.min(100, (vendedorRevenue / 120000) * 100) : 
+                   vendedorRevenue > 50000 ? Math.min(100, (vendedorRevenue / 100000) * 100) : 
+                   Math.min(100, (vendedorRevenue / 80000) * 100)
+    };
+  });
 
   const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4'];
+  const TEAM_COLORS = ['#3B82F6', '#10B981', '#8B5CF6', '#F59E0B'];
 
   const addLead = () => {
     if (newLead.nome && newLead.empresa && newLead.email) {
@@ -382,39 +434,171 @@ export default function DemoCRM() {
                 </div>
 
                 {/* Charts */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                   <div className="bg-zinc-900 rounded-xl border border-zinc-700 p-6">
-                    <h3 className="text-lg font-semibold text-white mb-4 raleway">Evolução de Vendas</h3>
+                    <h3 className="text-lg font-semibold text-white mb-4 raleway">Performance Semanal</h3>
                     <ResponsiveContainer width="100%" height={300}>
-                      <AreaChart data={performanceData}>
+                      <LineChart data={performanceData}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                        <XAxis dataKey="day" stroke="#9CA3AF" />
+                        <XAxis dataKey="semana" stroke="#9CA3AF" />
                         <YAxis stroke="#9CA3AF" />
                         <Tooltip 
-                          formatter={(value: number) => [`R$ ${value}k`, 'Vendas']} 
                           contentStyle={{ backgroundColor: '#18181B', border: '1px solid #374151', borderRadius: '8px' }}
                           labelStyle={{ color: '#F3F4F6' }}
                         />
-                        <Area type="monotone" dataKey="vendas" stroke="#3B82F6" fill="#3B82F6" fillOpacity={0.3} />
-                      </AreaChart>
+                        <Line type="monotone" dataKey="vendas" stroke="#3B82F6" strokeWidth={3} dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }} name="Vendas (k)" />
+                        <Line type="monotone" dataKey="leads" stroke="#10B981" strokeWidth={3} dot={{ fill: '#10B981', strokeWidth: 2, r: 4 }} name="Leads" />
+                        <Line type="monotone" dataKey="oportunidades" stroke="#F59E0B" strokeWidth={3} dot={{ fill: '#F59E0B', strokeWidth: 2, r: 4 }} name="Oportunidades" />
+                      </LineChart>
                     </ResponsiveContainer>
                   </div>
 
                   <div className="bg-zinc-900 rounded-xl border border-zinc-700 p-6">
-                    <h3 className="text-lg font-semibold text-white mb-4 raleway">Pipeline de Vendas</h3>
+                    <h3 className="text-lg font-semibold text-white mb-4 raleway">Pipeline por Etapa</h3>
                     <ResponsiveContainer width="100%" height={300}>
-                      <BarChart data={pipelineData}>
+                      <BarChart data={pipelineData} layout="horizontal">
                         <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                        <XAxis dataKey="stage" stroke="#9CA3AF" />
-                        <YAxis stroke="#9CA3AF" />
+                        <XAxis type="number" stroke="#9CA3AF" />
+                        <YAxis dataKey="stage" type="category" stroke="#9CA3AF" width={80} />
                         <Tooltip 
                           formatter={(value: number) => [`R$ ${value.toLocaleString('pt-BR')}`]} 
                           contentStyle={{ backgroundColor: '#18181B', border: '1px solid #374151', borderRadius: '8px' }}
                           labelStyle={{ color: '#F3F4F6' }}
                         />
-                        <Bar dataKey="value" fill="#10B981" name="Valor" />
+                        <Bar dataKey="value" fill="#10B981" name="Valor" radius={[0, 4, 4, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
+                  </div>
+
+                  <div className="bg-zinc-900 rounded-xl border border-zinc-700 p-6">
+                    <h3 className="text-lg font-semibold text-white mb-4 raleway">Evolução Mensal</h3>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <AreaChart data={revenueData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                        <XAxis dataKey="mes" stroke="#9CA3AF" />
+                        <YAxis stroke="#9CA3AF" />
+                        <Tooltip 
+                          contentStyle={{ backgroundColor: '#18181B', border: '1px solid #374151', borderRadius: '8px' }}
+                          labelStyle={{ color: '#F3F4F6' }}
+                        />
+                        <Area type="monotone" dataKey="receita" stackId="1" stroke="#3B82F6" fill="#3B82F6" fillOpacity={0.8} name="Receita (k)" />
+                        <Area type="monotone" dataKey="conversao" stackId="2" stroke="#8B5CF6" fill="#8B5CF6" fillOpacity={0.6} name="Conversão %" />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                {/* Team Performance Section */}
+                <div className="mb-8">
+                  <h3 className="text-xl font-bold text-white mb-6 raleway">Performance da Equipe Comercial</h3>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6">
+                    {teamPerformance.map((member, index) => (
+                      <div key={member.name} className="bg-zinc-900 rounded-xl border border-zinc-700 p-6" data-testid={`card-team-member-${index}`}>
+                        {/* Member Header */}
+                        <div className="flex items-center space-x-3 mb-4">
+                          <div 
+                            className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold"
+                            style={{ backgroundColor: TEAM_COLORS[index % TEAM_COLORS.length] }}
+                          >
+                            {member.initials}
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-white">{member.name}</h4>
+                            <p className="text-xs text-zinc-400">Vendedor</p>
+                          </div>
+                        </div>
+
+                        {/* Key Metrics */}
+                        <div className="grid grid-cols-2 gap-4 mb-4">
+                          <div className="text-center">
+                            <p className="text-2xl font-bold text-green-400" data-testid={`text-member-revenue-${index}`}>
+                              R$ {(member.revenue / 1000).toFixed(0)}k
+                            </p>
+                            <p className="text-xs text-zinc-400">Receita</p>
+                          </div>
+                          <div className="text-center">
+                            <p className="text-2xl font-bold text-blue-400" data-testid={`text-member-opportunities-${index}`}>
+                              {member.opportunities}
+                            </p>
+                            <p className="text-xs text-zinc-400">Oportunidades</p>
+                          </div>
+                          <div className="text-center">
+                            <p className="text-2xl font-bold text-purple-400" data-testid={`text-member-customers-${index}`}>
+                              {member.customers}
+                            </p>
+                            <p className="text-xs text-zinc-400">Clientes</p>
+                          </div>
+                          <div className="text-center">
+                            <p className="text-2xl font-bold text-orange-400" data-testid={`text-member-conversion-${index}`}>
+                              {member.conversionRate}%
+                            </p>
+                            <p className="text-xs text-zinc-400">Conversão</p>
+                          </div>
+                        </div>
+
+                        {/* Goal Progress */}
+                        <div className="mb-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm text-zinc-400">Meta Mensal</span>
+                            <span className="text-sm text-white">{member.goalProgress.toFixed(0)}%</span>
+                          </div>
+                          <div className="w-full bg-zinc-800 rounded-full h-2">
+                            <div 
+                              className="h-2 rounded-full transition-all duration-300"
+                              style={{ 
+                                width: `${Math.min(100, member.goalProgress)}%`,
+                                backgroundColor: TEAM_COLORS[index % TEAM_COLORS.length]
+                              }}
+                            ></div>
+                          </div>
+                        </div>
+
+                        {/* Mini Chart - Monthly Sales */}
+                        <div className="mb-4">
+                          <p className="text-sm text-zinc-400 mb-2">Vendas Mensais</p>
+                          <ResponsiveContainer width="100%" height={60}>
+                            <AreaChart data={member.monthlyData}>
+                              <Area 
+                                type="monotone" 
+                                dataKey="vendas" 
+                                stroke={TEAM_COLORS[index % TEAM_COLORS.length]} 
+                                fill={TEAM_COLORS[index % TEAM_COLORS.length]} 
+                                fillOpacity={0.3}
+                                strokeWidth={2}
+                              />
+                            </AreaChart>
+                          </ResponsiveContainer>
+                        </div>
+
+                        {/* Mini Chart - Weekly Activities */}
+                        <div className="mb-4">
+                          <p className="text-sm text-zinc-400 mb-2">Atividades Semanais</p>
+                          <ResponsiveContainer width="100%" height={60}>
+                            <BarChart data={member.weeklyData}>
+                              <Bar 
+                                dataKey="atividades" 
+                                fill={TEAM_COLORS[index % TEAM_COLORS.length]} 
+                                radius={[2, 2, 0, 0]}
+                              />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
+
+                        {/* Mini Chart - Pipeline Distribution */}
+                        <div>
+                          <p className="text-sm text-zinc-400 mb-2">Pipeline Atual</p>
+                          <ResponsiveContainer width="100%" height={60}>
+                            <BarChart data={member.pipelineData} layout="horizontal">
+                              <Bar 
+                                dataKey="value" 
+                                fill={TEAM_COLORS[index % TEAM_COLORS.length]} 
+                                radius={[0, 2, 2, 0]}
+                              />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
