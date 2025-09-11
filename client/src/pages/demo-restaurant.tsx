@@ -38,10 +38,10 @@ export default function DemoRestaurant() {
   ]);
   
   const [pratosPopulares, setPratosPopulares] = useState([
-    { nome: "Salmão Grelhado", categoria: "Prato Principal", vendas: 23, valor: 48.90, disponivel: true, estoque: 12 },
-    { nome: "Risotto de Funghi", categoria: "Prato Principal", vendas: 18, valor: 42.50, disponivel: true, estoque: 8 },
-    { nome: "Tiramisu da Casa", categoria: "Sobremesa", vendas: 31, valor: 16.90, disponivel: true, estoque: 15 },
-    { nome: "Bruschetta Especial", categoria: "Entrada", vendas: 42, valor: 18.50, disponivel: false, estoque: 0 }
+    { nome: "Salmão Grelhado", categoria: "Prato Principal", vendas: 23, valor: 48.90, disponivel: true, estoque: 12, imagem: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=300&h=200&fit=crop" },
+    { nome: "Risotto de Funghi", categoria: "Prato Principal", vendas: 18, valor: 42.50, disponivel: true, estoque: 8, imagem: "https://images.unsplash.com/photo-1476124369491-e7addf5db371?w=300&h=200&fit=crop" },
+    { nome: "Tiramisu da Casa", categoria: "Sobremesa", vendas: 31, valor: 16.90, disponivel: true, estoque: 15, imagem: "https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=300&h=200&fit=crop" },
+    { nome: "Bruschetta Especial", categoria: "Entrada", vendas: 42, valor: 18.50, disponivel: false, estoque: 0, imagem: "https://images.unsplash.com/photo-1505253213348-cd54c92b37ed?w=300&h=200&fit=crop" }
   ]);
   
   const [pedidosCozinha, setPedidosCozinha] = useState([
@@ -63,7 +63,7 @@ export default function DemoRestaurant() {
   
   // Form states
   const [novoPedido, setNovoPedido] = useState({ mesa: '', prato: '', quantidade: 1 });
-  const [novoItemCardapio, setNovoItemCardapio] = useState({ nome: '', categoria: 'Entrada', valor: '', disponivel: true, estoque: 10 });
+  const [novoItemCardapio, setNovoItemCardapio] = useState({ nome: '', categoria: 'Entrada', valor: '', disponivel: true, estoque: 10, imagem: '' });
 
   // Dados calculados dinamicamente
   const totalVendas = mesas.reduce((sum, mesa) => sum + (mesa.pedido || 0), 0);
@@ -813,7 +813,7 @@ export default function DemoRestaurant() {
                 {/* Adicionar Novo Item */}
                 <div className="bg-orange-800 rounded-xl border border-orange-700 p-6 mb-6">
                   <h3 className="text-lg font-semibold text-orange-100 mb-4">Adicionar Novo Item</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
                     <input 
                       type="text" 
                       value={novoItemCardapio.nome}
@@ -842,6 +842,14 @@ export default function DemoRestaurant() {
                       placeholder="Preço (R$)"
                       data-testid="input-valor-prato"
                     />
+                    <input 
+                      type="url" 
+                      value={novoItemCardapio.imagem}
+                      onChange={(e) => setNovoItemCardapio(prev => ({ ...prev, imagem: e.target.value }))}
+                      className="px-3 py-2 bg-orange-700 text-orange-100 rounded-lg border border-orange-600"
+                      placeholder="URL da imagem"
+                      data-testid="input-imagem-prato"
+                    />
                     <label className="flex items-center space-x-2 text-orange-100">
                       <input 
                         type="checkbox" 
@@ -855,15 +863,23 @@ export default function DemoRestaurant() {
                     <button 
                       onClick={() => {
                         if (novoItemCardapio.nome && novoItemCardapio.valor) {
-                          setPratosPopulares(prev => [...prev, {
-                            nome: novoItemCardapio.nome,
-                            categoria: novoItemCardapio.categoria,
-                            vendas: 0,
-                            valor: parseFloat(novoItemCardapio.valor),
-                            disponivel: novoItemCardapio.disponivel,
-                            estoque: novoItemCardapio.estoque
-                          }]);
-                          setNovoItemCardapio({ nome: '', categoria: 'Entrada', valor: '', disponivel: true, estoque: 10 });
+                          const imagemUrl = novoItemCardapio.imagem.trim();
+                          const imagemValida = !imagemUrl || /^https?:\/\//.test(imagemUrl);
+                          
+                          if (imagemValida) {
+                            setPratosPopulares(prev => [...prev, {
+                              nome: novoItemCardapio.nome,
+                              categoria: novoItemCardapio.categoria,
+                              vendas: 0,
+                              valor: parseFloat(novoItemCardapio.valor),
+                              disponivel: novoItemCardapio.disponivel,
+                              estoque: novoItemCardapio.estoque,
+                              imagem: imagemUrl || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300&h=200&fit=crop'
+                            }]);
+                            setNovoItemCardapio({ nome: '', categoria: 'Entrada', valor: '', disponivel: true, estoque: 10, imagem: '' });
+                          } else {
+                            alert('Por favor, insira uma URL válida para a imagem (deve começar com http:// ou https://)');
+                          }
                         }
                       }}
                       className="px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-lg hover:from-orange-600 hover:to-red-700 transition-colors"
@@ -911,27 +927,50 @@ export default function DemoRestaurant() {
                   <h3 className="text-lg font-semibold text-orange-100 mb-4">Itens do Cardápio</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {pratosPopulares.map((prato, index) => (
-                      <div key={index} className="bg-orange-700 p-4 rounded-lg" data-testid={`card-prato-${index}`}>
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="font-medium text-orange-100">{prato.nome}</h4>
-                          <button 
-                            onClick={() => {
-                              setPratosPopulares(prev => prev.map((p, i) => 
-                                i === index ? { ...p, disponivel: !p.disponivel } : p
-                              ));
-                            }}
-                            className={`text-xs px-2 py-1 rounded-full ${
-                              prato.disponivel ? 'bg-green-600 text-green-100' : 'bg-red-600 text-red-100'
-                            }`}
-                            data-testid={`button-toggle-${index}`}
-                          >
-                            {prato.disponivel ? 'Disponível' : 'Indisponível'}
-                          </button>
+                      <div key={index} className="bg-orange-700 rounded-lg overflow-hidden shadow-lg" data-testid={`card-prato-${index}`}>
+                        <div className="h-40 overflow-hidden">
+                          {(() => {
+                            const valid = /^https?:\/\//.test(prato.imagem||'');
+                            const safeSrc = valid ? prato.imagem : 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300&h=200&fit=crop';
+                            return (
+                              <img 
+                                src={safeSrc} 
+                                alt={`Imagem de ${prato.nome}`}
+                                className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 border border-orange-600"
+                                onError={(e) => {
+                                  e.currentTarget.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300&h=200&fit=crop';
+                                }}
+                                data-testid={`img-prato-${index}`}
+                              />
+                            );
+                          })()} 
                         </div>
-                        <p className="text-sm text-orange-300 mb-2">{prato.categoria}</p>
-                        <div className="flex items-center justify-between">
-                          <span className="text-lg font-bold text-orange-100">R$ {prato.valor.toFixed(2).replace('.', ',')}</span>
-                          <span className="text-sm text-orange-400">{prato.vendas} vendas</span>
+                        <div className="p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-medium text-orange-100">{prato.nome}</h4>
+                            <button 
+                              onClick={() => {
+                                setPratosPopulares(prev => prev.map((p, i) => 
+                                  i === index ? { ...p, disponivel: !p.disponivel } : p
+                                ));
+                              }}
+                              className={`text-xs px-2 py-1 rounded-full ${
+                                prato.disponivel ? 'bg-green-600 text-green-100' : 'bg-red-600 text-red-100'
+                              }`}
+                              data-testid={`button-toggle-${index}`}
+                            >
+                              {prato.disponivel ? 'Disponível' : 'Indisponível'}
+                            </button>
+                          </div>
+                          <p className="text-sm text-orange-300 mb-2">{prato.categoria}</p>
+                          <div className="flex items-center justify-between">
+                            <span className="text-lg font-bold text-orange-100">R$ {prato.valor.toFixed(2).replace('.', ',')}</span>
+                            <span className="text-sm text-orange-400">{prato.vendas} vendas</span>
+                          </div>
+                          <div className="mt-2 text-xs text-orange-400">
+                            <i className="fas fa-box mr-1"></i>
+                            Estoque: {prato.estoque}
+                          </div>
                         </div>
                       </div>
                     ))}
