@@ -22,7 +22,7 @@ export default function Hero() {
       
       <div className="relative z-10 max-w-7xl mx-auto px-6 text-center">
         <div className="fade-in">
-          <h1 className="playfair text-5xl md:text-7xl font-bold mb-6 leading-tight" data-testid="hero-title">
+          <h1 className="raleway text-5xl md:text-7xl font-bold mb-6 leading-tight" data-testid="hero-title">
             Tecnologia sob medida<br />
             <span className="text-gradient">para seu crescimento</span>
           </h1>

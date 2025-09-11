@@ -36,7 +36,7 @@ export default function Comparison() {
     <section id="comparativo" className="py-20 bg-background">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16 fade-in">
-          <h2 className="playfair text-4xl md:text-5xl font-bold mb-6" data-testid="comparison-title">
+          <h2 className="raleway text-4xl md:text-5xl font-bold mb-6" data-testid="comparison-title">
             Por que Escolher Sistemas Modernos?
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto" data-testid="comparison-subtitle">

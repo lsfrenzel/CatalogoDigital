@@ -10,8 +10,8 @@ export default function Header() {
               <i className="fas fa-code text-primary-foreground text-xl"></i>
             </div>
             <div className="text-center">
-              <h1 className="text-2xl font-bold text-foreground playfair" data-testid="company-name">TechSolutions</h1>
-              <p className="text-sm text-muted-foreground lato">Catálogo de Soluções Digitais</p>
+              <h1 className="text-2xl font-bold text-foreground raleway" data-testid="company-name">TechSolutions</h1>
+              <p className="text-sm text-muted-foreground open-sans">Catálogo de Soluções Digitais</p>
             </div>
           </Link>
         </div>

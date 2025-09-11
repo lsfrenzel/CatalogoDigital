@@ -42,7 +42,7 @@ export default function Benefits() {
     <section id="beneficios" className="py-20 bg-card">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16 fade-in">
-          <h2 className="playfair text-4xl md:text-5xl font-bold mb-6" data-testid="benefits-title">
+          <h2 className="raleway text-4xl md:text-5xl font-bold mb-6" data-testid="benefits-title">
             Benefícios dos Nossos Sistemas
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto" data-testid="benefits-subtitle">
@@ -60,7 +60,7 @@ export default function Benefits() {
               <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-primary/20 transition-colors">
                 <i className={`${benefit.icon} text-primary text-2xl`}></i>
               </div>
-              <h3 className="text-2xl font-bold mb-4 playfair" data-testid={`benefit-title-${benefit.id}`}>
+              <h3 className="text-2xl font-bold mb-4 raleway" data-testid={`benefit-title-${benefit.id}`}>
                 {benefit.title}
               </h3>
               <p className="text-muted-foreground" data-testid={`benefit-description-${benefit.id}`}>

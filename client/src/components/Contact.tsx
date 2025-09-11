@@ -74,7 +74,7 @@ export default function Contact() {
               <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
                 <i className="fas fa-check text-primary text-2xl"></i>
               </div>
-              <h2 className="playfair text-3xl font-bold mb-4" data-testid="success-title">
+              <h2 className="raleway text-3xl font-bold mb-4" data-testid="success-title">
                 Solicitação Enviada com Sucesso!
               </h2>
               <p className="text-muted-foreground mb-6" data-testid="success-message">
@@ -98,7 +98,7 @@ export default function Contact() {
     <section id="contato" className="py-20 bg-background">
       <div className="max-w-4xl mx-auto px-6">
         <div className="text-center mb-16 fade-in">
-          <h2 className="playfair text-4xl md:text-5xl font-bold mb-6" data-testid="contact-title">
+          <h2 className="raleway text-4xl md:text-5xl font-bold mb-6" data-testid="contact-title">
             Entre em Contato
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto" data-testid="contact-subtitle">

@@ -34,7 +34,7 @@ export default function Testimonials() {
     <section id="depoimentos" className="py-20 bg-card">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16 fade-in">
-          <h2 className="playfair text-4xl md:text-5xl font-bold mb-6" data-testid="testimonials-title">
+          <h2 className="raleway text-4xl md:text-5xl font-bold mb-6" data-testid="testimonials-title">
             O que Nossos Clientes Dizem
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto" data-testid="testimonials-subtitle">

@@ -80,7 +80,7 @@ export default function SystemsShowcase() {
     <section id="sistemas" className="py-20 bg-background">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16 fade-in">
-          <h2 className="playfair text-4xl md:text-5xl font-bold mb-6" data-testid="systems-title">
+          <h2 className="raleway text-4xl md:text-5xl font-bold mb-6" data-testid="systems-title">
             Nossos Sistemas
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto" data-testid="systems-subtitle">
@@ -105,7 +105,7 @@ export default function SystemsShowcase() {
                 <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mr-4">
                   <i className={`${system.icon} text-primary text-xl`}></i>
                 </div>
-                <h3 className="text-2xl font-bold playfair" data-testid={`system-title-${system.id}`}>
+                <h3 className="text-2xl font-bold raleway" data-testid={`system-title-${system.id}`}>
                   {system.title}
                 </h3>
               </div>
