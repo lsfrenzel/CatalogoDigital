@@ -2,6 +2,7 @@ import { Link } from "wouter";
 import { useLayoutEffect } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import CustomSystemsMessage from "@/components/CustomSystemsMessage";
 
 export default function SistemaERP() {
   useLayoutEffect(() => {
@@ -166,6 +167,13 @@ export default function SistemaERP() {
               </div>
               
             </div>
+          </div>
+        </section>
+
+        {/* Custom Systems Message */}
+        <section className="py-16 bg-muted/30">
+          <div className="max-w-4xl mx-auto px-6">
+            <CustomSystemsMessage variant="banner" className="mx-auto" />
           </div>
         </section>
 

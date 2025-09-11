@@ -5,6 +5,7 @@ import SystemsShowcase from "@/components/SystemsShowcase";
 import Benefits from "@/components/Benefits";
 import Comparison from "@/components/Comparison";
 import Footer from "@/components/Footer";
+import CustomSystemsMessage from "@/components/CustomSystemsMessage";
 
 export default function Home() {
   useEffect(() => {
@@ -36,6 +37,14 @@ export default function Home() {
       <main>
         <Hero />
         <SystemsShowcase />
+        
+        {/* Custom Systems Message */}
+        <section className="py-16 bg-muted/30">
+          <div className="max-w-4xl mx-auto px-6">
+            <CustomSystemsMessage variant="banner" className="mx-auto" />
+          </div>
+        </section>
+        
         <Benefits />
         <Comparison />
       </main>

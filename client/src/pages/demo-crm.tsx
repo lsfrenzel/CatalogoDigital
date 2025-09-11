@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import Header from "@/components/Header";
+import CustomSystemsMessage from "@/components/CustomSystemsMessage";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area, FunnelChart, Funnel, LabelList } from 'recharts';
 
 interface Lead {
@@ -247,6 +248,13 @@ export default function DemoCRM() {
     <>
       <Header />
       <div className="min-h-screen bg-black">
+        {/* Custom Systems Message */}
+        <div className="bg-black/90 border-b border-slate-800">
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <CustomSystemsMessage variant="compact" />
+          </div>
+        </div>
+        
         {/* Demo Header */}
         <div className="bg-zinc-900 border-b border-zinc-700 shadow-sm">
           <div className="max-w-7xl mx-auto px-6 py-4">

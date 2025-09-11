@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import Header from "@/components/Header";
+import CustomSystemsMessage from "@/components/CustomSystemsMessage";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, PieChart, Pie, Cell, LineChart, Line, AreaChart, Area } from 'recharts';
 
 export default function DemoRestaurant() {
@@ -283,6 +284,10 @@ export default function DemoRestaurant() {
             </div>
 
             <div className="p-6">
+              {/* Custom Systems Message */}
+              <div className="mb-6">
+                <CustomSystemsMessage variant="compact" />
+              </div>
               {selectedModule === 'dashboard' && (
               <div>
                 <div className="mb-6">

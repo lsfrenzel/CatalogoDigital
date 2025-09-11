@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import Header from "@/components/Header";
+import CustomSystemsMessage from "@/components/CustomSystemsMessage";
 
 export default function DemoEducation() {
   const [selectedModule, setSelectedModule] = useState('dashboard');
@@ -190,6 +191,10 @@ export default function DemoEducation() {
 
           {/* Main Content */}
           <div className="flex-1 p-6">
+            {/* Custom Systems Message */}
+            <div className="mb-6">
+              <CustomSystemsMessage variant="compact" />
+            </div>
             {selectedModule === 'dashboard' && (
               <div>
                 <div className="mb-6">

@@ -1,4 +1,5 @@
 import { CircleCheck, XCircle, TrendingUp, TrendingDown, Clock, Hourglass, Expand, Lock, Smile, Frown } from "lucide-react";
+import CustomSystemsMessage from "./CustomSystemsMessage";
 
 export default function Comparison() {
   const comparisonData = [
@@ -92,10 +93,8 @@ export default function Comparison() {
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8" data-testid="comparison-subtitle">
             Veja a diferença entre empresas que investem em tecnologia e aquelas que ficam para trás
           </p>
-          <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 max-w-2xl mx-auto">
-            <p className="text-primary font-semibold text-lg" data-testid="custom-systems-message">
-              🎯 Desenvolvemos sistemas personalizados de acordo com as necessidades específicas da sua empresa
-            </p>
+          <div className="max-w-2xl mx-auto">
+            <CustomSystemsMessage variant="default" />
           </div>
         </div>
 

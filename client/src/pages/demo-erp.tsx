@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import Header from "@/components/Header";
+import CustomSystemsMessage from "@/components/CustomSystemsMessage";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
 
 interface Sale {
@@ -257,6 +258,10 @@ export default function DemoERP() {
 
           {/* Main Content */}
           <div className="flex-1 p-6">
+            <div className="mb-6">
+              <CustomSystemsMessage variant="compact" className="mb-4" />
+            </div>
+            
             {selectedModule === 'dashboard' && (
               <div>
                 <div className="mb-6">
