@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import Header from "@/components/Header";
+import AppShell from "@/components/layout/AppShell";
 import CustomSystemsMessage from "@/components/CustomSystemsMessage";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -954,122 +954,51 @@ export default function DemoInventory() {
     rotatividade: "4.2x"
   };
 
+  const navItems = [
+    {
+      id: 'dashboard',
+      label: 'Dashboard',
+      icon: 'fas fa-tachometer-alt',
+      onClick: () => setSelectedModule('dashboard'),
+      isActive: selectedModule === 'dashboard'
+    },
+    {
+      id: 'estoque',
+      label: 'Estoque',
+      icon: 'fas fa-warehouse',
+      onClick: () => setSelectedModule('estoque'),
+      isActive: selectedModule === 'estoque'
+    },
+    {
+      id: 'movimentacoes',
+      label: 'Movimentações',
+      icon: 'fas fa-exchange-alt',
+      onClick: () => setSelectedModule('movimentacoes'),
+      isActive: selectedModule === 'movimentacoes'
+    },
+    {
+      id: 'fornecedores',
+      label: 'Fornecedores',
+      icon: 'fas fa-truck',
+      onClick: () => setSelectedModule('fornecedores'),
+      isActive: selectedModule === 'fornecedores'
+    }
+  ];
+
   return (
-    <>
-      <Header />
-      <div className="min-h-screen bg-gradient-to-br from-yellow-900 via-yellow-800 to-amber-900 dark:from-yellow-900 dark:to-amber-900">
-        {/* Demo Header */}
-        <div className="bg-yellow-800 dark:bg-yellow-900 border-b border-yellow-700 dark:border-yellow-600 shadow-lg">
-          <div className="max-w-7xl mx-auto px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <Link 
-                  href="/sistema/inventory"
-                  className="text-yellow-200 dark:text-yellow-100 hover:text-yellow-100 dark:hover:text-yellow-50 flex items-center"
-                >
-                  <i className="fas fa-arrow-left mr-2"></i>
-                  Voltar
-                </Link>
-                <div className="w-px h-6 bg-yellow-600 dark:bg-yellow-500"></div>
-                <h1 className="text-2xl font-bold text-yellow-100 dark:text-yellow-50 raleway">StockControl Pro - TechSolutions</h1>
-              </div>
-              <div className="bg-yellow-700 dark:bg-yellow-600 text-yellow-100 dark:text-yellow-50 px-3 py-1 rounded-full text-sm font-medium">
-                <i className="fas fa-circle text-yellow-300 mr-2 text-xs"></i>
-                Sistema Industrial
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex">
-          {/* Sidebar */}
-          <div className="w-64 bg-yellow-700 dark:bg-yellow-800 border-r border-yellow-600 dark:border-yellow-700 min-h-screen shadow-lg">
-            <div className="p-4">
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="w-10 h-10 bg-gradient-to-br from-yellow-600 to-yellow-500 rounded-lg flex items-center justify-center">
-                  <i className="fas fa-boxes text-yellow-100"></i>
-                </div>
-                <div>
-                  <h2 className="font-semibold text-yellow-100 dark:text-yellow-50">StockControl</h2>
-                  <p className="text-sm text-yellow-200 dark:text-yellow-100">Pro Industrial</p>
-                </div>
-              </div>
-
-              <nav className="space-y-2">
-                <button
-                  onClick={() => setSelectedModule('dashboard')}
-                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                    selectedModule === 'dashboard' 
-                      ? 'bg-gradient-to-r from-slate-600 to-zinc-700 text-white' 
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
-                  }`}
-                >
-                  <i className="fas fa-tachometer-alt w-4"></i>
-                  <span>Dashboard</span>
-                </button>
-                <button
-                  onClick={() => setSelectedModule('estoque')}
-                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                    selectedModule === 'estoque' 
-                      ? 'bg-gradient-to-r from-slate-600 to-zinc-700 text-white' 
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
-                  }`}
-                >
-                  <i className="fas fa-warehouse w-4"></i>
-                  <span>Estoque</span>
-                </button>
-                <button
-                  onClick={() => setSelectedModule('movimentacoes')}
-                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                    selectedModule === 'movimentacoes' 
-                      ? 'bg-gradient-to-r from-slate-600 to-zinc-700 text-white' 
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
-                  }`}
-                >
-                  <i className="fas fa-exchange-alt w-4"></i>
-                  <span>Movimentações</span>
-                </button>
-                <button
-                  onClick={() => setSelectedModule('fornecedores')}
-                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                    selectedModule === 'fornecedores' 
-                      ? 'bg-gradient-to-r from-slate-600 to-zinc-700 text-white' 
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
-                  }`}
-                >
-                  <i className="fas fa-truck w-4"></i>
-                  <span>Fornecedores</span>
-                </button>
-              </nav>
-
-              <div className="mt-8 p-3 bg-gradient-to-br from-slate-100 to-zinc-100 dark:from-slate-700 dark:to-slate-600 rounded-lg">
-                <h3 className="font-medium text-slate-900 dark:text-slate-100 mb-2">Status Operacional</h3>
-                <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 bg-gradient-to-br from-slate-600 to-zinc-700 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-medium">S</span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100">Sistema Ativo</p>
-                    <p className="text-xs text-slate-600 dark:text-slate-400">24/7 Monitoramento</p>
-                  </div>
-                </div>
-                <div className="mt-2 pt-2 border-t border-slate-300 dark:border-slate-500">
-                  <p className="text-xs text-slate-600 dark:text-slate-400">Última Sincronização</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">Agora</span>
-                    <span className="text-xs text-green-600 dark:text-green-400">Online</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Main Content */}
-          <div className="flex-1 p-6">
-            {/* Custom Systems Message */}
-            <div className="mb-6">
-              <CustomSystemsMessage variant="compact" />
-            </div>
+    <AppShell
+      title="StockControl Pro - TechSolutions"
+      subtitle="Pro Industrial"
+      systemIcon="fas fa-boxes"
+      systemColor="from-yellow-600 to-yellow-500"
+      backHref="/sistema/inventory"
+      statusBadge="Sistema Industrial"
+      navItems={navItems}
+    >
+      {/* Custom Systems Message */}
+      <div className="mb-6">
+        <CustomSystemsMessage variant="compact" />
+      </div>
             {selectedModule === 'dashboard' && (
               <div>
                 <div className="mb-6">
@@ -1834,9 +1763,6 @@ export default function DemoInventory() {
                 </div>
               </div>
             )}
-          </div>
-        </div>
-      </div>
       
       {/* Confirmação de exclusão */}
       <Dialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
@@ -1881,6 +1807,6 @@ export default function DemoInventory() {
           </div>
         </DialogContent>
       </Dialog>
-    </>
+    </AppShell>
   );
 }
