@@ -63,6 +63,18 @@ export default function SystemsShowcase() {
       ]
     },
     {
+      id: 'ecommerce',
+      title: 'E-commerce para Lojas Físicas',
+      description: 'Transforme sua loja física em digital com sincronização de estoque e gestão unificada de vendas.',
+      image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400',
+      icon: 'fas fa-shopping-cart',
+      features: [
+        'Sincronização de estoque unificado',
+        'Design responsivo otimizado',
+        'Gestão integrada de entregas'
+      ]
+    },
+    {
       id: 'education',
       title: 'Plataforma EAD',
       description: 'Plataforma completa de ensino a distância com gestão de cursos, alunos e certificações.',
@@ -92,7 +104,7 @@ export default function SystemsShowcase() {
           {systems.map((system) => (
             <Link 
               key={system.id}
-              href={`/sistema/${system.id}`}
+              href={system.id === 'ecommerce' ? '/sistema-ecommerce' : `/sistema/${system.id}`}
               className="fade-in hover-lift bg-card border border-border rounded-xl p-8 group block transition-all hover:scale-105 hover:shadow-xl"
               data-testid={`system-card-${system.id}`}
             >
