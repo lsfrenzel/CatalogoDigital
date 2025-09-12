@@ -1,5 +1,7 @@
 import { Link } from "wouter";
 import { useLayoutEffect, useState } from "react";
+import { useCartStore } from "@/lib/cartStore";
+import { products, categories } from "@/data/products";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CustomSystemsMessage from "@/components/CustomSystemsMessage";
@@ -9,114 +11,18 @@ export default function EcommerceDemo() {
     window.scrollTo(0, 0);
   }, []);
 
-  const [cartItems, setCartItems] = useState<number>(0);
   const [activeCategory, setActiveCategory] = useState<string>('todos');
-
-  const categories = [
-    { id: 'todos', name: 'Todos os Produtos', icon: 'fas fa-th-large' },
-    { id: 'eletronicos', name: 'Eletrônicos', icon: 'fas fa-mobile-alt' },
-    { id: 'moda', name: 'Moda & Acessórios', icon: 'fas fa-tshirt' },
-    { id: 'casa', name: 'Casa & Decoração', icon: 'fas fa-home' },
-    { id: 'esportes', name: 'Esportes & Lazer', icon: 'fas fa-dumbbell' }
-  ];
-
-  const products = [
-    {
-      id: 1,
-      name: 'Smartphone Samsung Galaxy A54',
-      price: 'R$ 1.299,90',
-      oldPrice: 'R$ 1.599,90',
-      discount: '19%',
-      image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400',
-      category: 'eletronicos',
-      rating: 4.5,
-      inStock: true
-    },
-    {
-      id: 2,
-      name: 'Tênis Nike Air Max Revolution',
-      price: 'R$ 289,90',
-      oldPrice: 'R$ 349,90',
-      discount: '17%',
-      image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400',
-      category: 'moda',
-      rating: 4.8,
-      inStock: true
-    },
-    {
-      id: 3,
-      name: 'Smart TV LG 55" 4K UHD',
-      price: 'R$ 2.199,90',
-      oldPrice: 'R$ 2.799,90',
-      discount: '21%',
-      image: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400',
-      category: 'eletronicos',
-      rating: 4.7,
-      inStock: true
-    },
-    {
-      id: 4,
-      name: 'Sofá 3 Lugares Reclinável',
-      price: 'R$ 1.899,90',
-      oldPrice: 'R$ 2.399,90',
-      discount: '21%',
-      image: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400',
-      category: 'casa',
-      rating: 4.6,
-      inStock: true
-    },
-    {
-      id: 5,
-      name: 'Camiseta Polo Lacoste',
-      price: 'R$ 259,90',
-      oldPrice: 'R$ 319,90',
-      discount: '19%',
-      image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400',
-      category: 'moda',
-      rating: 4.4,
-      inStock: true
-    },
-    {
-      id: 6,
-      name: 'Bicicleta Mountain Bike 21V',
-      price: 'R$ 899,90',
-      oldPrice: 'R$ 1.199,90',
-      discount: '25%',
-      image: 'https://images.unsplash.com/photo-1571068316344-75bc76f77890?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400',
-      category: 'esportes',
-      rating: 4.3,
-      inStock: false
-    },
-    {
-      id: 7,
-      name: 'Mesa de Jantar 6 Lugares',
-      price: 'R$ 1.599,90',
-      oldPrice: 'R$ 1.999,90',
-      discount: '20%',
-      image: 'https://images.unsplash.com/photo-1549497538-303791108f95?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400',
-      category: 'casa',
-      rating: 4.5,
-      inStock: true
-    },
-    {
-      id: 8,
-      name: 'Notebook Lenovo IdeaPad 3',
-      price: 'R$ 2.499,90',
-      oldPrice: 'R$ 2.999,90',
-      discount: '17%',
-      image: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400',
-      category: 'eletronicos',
-      rating: 4.2,
-      inStock: true
-    }
-  ];
+  const { addItem, getTotalItems } = useCartStore();
 
   const filteredProducts = activeCategory === 'todos' 
     ? products 
     : products.filter(product => product.category === activeCategory);
 
   const addToCart = (productId: number) => {
-    setCartItems(prev => prev + 1);
+    const product = products.find(p => p.id === productId);
+    if (product) {
+      addItem(product);
+    }
   };
 
   const renderStars = (rating: number) => {
@@ -175,17 +81,18 @@ export default function EcommerceDemo() {
                   />
                 </div>
                 
-                <button 
+                <Link
+                  href="/demo/cart"
                   className="relative p-2 text-blue-600 hover:text-blue-800"
                   data-testid="cart-button"
                 >
                   <i className="fas fa-shopping-cart text-xl"></i>
-                  {cartItems > 0 && (
+                  {getTotalItems() > 0 && (
                     <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-                      {cartItems}
+                      {getTotalItems()}
                     </span>
                   )}
-                </button>
+                </Link>
               </div>
             </div>
           </div>

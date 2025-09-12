@@ -18,6 +18,8 @@ import DemoFinancial from "@/pages/demo-financial";
 import DemoInventory from "@/pages/demo-inventory";
 import DemoEducation from "@/pages/demo-education";
 import EcommerceDemo from "@/pages/demo/ecommerce";
+import Cart from "@/pages/demo/cart";
+import ProductDetail from "@/pages/demo/product";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -41,6 +43,8 @@ function Router() {
       <Route path="/demo/inventory" component={DemoInventory} />
       <Route path="/demo/education" component={DemoEducation} />
       <Route path="/demo/ecommerce" component={EcommerceDemo} />
+      <Route path="/demo/cart" component={Cart} />
+      <Route path="/demo/produto/:id" component={ProductDetail} />
       <Route component={NotFound} />
     </Switch>
   );
