@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -16,6 +16,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useToast } from "@/hooks/use-toast";
 import type { Product, Supplier, Category, StockMovement } from "@shared/schema";
 import { insertProductSchema, insertSupplierSchema, insertCategorySchema, insertStockMovementSchema } from "@shared/schema";
+import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 // Form Components
 function CategoryForm({ onSubmit }: { onSubmit: (data: z.infer<typeof insertCategorySchema>) => void }) {
@@ -402,22 +403,24 @@ function SupplierForm({
 
 function MovementForm({ 
   onSubmit, 
-  products 
+  products,
+  defaultValues 
 }: { 
   onSubmit: (data: z.infer<typeof insertStockMovementSchema>) => void;
   products: Product[];
+  defaultValues?: Partial<z.infer<typeof insertStockMovementSchema>>;
 }) {
   const form = useForm<z.infer<typeof insertStockMovementSchema>>({
     resolver: zodResolver(insertStockMovementSchema),
     defaultValues: {
-      productId: "",
-      type: "entrada",
-      quantity: 1,
-      unitPrice: "0",
-      totalValue: "0",
-      reason: "",
-      responsible: "",
-      notes: "",
+      productId: defaultValues?.productId || "",
+      type: defaultValues?.type || "entrada",
+      quantity: defaultValues?.quantity || 1,
+      unitPrice: defaultValues?.unitPrice || "0",
+      totalValue: defaultValues?.totalValue || "0",
+      reason: defaultValues?.reason || "",
+      responsible: defaultValues?.responsible || "",
+      notes: defaultValues?.notes || "",
     },
   });
 
@@ -607,6 +610,9 @@ export default function DemoInventory() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
+  // Chart colors
+  const CHART_COLORS = ['#3B82F6', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16'];
+
   // API Queries
   const { data: products = [], isLoading: isLoadingProducts } = useQuery<Product[]>({
     queryKey: ['/api/products']
@@ -627,6 +633,91 @@ export default function DemoInventory() {
   const { data: lowStockProducts = [] } = useQuery<Product[]>({
     queryKey: ['/api/products/low-stock']
   });
+
+  // Chart data calculations
+  const chartData = useMemo(() => {
+    // Stock by category chart data
+    const stockByCategory = categories.map(category => {
+      const categoryProducts = products.filter(p => p.categoryId === category.id);
+      const totalStock = categoryProducts.reduce((sum, p) => sum + (p.currentStock || 0), 0);
+      const totalValue = categoryProducts.reduce((sum, p) => {
+        const price = parseFloat(p.price || '0');
+        const stock = p.currentStock || 0;
+        return sum + (isNaN(price) ? 0 : price) * stock;
+      }, 0);
+      return {
+        name: category.name || 'Sem categoria',
+        stock: totalStock,
+        value: Math.round(totalValue * 100) / 100, // Round to 2 decimal places
+        products: categoryProducts.length
+      };
+    });
+
+    // Stock movements over time (last 7 days)
+    const movementsOverTime = (() => {
+      // Sort movements by date first
+      const sortedMovements = [...movements].sort((a, b) => {
+        const dateA = new Date(a.createdAt || 0).getTime();
+        const dateB = new Date(b.createdAt || 0).getTime();
+        return dateA - dateB;
+      });
+
+      // Create a map for aggregating movements by date
+      const movementsByDate = new Map();
+      
+      sortedMovements.forEach(movement => {
+        if (!movement.createdAt) return; // Skip movements without dates
+        
+        const date = new Date(movement.createdAt).toLocaleDateString('pt-BR');
+        if (!movementsByDate.has(date)) {
+          movementsByDate.set(date, { date, entradas: 0, saidas: 0 });
+        }
+        
+        const dayData = movementsByDate.get(date);
+        if (movement.type === 'entrada') {
+          dayData.entradas += movement.quantity || 0;
+        } else {
+          dayData.saidas += movement.quantity || 0;
+        }
+      });
+
+      // Convert to array and get last 7 days with data
+      return Array.from(movementsByDate.values()).slice(-7);
+    })();
+
+    // Stock value distribution by category
+    const stockValueDistribution = stockByCategory.filter(cat => cat.value > 0).map((category, index) => ({
+      name: category.name,
+      value: category.value,
+      color: CHART_COLORS[index % CHART_COLORS.length]
+    }));
+
+    // Supplier performance (products count and average delivery days)
+    const supplierPerformance = suppliers.map(supplier => {
+      const supplierProducts = products.filter(p => p.supplierId === supplier.id);
+      const totalValue = supplierProducts.reduce((sum, p) => {
+        const price = parseFloat(p.price || '0');
+        const stock = p.currentStock || 0;
+        return sum + (isNaN(price) ? 0 : price) * stock;
+      }, 0);
+      const rating = parseFloat(supplier.rating || '0');
+      
+      return {
+        name: supplier.name || 'Fornecedor',
+        produtos: supplierProducts.length,
+        prazoMedio: supplier.deliveryDays || 0,
+        avaliacao: isNaN(rating) ? 0 : Math.round(rating * 10) / 10, // Round to 1 decimal
+        valor: Math.round(totalValue * 100) / 100 // Round to 2 decimal places
+      };
+    }).filter(s => s.produtos > 0);
+
+    return {
+      stockByCategory,
+      movementsOverTime,
+      stockValueDistribution,
+      supplierPerformance
+    };
+  }, [products, categories, movements, suppliers]);
 
   // Mutations
   const createProductMutation = useMutation({
@@ -1014,6 +1105,189 @@ export default function DemoInventory() {
                     <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-1">{inventoryData.rotatividade}</h3>
                     <p className="text-slate-600 dark:text-slate-400 text-sm">Rotatividade Média</p>
                     <p className="text-purple-600 dark:text-purple-400 text-xs mt-2">Por ano</p>
+                  </div>
+                </div>
+
+                {/* Interactive Charts Section */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                  {/* Stock by Category Chart */}
+                  <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-300 dark:border-slate-700 shadow-lg p-6">
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4 raleway">Estoque por Categoria</h3>
+                    <div className="h-64">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={chartData.stockByCategory}>
+                          <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                          <XAxis 
+                            dataKey="name" 
+                            tick={{ fontSize: 12 }}
+                            className="fill-slate-600 dark:fill-slate-400"
+                          />
+                          <YAxis 
+                            tick={{ fontSize: 12 }}
+                            className="fill-slate-600 dark:fill-slate-400"
+                          />
+                          <Tooltip 
+                            contentStyle={{
+                              backgroundColor: 'var(--background)',
+                              border: '1px solid var(--border)',
+                              borderRadius: '8px'
+                            }}
+                            formatter={(value: any, name: string) => [
+                              name === 'stock' ? `${value} unidades` : `${value} produtos`,
+                              name === 'stock' ? 'Estoque Total' : 'Produtos'
+                            ]}
+                          />
+                          <Legend />
+                          <Bar dataKey="stock" fill="#3B82F6" name="Estoque" radius={[2, 2, 0, 0]} />
+                          <Bar dataKey="products" fill="#10B981" name="Produtos" radius={[2, 2, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
+                  {/* Stock Movements Over Time Chart */}
+                  <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-300 dark:border-slate-700 shadow-lg p-6">
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4 raleway">Movimentações (Últimos 7 dias)</h3>
+                    <div className="h-64">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={chartData.movementsOverTime}>
+                          <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                          <XAxis 
+                            dataKey="date" 
+                            tick={{ fontSize: 12 }}
+                            className="fill-slate-600 dark:fill-slate-400"
+                          />
+                          <YAxis 
+                            tick={{ fontSize: 12 }}
+                            className="fill-slate-600 dark:fill-slate-400"
+                          />
+                          <Tooltip 
+                            contentStyle={{
+                              backgroundColor: 'var(--background)',
+                              border: '1px solid var(--border)',
+                              borderRadius: '8px'
+                            }}
+                            formatter={(value: any, name: string) => [
+                              `${value} unidades`,
+                              name === 'entradas' ? 'Entradas' : 'Saídas'
+                            ]}
+                          />
+                          <Legend />
+                          <Line 
+                            type="monotone" 
+                            dataKey="entradas" 
+                            stroke="#10B981" 
+                            strokeWidth={3}
+                            dot={{ fill: '#10B981', strokeWidth: 2, r: 4 }}
+                            name="Entradas"
+                          />
+                          <Line 
+                            type="monotone" 
+                            dataKey="saidas" 
+                            stroke="#EF4444" 
+                            strokeWidth={3}
+                            dot={{ fill: '#EF4444', strokeWidth: 2, r: 4 }}
+                            name="Saídas"
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                  {/* Stock Value Distribution Chart */}
+                  <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-300 dark:border-slate-700 shadow-lg p-6">
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4 raleway">Distribuição do Valor do Estoque</h3>
+                    <div className="h-64">
+                      {chartData.stockValueDistribution.length > 0 ? (
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie
+                              data={chartData.stockValueDistribution}
+                              cx="50%"
+                              cy="50%"
+                              labelLine={false}
+                              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                              outerRadius={80}
+                              fill="#8884d8"
+                              dataKey="value"
+                            >
+                              {chartData.stockValueDistribution.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.color} />
+                              ))}
+                            </Pie>
+                            <Tooltip 
+                              contentStyle={{
+                                backgroundColor: 'var(--background)',
+                                border: '1px solid var(--border)',
+                                borderRadius: '8px'
+                              }}
+                              formatter={(value: any) => [
+                                new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value),
+                                'Valor'
+                              ]}
+                            />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      ) : (
+                        <div className="flex items-center justify-center h-full">
+                          <p className="text-slate-500 dark:text-slate-400 text-center">
+                            Nenhum dado de estoque disponível
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Supplier Performance Chart */}
+                  <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-300 dark:border-slate-700 shadow-lg p-6">
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4 raleway">Performance dos Fornecedores</h3>
+                    <div className="h-64">
+                      {chartData.supplierPerformance.length > 0 ? (
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={chartData.supplierPerformance} layout="horizontal">
+                            <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                            <XAxis 
+                              type="number"
+                              tick={{ fontSize: 12 }}
+                              className="fill-slate-600 dark:fill-slate-400"
+                            />
+                            <YAxis 
+                              type="category"
+                              dataKey="name" 
+                              tick={{ fontSize: 12 }}
+                              className="fill-slate-600 dark:fill-slate-400"
+                              width={80}
+                            />
+                            <Tooltip 
+                              contentStyle={{
+                                backgroundColor: 'var(--background)',
+                                border: '1px solid var(--border)',
+                                borderRadius: '8px'
+                              }}
+                              formatter={(value: any, name: string) => [
+                                name === 'produtos' ? `${value} produtos` : 
+                                name === 'prazoMedio' ? `${value} dias` :
+                                `${value.toFixed(1)}/5`,
+                                name === 'produtos' ? 'Produtos' : 
+                                name === 'prazoMedio' ? 'Prazo Médio' : 'Avaliação'
+                              ]}
+                            />
+                            <Legend />
+                            <Bar dataKey="produtos" fill="#3B82F6" name="Produtos" />
+                            <Bar dataKey="prazoMedio" fill="#F59E0B" name="Prazo (dias)" />
+                            <Bar dataKey="avaliacao" fill="#10B981" name="Avaliação" />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      ) : (
+                        <div className="flex items-center justify-center h-full">
+                          <p className="text-slate-500 dark:text-slate-400 text-center">
+                            Nenhum fornecedor com produtos disponível
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
