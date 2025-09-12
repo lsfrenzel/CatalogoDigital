@@ -1,76 +1,744 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "wouter";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import Header from "@/components/Header";
 import CustomSystemsMessage from "@/components/CustomSystemsMessage";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useToast } from "@/hooks/use-toast";
+import type { Product, Supplier, Category, StockMovement } from "@shared/schema";
+import { insertProductSchema, insertSupplierSchema, insertCategorySchema, insertStockMovementSchema } from "@shared/schema";
+
+// Form Components
+function CategoryForm({ onSubmit }: { onSubmit: (data: z.infer<typeof insertCategorySchema>) => void }) {
+  const form = useForm<z.infer<typeof insertCategorySchema>>({
+    resolver: zodResolver(insertCategorySchema),
+    defaultValues: {
+      name: "",
+      description: "",
+    },
+  });
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Nome da Categoria</FormLabel>
+              <FormControl>
+                <Input placeholder="Ex: Eletrônicos" {...field} data-testid="input-categoria-name" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Descrição</FormLabel>
+              <FormControl>
+                <Textarea placeholder="Descrição da categoria" {...field} data-testid="textarea-categoria-description" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button type="submit" className="w-full" data-testid="button-submit-categoria">
+          Adicionar Categoria
+        </Button>
+      </form>
+    </Form>
+  );
+}
+
+function ProductForm({ 
+  onSubmit, 
+  suppliers, 
+  categories 
+}: { 
+  onSubmit: (data: z.infer<typeof insertProductSchema>) => void;
+  suppliers: Supplier[];
+  categories: Category[];
+}) {
+  const form = useForm<z.infer<typeof insertProductSchema>>({
+    resolver: zodResolver(insertProductSchema),
+    defaultValues: {
+      code: "",
+      name: "",
+      description: "",
+      categoryId: "",
+      supplierId: "",
+      price: "0",
+      currentStock: 0,
+      minimumStock: 0,
+      unit: "un",
+      isActive: true,
+    },
+  });
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="code"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Código</FormLabel>
+                <FormControl>
+                  <Input placeholder="Ex: PRD001" {...field} data-testid="input-produto-code" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="unit"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Unidade</FormLabel>
+                <FormControl>
+                  <Input placeholder="Ex: un, kg, L" {...field} data-testid="input-produto-unit" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Nome do Produto</FormLabel>
+              <FormControl>
+                <Input placeholder="Ex: Notebook Dell XPS 13" {...field} data-testid="input-produto-name" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Descrição</FormLabel>
+              <FormControl>
+                <Textarea placeholder="Descrição do produto" {...field} data-testid="textarea-produto-description" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="categoryId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Categoria</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger data-testid="select-produto-category">
+                      <SelectValue placeholder="Selecione uma categoria" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {categories.map((category) => (
+                      <SelectItem key={category.id} value={category.id}>
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="supplierId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Fornecedor</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger data-testid="select-produto-supplier">
+                      <SelectValue placeholder="Selecione um fornecedor" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {suppliers.map((supplier) => (
+                      <SelectItem key={supplier.id} value={supplier.id}>
+                        {supplier.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="grid grid-cols-3 gap-4">
+          <FormField
+            control={form.control}
+            name="price"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Preço</FormLabel>
+                <FormControl>
+                  <Input type="number" step="0.01" placeholder="0.00" {...field} data-testid="input-produto-price" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="currentStock"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Estoque Atual</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    placeholder="0" 
+                    {...field} 
+                    onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                    data-testid="input-produto-stock"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="minimumStock"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Estoque Mínimo</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    placeholder="0" 
+                    {...field} 
+                    onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                    data-testid="input-produto-minimum-stock"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        
+        <Button type="submit" className="w-full" data-testid="button-submit-produto">
+          Adicionar Produto
+        </Button>
+      </form>
+    </Form>
+  );
+}
+
+function SupplierForm({ onSubmit }: { onSubmit: (data: z.infer<typeof insertSupplierSchema>) => void }) {
+  const form = useForm<z.infer<typeof insertSupplierSchema>>({
+    resolver: zodResolver(insertSupplierSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      phone: "",
+      address: "",
+      rating: "5",
+      deliveryDays: 7,
+      isActive: true,
+    },
+  });
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Nome do Fornecedor</FormLabel>
+              <FormControl>
+                <Input placeholder="Ex: TechSupplies Inc." {...field} data-testid="input-supplier-name" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input type="email" placeholder="contato@fornecedor.com" {...field} data-testid="input-supplier-email" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="phone"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Telefone</FormLabel>
+                <FormControl>
+                  <Input placeholder="(11) 99999-9999" {...field} data-testid="input-supplier-phone" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        
+        <FormField
+          control={form.control}
+          name="address"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Endereço</FormLabel>
+              <FormControl>
+                <Textarea placeholder="Endereço completo" {...field} data-testid="textarea-supplier-address" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="rating"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Avaliação (1-5)</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    min="1" 
+                    max="5" 
+                    step="0.1" 
+                    placeholder="5.0" 
+                    {...field} 
+                    data-testid="input-supplier-rating"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="deliveryDays"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Prazo de Entrega (dias)</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    placeholder="7" 
+                    {...field} 
+                    onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                    data-testid="input-supplier-delivery-days"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        
+        <Button type="submit" className="w-full" data-testid="button-submit-supplier">
+          Adicionar Fornecedor
+        </Button>
+      </form>
+    </Form>
+  );
+}
+
+function MovementForm({ 
+  onSubmit, 
+  products 
+}: { 
+  onSubmit: (data: z.infer<typeof insertStockMovementSchema>) => void;
+  products: Product[];
+}) {
+  const form = useForm<z.infer<typeof insertStockMovementSchema>>({
+    resolver: zodResolver(insertStockMovementSchema),
+    defaultValues: {
+      productId: "",
+      type: "entrada",
+      quantity: 1,
+      unitPrice: "0",
+      totalValue: "0",
+      reason: "",
+      responsible: "",
+      notes: "",
+    },
+  });
+
+  const watchedQuantity = form.watch("quantity");
+  const watchedUnitPrice = form.watch("unitPrice");
+
+  useEffect(() => {
+    const quantity = watchedQuantity || 0;
+    const unitPrice = parseFloat(watchedUnitPrice || "0");
+    const totalValue = (quantity * unitPrice).toString();
+    form.setValue("totalValue", totalValue);
+  }, [watchedQuantity, watchedUnitPrice, form]);
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="productId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Produto</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger data-testid="select-movement-product">
+                      <SelectValue placeholder="Selecione um produto" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {products.map((product) => (
+                      <SelectItem key={product.id} value={product.id}>
+                        {product.name} - {product.code}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="type"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tipo de Movimentação</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger data-testid="select-movement-type">
+                      <SelectValue placeholder="Selecione o tipo" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="entrada">Entrada</SelectItem>
+                    <SelectItem value="saida">Saída</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="grid grid-cols-3 gap-4">
+          <FormField
+            control={form.control}
+            name="quantity"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Quantidade</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    min="1" 
+                    placeholder="1" 
+                    {...field} 
+                    onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                    data-testid="input-movement-quantity"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="unitPrice"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Preço Unitário</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    step="0.01" 
+                    placeholder="0.00" 
+                    {...field} 
+                    data-testid="input-movement-unit-price"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="totalValue"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Valor Total</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    step="0.01" 
+                    placeholder="0.00" 
+                    {...field} 
+                    disabled 
+                    data-testid="input-movement-total-value"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="reason"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Motivo</FormLabel>
+                <FormControl>
+                  <Input placeholder="Ex: Compra, Venda, Ajuste" {...field} data-testid="input-movement-reason" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="responsible"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Responsável</FormLabel>
+                <FormControl>
+                  <Input placeholder="Nome do responsável" {...field} data-testid="input-movement-responsible" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        
+        <FormField
+          control={form.control}
+          name="notes"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Observações</FormLabel>
+              <FormControl>
+                <Textarea placeholder="Observações adicionais" {...field} data-testid="textarea-movement-notes" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <Button type="submit" className="w-full" data-testid="button-submit-movement">
+          Registrar Movimentação
+        </Button>
+      </form>
+    </Form>
+  );
+}
 
 export default function DemoInventory() {
   const [selectedModule, setSelectedModule] = useState('dashboard');
+  const [isDialogOpen, setIsDialogOpen] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
+  // API Queries
+  const { data: products = [], isLoading: isLoadingProducts } = useQuery<Product[]>({
+    queryKey: ['/api/products']
+  });
+
+  const { data: suppliers = [], isLoading: isLoadingSuppliers } = useQuery<Supplier[]>({
+    queryKey: ['/api/suppliers']
+  });
+
+  const { data: categories = [], isLoading: isLoadingCategories } = useQuery<Category[]>({
+    queryKey: ['/api/categories']
+  });
+
+  const { data: movements = [], isLoading: isLoadingMovements } = useQuery<StockMovement[]>({
+    queryKey: ['/api/movements']
+  });
+
+  const { data: lowStockProducts = [] } = useQuery<Product[]>({
+    queryKey: ['/api/products/low-stock']
+  });
+
+  // Mutations
+  const createProductMutation = useMutation({
+    mutationFn: async (data: z.infer<typeof insertProductSchema>) => {
+      const response = await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error('Erro ao criar produto');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/products'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/products/low-stock'] });
+      toast({ title: "Produto criado com sucesso!" });
+      setIsDialogOpen(null);
+    },
+    onError: () => {
+      toast({ title: "Erro ao criar produto", variant: "destructive" });
+    },
+  });
+
+  const createSupplierMutation = useMutation({
+    mutationFn: async (data: z.infer<typeof insertSupplierSchema>) => {
+      const response = await fetch('/api/suppliers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error('Erro ao criar fornecedor');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/suppliers'] });
+      toast({ title: "Fornecedor criado com sucesso!" });
+      setIsDialogOpen(null);
+    },
+    onError: () => {
+      toast({ title: "Erro ao criar fornecedor", variant: "destructive" });
+    },
+  });
+
+  const createCategoryMutation = useMutation({
+    mutationFn: async (data: z.infer<typeof insertCategorySchema>) => {
+      const response = await fetch('/api/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error('Erro ao criar categoria');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/categories'] });
+      toast({ title: "Categoria criada com sucesso!" });
+      setIsDialogOpen(null);
+    },
+    onError: () => {
+      toast({ title: "Erro ao criar categoria", variant: "destructive" });
+    },
+  });
+
+  const createMovementMutation = useMutation({
+    mutationFn: async (data: z.infer<typeof insertStockMovementSchema>) => {
+      const response = await fetch('/api/movements', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error('Erro ao criar movimentação');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/movements'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/products'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/products/low-stock'] });
+      toast({ title: "Movimentação registrada com sucesso!" });
+      setIsDialogOpen(null);
+    },
+    onError: () => {
+      toast({ title: "Erro ao registrar movimentação", variant: "destructive" });
+    },
+  });
+
+  // Calculate dashboard data from real API data
   const inventoryData = {
-    totalItens: "12.847",
-    valorEstoque: "R$ 2.456.780",
-    produtosAtivos: "2.543",
-    alertasEstoque: 23,
-    entradas: "456",
-    saidas: "389",
+    totalItens: products.reduce((sum, p) => sum + (p.currentStock || 0), 0).toLocaleString(),
+    valorEstoque: new Intl.NumberFormat('pt-BR', { 
+      style: 'currency', 
+      currency: 'BRL' 
+    }).format(
+      products.reduce((sum, p) => sum + (p.currentStock || 0) * parseFloat(p.price || '0'), 0)
+    ),
+    produtosAtivos: products.filter(p => p.isActive).length.toLocaleString(),
+    alertasEstoque: lowStockProducts.length,
+    entradas: movements.filter(m => m.type === 'entrada').length.toString(),
+    saidas: movements.filter(m => m.type === 'saida').length.toString(),
     rotatividade: "4.2x"
   };
-
-  const lowStockItems = [
-    { codigo: "TEC001", produto: "Notebook Dell XPS 13", categoria: "Eletrônicos", estoque: 5, minimo: 15, fornecedor: "Dell Inc", status: "crítico" },
-    { codigo: "OFF032", produto: "Cadeira Ergonômica Pro", categoria: "Mobiliário", estoque: 8, minimo: 20, fornecedor: "Móveis SA", status: "baixo" },
-    { codigo: "TEC045", produto: "Monitor LG 27\" 4K", categoria: "Eletrônicos", estoque: 3, minimo: 12, fornecedor: "LG Electronics", status: "crítico" },
-    { codigo: "SUP012", produto: "Papel A4 Sulfite", categoria: "Suprimentos", estoque: 12, minimo: 50, fornecedor: "Papelaria Central", status: "baixo" }
-  ];
-
-  const recentMovements = [
-    { tipo: "entrada", produto: "Notebook Lenovo ThinkPad", quantidade: 25, valor: "R$ 125.000", data: "13/11", responsavel: "João Silva" },
-    { tipo: "saida", produto: "Mouse Logitech MX Master", quantidade: 15, valor: "R$ 3.750", data: "13/11", responsavel: "Sistema" },
-    { tipo: "entrada", produto: "Teclado Mecânico", quantidade: 30, valor: "R$ 9.000", data: "12/11", responsavel: "Maria Santos" },
-    { tipo: "saida", produto: "Fone de Ouvido Sony", quantidade: 8, valor: "R$ 2.400", data: "12/11", responsavel: "Pedro Costa" }
-  ];
-
-  const topCategories = [
-    { categoria: "Eletrônicos", itens: 847, valor: "R$ 1.234.500", rotatividade: "5.2x" },
-    { categoria: "Mobiliário", itens: 234, valor: "R$ 456.780", rotatividade: "2.1x" },
-    { categoria: "Suprimentos", itens: 567, valor: "R$ 123.450", rotatividade: "8.7x" },
-    { categoria: "Equipamentos", itens: 189, valor: "R$ 345.670", rotatividade: "3.4x" }
-  ];
-
-  const suppliers = [
-    { nome: "Dell Inc", produtos: 45, valorTotal: "R$ 567.890", prazoMedio: "15 dias", rating: 4.8 },
-    { nome: "HP Enterprise", produtos: 32, valorTotal: "R$ 234.560", prazoMedio: "12 dias", rating: 4.5 },
-    { nome: "Lenovo Group", produtos: 28, valorTotal: "R$ 345.670", prazoMedio: "18 dias", rating: 4.7 },
-    { nome: "Samsung Corp", produtos: 52, valorTotal: "R$ 456.780", prazoMedio: "14 dias", rating: 4.6 }
-  ];
-
-  const warehouses = [
-    { nome: "Galpão Principal", localizacao: "São Paulo - SP", capacidade: "85%", itens: 8947, valor: "R$ 1.890.000" },
-    { nome: "Centro de Distribuição", localizacao: "Rio de Janeiro - RJ", capacidade: "62%", itens: 3245, valor: "R$ 567.000" },
-    { nome: "Depósito Zona Norte", localizacao: "Belo Horizonte - MG", capacidade: "78%", itens: 655, valor: "R$ 234.000" }
-  ];
 
   return (
     <>
       <Header />
-      <div className="min-h-screen bg-gradient-to-br from-slate-100 via-gray-100 to-zinc-100 dark:from-slate-900 dark:to-slate-800">
+      <div className="min-h-screen bg-gradient-to-br from-yellow-900 via-yellow-800 to-amber-900 dark:from-yellow-900 dark:to-amber-900">
         {/* Demo Header */}
-        <div className="bg-white dark:bg-slate-800 border-b border-slate-300 dark:border-slate-700 shadow-sm">
+        <div className="bg-yellow-800 dark:bg-yellow-900 border-b border-yellow-700 dark:border-yellow-600 shadow-lg">
           <div className="max-w-7xl mx-auto px-6 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <Link 
                   href="/sistema/inventory"
-                  className="text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-300 flex items-center"
+                  className="text-yellow-200 dark:text-yellow-100 hover:text-yellow-100 dark:hover:text-yellow-50 flex items-center"
                 >
                   <i className="fas fa-arrow-left mr-2"></i>
                   Voltar
                 </Link>
-                <div className="w-px h-6 bg-slate-400 dark:bg-slate-600"></div>
-                <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 raleway">StockControl Pro - TechSolutions</h1>
+                <div className="w-px h-6 bg-yellow-600 dark:bg-yellow-500"></div>
+                <h1 className="text-2xl font-bold text-yellow-100 dark:text-yellow-50 raleway">StockControl Pro - TechSolutions</h1>
               </div>
-              <div className="bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 px-3 py-1 rounded-full text-sm font-medium">
-                <i className="fas fa-circle text-slate-600 mr-2 text-xs"></i>
+              <div className="bg-yellow-700 dark:bg-yellow-600 text-yellow-100 dark:text-yellow-50 px-3 py-1 rounded-full text-sm font-medium">
+                <i className="fas fa-circle text-yellow-300 mr-2 text-xs"></i>
                 Sistema Industrial
               </div>
             </div>
@@ -79,15 +747,15 @@ export default function DemoInventory() {
 
         <div className="flex">
           {/* Sidebar */}
-          <div className="w-64 bg-white dark:bg-slate-800 border-r border-slate-300 dark:border-slate-700 min-h-screen shadow-lg">
+          <div className="w-64 bg-yellow-700 dark:bg-yellow-800 border-r border-yellow-600 dark:border-yellow-700 min-h-screen shadow-lg">
             <div className="p-4">
               <div className="flex items-center space-x-3 mb-6">
-                <div className="w-10 h-10 bg-gradient-to-br from-slate-600 to-zinc-700 rounded-lg flex items-center justify-center">
-                  <i className="fas fa-boxes text-white"></i>
+                <div className="w-10 h-10 bg-gradient-to-br from-yellow-600 to-yellow-500 rounded-lg flex items-center justify-center">
+                  <i className="fas fa-boxes text-yellow-100"></i>
                 </div>
                 <div>
-                  <h2 className="font-semibold text-slate-900 dark:text-slate-100">StockControl</h2>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">Pro Industrial</p>
+                  <h2 className="font-semibold text-yellow-100 dark:text-yellow-50">StockControl</h2>
+                  <p className="text-sm text-yellow-200 dark:text-yellow-100">Pro Industrial</p>
                 </div>
               </div>
 
@@ -225,43 +893,52 @@ export default function DemoInventory() {
                   <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-300 dark:border-slate-700 shadow-lg p-6">
                     <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4 raleway">Estoque Baixo</h3>
                     <div className="space-y-4">
-                      {lowStockItems.map((item, index) => (
+                      {lowStockProducts.length > 0 ? lowStockProducts.map((item, index) => (
                         <div key={index} className="flex items-center justify-between p-3 bg-gradient-to-r from-orange-50 to-red-50 dark:from-slate-700 dark:to-slate-600 rounded-lg">
                           <div>
-                            <p className="font-medium text-slate-900 dark:text-slate-100">{item.produto}</p>
-                            <p className="text-sm text-slate-500 dark:text-slate-400">{item.codigo} • {item.categoria}</p>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">{item.fornecedor}</p>
+                            <p className="font-medium text-slate-900 dark:text-slate-100">{item.name}</p>
+                            <p className="text-sm text-slate-500 dark:text-slate-400">{item.code}</p>
                           </div>
                           <div className="text-right">
-                            <p className="font-semibold text-slate-900 dark:text-slate-100">{item.estoque} unidades</p>
+                            <p className="font-semibold text-slate-900 dark:text-slate-100">{item.currentStock || 0} unidades</p>
                             <span className={`text-xs px-2 py-1 rounded-full ${
-                              item.status === 'crítico' ? 'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400' :
+                              (item.currentStock || 0) <= (item.minimumStock || 0) / 2 ? 'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400' :
                               'bg-orange-100 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400'
                             }`}>
-                              {item.status === 'crítico' ? 'Crítico' : 'Baixo'}
+                              {(item.currentStock || 0) <= (item.minimumStock || 0) / 2 ? 'Crítico' : 'Baixo'}
                             </span>
-                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Mín: {item.minimo}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Mín: {item.minimumStock || 0}</p>
                           </div>
                         </div>
-                      ))}
+                      )) : (
+                        <p className="text-center text-slate-500 dark:text-slate-400">Nenhum produto com estoque baixo</p>
+                      )}
                     </div>
                   </div>
 
                   <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-300 dark:border-slate-700 shadow-lg p-6">
                     <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4 raleway">Categorias Principais</h3>
                     <div className="space-y-4">
-                      {topCategories.map((cat, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 bg-gradient-to-r from-slate-50 to-gray-50 dark:from-slate-700 dark:to-slate-600 rounded-lg">
-                          <div>
-                            <p className="font-medium text-slate-900 dark:text-slate-100">{cat.categoria}</p>
-                            <p className="text-sm text-slate-500 dark:text-slate-400">{cat.itens} itens</p>
+                      {categories.length > 0 ? categories.slice(0, 4).map((cat, index) => {
+                        const categoryProducts = products.filter(p => p.categoryId === cat.id);
+                        const categoryValue = categoryProducts.reduce((sum, p) => sum + (p.currentStock || 0) * parseFloat(p.price || '0'), 0);
+                        return (
+                          <div key={index} className="flex items-center justify-between p-3 bg-gradient-to-r from-slate-50 to-gray-50 dark:from-slate-700 dark:to-slate-600 rounded-lg">
+                            <div>
+                              <p className="font-medium text-slate-900 dark:text-slate-100">{cat.name}</p>
+                              <p className="text-sm text-slate-500 dark:text-slate-400">{categoryProducts.length} itens</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-semibold text-slate-900 dark:text-slate-100">
+                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(categoryValue)}
+                              </p>
+                              <p className="text-sm text-slate-600 dark:text-slate-400">Giro: 3.2x</p>
+                            </div>
                           </div>
-                          <div className="text-right">
-                            <p className="font-semibold text-slate-900 dark:text-slate-100">{cat.valor}</p>
-                            <p className="text-sm text-slate-600 dark:text-slate-400">Giro: {cat.rotatividade}</p>
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      }) : (
+                        <p className="text-center text-slate-500 dark:text-slate-400">Nenhuma categoria cadastrada</p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -271,53 +948,69 @@ export default function DemoInventory() {
                   <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-300 dark:border-slate-700 shadow-lg p-6">
                     <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4 raleway">Movimentações Recentes</h3>
                     <div className="space-y-3">
-                      {recentMovements.map((mov, index) => (
-                        <div key={index} className="flex items-center space-x-4 p-3 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg transition-colors">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                            mov.tipo === 'entrada' ? 'bg-green-100 dark:bg-green-900/20' : 'bg-red-100 dark:bg-red-900/20'
-                          }`}>
-                            <i className={`${
-                              mov.tipo === 'entrada' ? 'fas fa-arrow-down text-green-600 dark:text-green-400' : 'fas fa-arrow-up text-red-600 dark:text-red-400'
-                            }`}></i>
+                      {movements.length > 0 ? movements.slice(0, 4).map((mov, index) => {
+                        const product = products.find(p => p.id === mov.productId);
+                        return (
+                          <div key={index} className="flex items-center space-x-4 p-3 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg transition-colors">
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                              mov.type === 'entrada' ? 'bg-green-100 dark:bg-green-900/20' : 'bg-red-100 dark:bg-red-900/20'
+                            }`}>
+                              <i className={`${
+                                mov.type === 'entrada' ? 'fas fa-arrow-down text-green-600 dark:text-green-400' : 'fas fa-arrow-up text-red-600 dark:text-red-400'
+                              }`}></i>
+                            </div>
+                            <div className="flex-1">
+                              <p className="font-medium text-slate-900 dark:text-slate-100">{product?.name || 'Produto'}</p>
+                              <p className="text-sm text-slate-600 dark:text-slate-400">
+                                {mov.quantity} unidades • {mov.responsible || 'Sistema'} • {new Date(mov.createdAt || '').toLocaleDateString('pt-BR')}
+                              </p>
+                            </div>
+                            <span className={`font-semibold ${
+                              mov.type === 'entrada' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                            }`}>
+                              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(parseFloat(mov.totalValue || '0'))}
+                            </span>
                           </div>
-                          <div className="flex-1">
-                            <p className="font-medium text-slate-900 dark:text-slate-100">{mov.produto}</p>
-                            <p className="text-sm text-slate-600 dark:text-slate-400">
-                              {mov.quantidade} unidades • {mov.responsavel} • {mov.data}
-                            </p>
-                          </div>
-                          <span className={`font-semibold ${
-                            mov.tipo === 'entrada' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                          }`}>
-                            {mov.valor}
-                          </span>
-                        </div>
-                      ))}
+                        );
+                      }) : (
+                        <p className="text-center text-slate-500 dark:text-slate-400">Nenhuma movimentação registrada</p>
+                      )}
                     </div>
                   </div>
 
                   <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-300 dark:border-slate-700 shadow-lg p-6">
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4 raleway">Centros de Distribuição</h3>
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4 raleway">Estoque por Categorias</h3>
                     <div className="space-y-4">
-                      {warehouses.map((warehouse, index) => (
-                        <div key={index} className="p-4 bg-gradient-to-r from-slate-50 to-zinc-50 dark:from-slate-700 dark:to-slate-600 rounded-lg">
-                          <div className="flex items-center justify-between mb-2">
-                            <h4 className="font-medium text-slate-900 dark:text-slate-100">{warehouse.nome}</h4>
-                            <span className={`text-xs px-2 py-1 rounded-full ${
-                              parseInt(warehouse.capacidade) > 80 ? 'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400' :
-                              parseInt(warehouse.capacidade) > 60 ? 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400' :
-                              'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400'
-                            }`}>
-                              {warehouse.capacidade} ocupação
-                            </span>
+                      {categories.length > 0 ? categories.slice(0, 3).map((category, index) => {
+                        const categoryProducts = products.filter(p => p.categoryId === category.id);
+                        const totalItems = categoryProducts.reduce((sum, p) => sum + (p.currentStock || 0), 0);
+                        const totalValue = categoryProducts.reduce((sum, p) => sum + (p.currentStock || 0) * parseFloat(p.price || '0'), 0);
+                        const capacityPercentage = Math.min(100, (totalItems / 1000) * 100); // Assuming max 1000 items per category
+                        
+                        return (
+                          <div key={index} className="p-4 bg-gradient-to-r from-slate-50 to-zinc-50 dark:from-slate-700 dark:to-slate-600 rounded-lg">
+                            <div className="flex items-center justify-between mb-2">
+                              <h4 className="font-medium text-slate-900 dark:text-slate-100">{category.name}</h4>
+                              <span className={`text-xs px-2 py-1 rounded-full ${
+                                capacityPercentage > 80 ? 'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400' :
+                                capacityPercentage > 60 ? 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400' :
+                                'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                              }`}>
+                                {Math.round(capacityPercentage)}% estoque
+                              </span>
+                            </div>
+                            <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">{category.description || 'Categoria de produtos'}</p>
+                            <div className="flex justify-between text-sm">
+                              <span className="text-slate-600 dark:text-slate-400">{totalItems.toLocaleString()} itens</span>
+                              <span className="font-semibold text-slate-900 dark:text-slate-100">
+                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalValue)}
+                              </span>
+                            </div>
                           </div>
-                          <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">{warehouse.localizacao}</p>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-slate-600 dark:text-slate-400">{warehouse.itens.toLocaleString()} itens</span>
-                            <span className="font-semibold text-slate-900 dark:text-slate-100">{warehouse.valor}</span>
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      }) : (
+                        <p className="text-center text-slate-500 dark:text-slate-400">Nenhuma categoria cadastrada</p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -326,59 +1019,281 @@ export default function DemoInventory() {
 
             {selectedModule === 'estoque' && (
               <div>
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-6 raleway">Controle de Estoque</h2>
-                <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-300 dark:border-slate-700 shadow-lg p-8 text-center">
-                  <i className="fas fa-warehouse text-4xl text-slate-600 dark:text-slate-400 mb-4"></i>
-                  <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-2">Gestão de Inventário</h3>
-                  <p className="text-slate-600 dark:text-slate-400">Controle completo de produtos, localização e movimentações.</p>
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 raleway">Controle de Estoque</h2>
+                  <div className="flex gap-2">
+                    <Dialog open={isDialogOpen === 'categoria'} onOpenChange={(open) => setIsDialogOpen(open ? 'categoria' : null)}>
+                      <DialogTrigger asChild>
+                        <Button className="bg-blue-600 hover:bg-blue-700" data-testid="button-add-categoria">
+                          <i className="fas fa-plus mr-2"></i>
+                          Categoria
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Adicionar Categoria</DialogTitle>
+                        </DialogHeader>
+                        <CategoryForm onSubmit={createCategoryMutation.mutate} />
+                      </DialogContent>
+                    </Dialog>
+                    
+                    <Dialog open={isDialogOpen === 'produto'} onOpenChange={(open) => setIsDialogOpen(open ? 'produto' : null)}>
+                      <DialogTrigger asChild>
+                        <Button className="bg-green-600 hover:bg-green-700" data-testid="button-add-produto">
+                          <i className="fas fa-plus mr-2"></i>
+                          Produto
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Adicionar Produto</DialogTitle>
+                        </DialogHeader>
+                        <ProductForm onSubmit={createProductMutation.mutate} suppliers={suppliers} categories={categories} />
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Products List */}
+                  <div className="lg:col-span-2 bg-white dark:bg-slate-800 rounded-xl border border-slate-300 dark:border-slate-700 shadow-lg p-6">
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4 raleway">Produtos em Estoque</h3>
+                    <div className="space-y-3 max-h-96 overflow-y-auto">
+                      {isLoadingProducts ? (
+                        <div className="text-center py-4">
+                          <i className="fas fa-spinner fa-spin text-slate-400"></i>
+                          <p className="text-slate-500 dark:text-slate-400 mt-2">Carregando produtos...</p>
+                        </div>
+                      ) : products.length > 0 ? products.map((product, index) => (
+                        <div key={index} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors">
+                          <div className="flex-1">
+                            <p className="font-medium text-slate-900 dark:text-slate-100">{product.name}</p>
+                            <p className="text-sm text-slate-500 dark:text-slate-400">{product.code} • {product.unit || 'un'}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
+                              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(parseFloat(product.price || '0'))}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-semibold text-slate-900 dark:text-slate-100">{product.currentStock || 0} unidades</p>
+                            <span className={`text-xs px-2 py-1 rounded-full ${
+                              (product.currentStock || 0) <= (product.minimumStock || 0) ? 
+                                'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400' :
+                                'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                            }`}>
+                              Mín: {product.minimumStock || 0}
+                            </span>
+                          </div>
+                        </div>
+                      )) : (
+                        <div className="text-center py-8">
+                          <i className="fas fa-box-open text-4xl text-slate-400 mb-4"></i>
+                          <p className="text-slate-500 dark:text-slate-400">Nenhum produto cadastrado</p>
+                          <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">Adicione produtos para começar</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Categories List */}
+                  <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-300 dark:border-slate-700 shadow-lg p-6">
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4 raleway">Categorias</h3>
+                    <div className="space-y-3">
+                      {isLoadingCategories ? (
+                        <div className="text-center py-4">
+                          <i className="fas fa-spinner fa-spin text-slate-400"></i>
+                        </div>
+                      ) : categories.length > 0 ? categories.map((category, index) => {
+                        const categoryProductCount = products.filter(p => p.categoryId === category.id).length;
+                        return (
+                          <div key={index} className="p-3 bg-slate-50 dark:bg-slate-700 rounded-lg">
+                            <p className="font-medium text-slate-900 dark:text-slate-100">{category.name}</p>
+                            <p className="text-sm text-slate-500 dark:text-slate-400">{categoryProductCount} produtos</p>
+                          </div>
+                        );
+                      }) : (
+                        <div className="text-center py-4">
+                          <i className="fas fa-tags text-2xl text-slate-400 mb-2"></i>
+                          <p className="text-slate-500 dark:text-slate-400 text-sm">Nenhuma categoria</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
 
             {selectedModule === 'movimentacoes' && (
               <div>
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-6 raleway">Movimentações</h2>
-                <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-300 dark:border-slate-700 shadow-lg p-8 text-center">
-                  <i className="fas fa-exchange-alt text-4xl text-zinc-600 dark:text-zinc-400 mb-4"></i>
-                  <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-2">Entrada e Saída</h3>
-                  <p className="text-slate-600 dark:text-slate-400">Registro completo de todas as movimentações de estoque.</p>
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 raleway">Movimentações</h2>
+                  <Dialog open={isDialogOpen === 'movimentacao'} onOpenChange={(open) => setIsDialogOpen(open ? 'movimentacao' : null)}>
+                    <DialogTrigger asChild>
+                      <Button className="bg-purple-600 hover:bg-purple-700" data-testid="button-add-movimentacao">
+                        <i className="fas fa-plus mr-2"></i>
+                        Nova Movimentação
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl">
+                      <DialogHeader>
+                        <DialogTitle>Registrar Movimentação</DialogTitle>
+                      </DialogHeader>
+                      <MovementForm onSubmit={createMovementMutation.mutate} products={products} />
+                    </DialogContent>
+                  </Dialog>
+                </div>
+
+                <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-300 dark:border-slate-700 shadow-lg p-6">
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4 raleway">Histórico de Movimentações</h3>
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                    {isLoadingMovements ? (
+                      <div className="text-center py-4">
+                        <i className="fas fa-spinner fa-spin text-slate-400"></i>
+                        <p className="text-slate-500 dark:text-slate-400 mt-2">Carregando movimentações...</p>
+                      </div>
+                    ) : movements.length > 0 ? movements.map((movement, index) => {
+                      const product = products.find(p => p.id === movement.productId);
+                      return (
+                        <div key={index} className="flex items-center space-x-4 p-4 bg-slate-50 dark:bg-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors">
+                          <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                            movement.type === 'entrada' ? 'bg-green-100 dark:bg-green-900/20' : 'bg-red-100 dark:bg-red-900/20'
+                          }`}>
+                            <i className={`${
+                              movement.type === 'entrada' ? 'fas fa-arrow-down text-green-600 dark:text-green-400' : 'fas fa-arrow-up text-red-600 dark:text-red-400'
+                            } text-lg`}></i>
+                          </div>
+                          <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div>
+                              <p className="font-medium text-slate-900 dark:text-slate-100">{product?.name || 'Produto'}</p>
+                              <p className="text-sm text-slate-500 dark:text-slate-400">{product?.code || movement.productId}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm text-slate-600 dark:text-slate-400">Quantidade</p>
+                              <p className="font-medium text-slate-900 dark:text-slate-100">{movement.quantity} {product?.unit || 'un'}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm text-slate-600 dark:text-slate-400">Responsável</p>
+                              <p className="font-medium text-slate-900 dark:text-slate-100">{movement.responsible || 'Sistema'}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm text-slate-600 dark:text-slate-400">
+                                {new Date(movement.createdAt || '').toLocaleDateString('pt-BR')}
+                              </p>
+                              <p className={`font-semibold ${
+                                movement.type === 'entrada' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                              }`}>
+                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(parseFloat(movement.totalValue || '0'))}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    }) : (
+                      <div className="text-center py-8">
+                        <i className="fas fa-exchange-alt text-4xl text-slate-400 mb-4"></i>
+                        <p className="text-slate-500 dark:text-slate-400">Nenhuma movimentação registrada</p>
+                        <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">Registre movimentações para acompanhar o estoque</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
 
             {selectedModule === 'fornecedores' && (
               <div>
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-6 raleway">Gestão de Fornecedores</h2>
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 raleway">Gestão de Fornecedores</h2>
+                  <Dialog open={isDialogOpen === 'fornecedor'} onOpenChange={(open) => setIsDialogOpen(open ? 'fornecedor' : null)}>
+                    <DialogTrigger asChild>
+                      <Button className="bg-orange-600 hover:bg-orange-700" data-testid="button-add-fornecedor">
+                        <i className="fas fa-plus mr-2"></i>
+                        Novo Fornecedor
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Adicionar Fornecedor</DialogTitle>
+                      </DialogHeader>
+                      <SupplierForm onSubmit={createSupplierMutation.mutate} />
+                    </DialogContent>
+                  </Dialog>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {suppliers.map((supplier, index) => (
-                    <div key={index} className="bg-white dark:bg-slate-800 rounded-xl border border-slate-300 dark:border-slate-700 shadow-lg p-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{supplier.nome}</h3>
-                        <div className="flex items-center space-x-1">
-                          {[...Array(5)].map((_, i) => (
-                            <i key={i} className={`fas fa-star text-sm ${
-                              i < Math.floor(supplier.rating) ? 'text-yellow-500' : 'text-slate-300 dark:text-slate-600'
-                            }`}></i>
-                          ))}
-                          <span className="text-sm text-slate-600 dark:text-slate-400 ml-1">{supplier.rating}</span>
-                        </div>
-                      </div>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-slate-600 dark:text-slate-400">Produtos:</span>
-                          <span className="font-medium text-slate-900 dark:text-slate-100">{supplier.produtos}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-600 dark:text-slate-400">Valor Total:</span>
-                          <span className="font-medium text-slate-900 dark:text-slate-100">{supplier.valorTotal}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-600 dark:text-slate-400">Prazo Médio:</span>
-                          <span className="font-medium text-slate-900 dark:text-slate-100">{supplier.prazoMedio}</span>
-                        </div>
-                      </div>
+                  {isLoadingSuppliers ? (
+                    <div className="col-span-2 text-center py-8">
+                      <i className="fas fa-spinner fa-spin text-slate-400 text-2xl"></i>
+                      <p className="text-slate-500 dark:text-slate-400 mt-2">Carregando fornecedores...</p>
                     </div>
-                  ))}
+                  ) : suppliers.length > 0 ? suppliers.map((supplier, index) => {
+                    const supplierProducts = products.filter(p => p.supplierId === supplier.id);
+                    const supplierValue = supplierProducts.reduce((sum, p) => sum + (p.currentStock || 0) * parseFloat(p.price || '0'), 0);
+                    
+                    return (
+                      <div key={index} className="bg-white dark:bg-slate-800 rounded-xl border border-slate-300 dark:border-slate-700 shadow-lg p-6 hover:shadow-xl transition-shadow">
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{supplier.name}</h3>
+                          <div className="flex items-center space-x-1">
+                            {[...Array(5)].map((_, i) => (
+                              <i key={i} className={`fas fa-star text-sm ${
+                                i < Math.floor(parseFloat(supplier.rating || '0')) ? 'text-yellow-500' : 'text-slate-300 dark:text-slate-600'
+                              }`}></i>
+                            ))}
+                            <span className="text-sm text-slate-600 dark:text-slate-400 ml-1">{supplier.rating || '0'}</span>
+                          </div>
+                        </div>
+                        
+                        {supplier.email && (
+                          <div className="mb-2">
+                            <p className="text-sm text-slate-600 dark:text-slate-400">
+                              <i className="fas fa-envelope mr-2"></i>
+                              {supplier.email}
+                            </p>
+                          </div>
+                        )}
+                        
+                        {supplier.phone && (
+                          <div className="mb-4">
+                            <p className="text-sm text-slate-600 dark:text-slate-400">
+                              <i className="fas fa-phone mr-2"></i>
+                              {supplier.phone}
+                            </p>
+                          </div>
+                        )}
+                        
+                        <div className="space-y-2 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-slate-600 dark:text-slate-400">Produtos:</span>
+                            <span className="font-medium text-slate-900 dark:text-slate-100">{supplierProducts.length}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-600 dark:text-slate-400">Valor Total:</span>
+                            <span className="font-medium text-slate-900 dark:text-slate-100">
+                              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(supplierValue)}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-600 dark:text-slate-400">Prazo Médio:</span>
+                            <span className="font-medium text-slate-900 dark:text-slate-100">{supplier.deliveryDays || 0} dias</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-600 dark:text-slate-400">Status:</span>
+                            <span className={`font-medium ${
+                              supplier.isActive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                            }`}>
+                              {supplier.isActive ? 'Ativo' : 'Inativo'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }) : (
+                    <div className="col-span-2 text-center py-8">
+                      <i className="fas fa-truck text-4xl text-slate-400 mb-4"></i>
+                      <p className="text-slate-500 dark:text-slate-400">Nenhum fornecedor cadastrado</p>
+                      <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">Adicione fornecedores para gerenciar a cadeia de suprimentos</p>
+                    </div>
+                  )}
                 </div>
               </div>
             )}

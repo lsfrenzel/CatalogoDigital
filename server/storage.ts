@@ -1,10 +1,4 @@
 import { 
-  users, 
-  contactSubmissions, 
-  suppliers,
-  categories,
-  products,
-  stockMovements,
   type User, 
   type InsertUser, 
   type ContactSubmission, 
@@ -18,8 +12,6 @@ import {
   type StockMovement,
   type InsertStockMovement
 } from "@shared/schema";
-import { db } from "./db";
-import { eq, desc, and, sql } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -61,6 +53,7 @@ export interface IStorage {
   deleteStockMovement(id: string): Promise<boolean>;
 }
 
+// Database storage implementation removed - using MemStorage for demo
 export class DatabaseStorage implements IStorage {
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
@@ -397,4 +390,301 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-export const storage = new DatabaseStorage();
+// In-memory storage implementation
+export class MemStorage implements IStorage {
+  private users: User[] = [];
+  private contacts: ContactSubmission[] = [];
+  private suppliersStore: Supplier[] = [];
+  private categoriesStore: Category[] = [];
+  private productsStore: Product[] = [];
+  private movementsStore: StockMovement[] = [];
+
+  // Helper method to generate IDs
+  private generateId(): string {
+    return crypto.randomUUID();
+  }
+
+  // User methods
+  async getUser(id: string): Promise<User | undefined> {
+    return this.users.find(user => user.id === id);
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    return this.users.find(user => user.username === username);
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const user: User = {
+      ...insertUser,
+      id: this.generateId(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.users.push(user);
+    return user;
+  }
+
+  async createContactSubmission(insertContact: InsertContact): Promise<ContactSubmission> {
+    const contact: ContactSubmission = {
+      ...insertContact,
+      id: this.generateId(),
+      phone: insertContact.phone || "",
+      systemOfInterest: insertContact.systemOfInterest || "",
+      message: insertContact.message || "",
+      acceptsMarketing: insertContact.acceptsMarketing || "false",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.contacts.push(contact);
+    return contact;
+  }
+
+  async getContactSubmissions(): Promise<ContactSubmission[]> {
+    return [...this.contacts].sort(
+      (a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0)
+    );
+  }
+
+  // Suppliers
+  async getSuppliers(): Promise<Supplier[]> {
+    return [...this.suppliersStore].sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  async getSupplier(id: string): Promise<Supplier | undefined> {
+    return this.suppliersStore.find(supplier => supplier.id === id);
+  }
+
+  async createSupplier(insertSupplier: InsertSupplier): Promise<Supplier> {
+    const supplier: Supplier = {
+      ...insertSupplier,
+      id: this.generateId(),
+      email: insertSupplier.email || "",
+      phone: insertSupplier.phone || "",
+      address: insertSupplier.address || "",
+      rating: insertSupplier.rating || "0",
+      deliveryDays: insertSupplier.deliveryDays || 0,
+      isActive: insertSupplier.isActive !== undefined ? insertSupplier.isActive : true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.suppliersStore.push(supplier);
+    return supplier;
+  }
+
+  async updateSupplier(id: string, updateData: Partial<InsertSupplier>): Promise<Supplier | undefined> {
+    const index = this.suppliersStore.findIndex(supplier => supplier.id === id);
+    if (index === -1) return undefined;
+    
+    this.suppliersStore[index] = {
+      ...this.suppliersStore[index],
+      ...updateData,
+      updatedAt: new Date(),
+    };
+    return this.suppliersStore[index];
+  }
+
+  async deleteSupplier(id: string): Promise<boolean> {
+    const index = this.suppliersStore.findIndex(supplier => supplier.id === id);
+    if (index === -1) return false;
+    this.suppliersStore.splice(index, 1);
+    return true;
+  }
+
+  // Categories
+  async getCategories(): Promise<Category[]> {
+    return [...this.categoriesStore].sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  async getCategory(id: string): Promise<Category | undefined> {
+    return this.categoriesStore.find(category => category.id === id);
+  }
+
+  async createCategory(insertCategory: InsertCategory): Promise<Category> {
+    const category: Category = {
+      ...insertCategory,
+      id: this.generateId(),
+      description: insertCategory.description || "",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.categoriesStore.push(category);
+    return category;
+  }
+
+  async updateCategory(id: string, updateData: Partial<InsertCategory>): Promise<Category | undefined> {
+    const index = this.categoriesStore.findIndex(category => category.id === id);
+    if (index === -1) return undefined;
+    
+    this.categoriesStore[index] = {
+      ...this.categoriesStore[index],
+      ...updateData,
+      updatedAt: new Date(),
+    };
+    return this.categoriesStore[index];
+  }
+
+  async deleteCategory(id: string): Promise<boolean> {
+    const index = this.categoriesStore.findIndex(category => category.id === id);
+    if (index === -1) return false;
+    this.categoriesStore.splice(index, 1);
+    return true;
+  }
+
+  // Products
+  async getProducts(): Promise<Product[]> {
+    return [...this.productsStore].sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  async getProduct(id: string): Promise<Product | undefined> {
+    return this.productsStore.find(product => product.id === id);
+  }
+
+  async getProductByCode(code: string): Promise<Product | undefined> {
+    return this.productsStore.find(product => product.code === code);
+  }
+
+  async createProduct(insertProduct: InsertProduct): Promise<Product> {
+    const product: Product = {
+      ...insertProduct,
+      id: this.generateId(),
+      description: insertProduct.description || "",
+      price: insertProduct.price || "0",
+      currentStock: insertProduct.currentStock || 0,
+      minimumStock: insertProduct.minimumStock || 0,
+      unit: insertProduct.unit || "un",
+      isActive: insertProduct.isActive !== undefined ? insertProduct.isActive : true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.productsStore.push(product);
+    return product;
+  }
+
+  async updateProduct(id: string, updateData: Partial<InsertProduct>): Promise<Product | undefined> {
+    const index = this.productsStore.findIndex(product => product.id === id);
+    if (index === -1) return undefined;
+    
+    this.productsStore[index] = {
+      ...this.productsStore[index],
+      ...updateData,
+      updatedAt: new Date(),
+    };
+    return this.productsStore[index];
+  }
+
+  async deleteProduct(id: string): Promise<boolean> {
+    const index = this.productsStore.findIndex(product => product.id === id);
+    if (index === -1) return false;
+    this.productsStore.splice(index, 1);
+    return true;
+  }
+
+  async updateProductStock(id: string, newStock: number): Promise<Product | undefined> {
+    const index = this.productsStore.findIndex(product => product.id === id);
+    if (index === -1) return undefined;
+    
+    this.productsStore[index] = {
+      ...this.productsStore[index],
+      currentStock: newStock,
+      updatedAt: new Date(),
+    };
+    return this.productsStore[index];
+  }
+
+  async getLowStockProducts(): Promise<Product[]> {
+    return this.productsStore.filter(product => 
+      (product.currentStock || 0) <= (product.minimumStock || 0)
+    );
+  }
+
+  // Stock Movements
+  async getStockMovements(): Promise<StockMovement[]> {
+    return [...this.movementsStore].sort((a, b) => 
+      (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0)
+    );
+  }
+
+  async getStockMovement(id: string): Promise<StockMovement | undefined> {
+    return this.movementsStore.find(movement => movement.id === id);
+  }
+
+  async getProductMovements(productId: string): Promise<StockMovement[]> {
+    return this.movementsStore
+      .filter(movement => movement.productId === productId)
+      .sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0));
+  }
+
+  async createStockMovement(insertMovement: InsertStockMovement): Promise<StockMovement> {
+    const movement: StockMovement = {
+      ...insertMovement,
+      id: this.generateId(),
+      reason: insertMovement.reason || "",
+      responsible: insertMovement.responsible || "",
+      notes: insertMovement.notes || "",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    
+    // Update product stock
+    const productIndex = this.productsStore.findIndex(p => p.id === insertMovement.productId);
+    if (productIndex !== -1) {
+      const currentStock = this.productsStore[productIndex].currentStock || 0;
+      const newStock = insertMovement.type === 'entrada' 
+        ? currentStock + insertMovement.quantity
+        : currentStock - insertMovement.quantity;
+      
+      this.productsStore[productIndex] = {
+        ...this.productsStore[productIndex],
+        currentStock: Math.max(0, newStock),
+        updatedAt: new Date(),
+      };
+    }
+    
+    this.movementsStore.push(movement);
+    return movement;
+  }
+
+  async updateStockMovement(id: string, updateData: Partial<InsertStockMovement>): Promise<StockMovement | undefined> {
+    const index = this.movementsStore.findIndex(movement => movement.id === id);
+    if (index === -1) return undefined;
+    
+    this.movementsStore[index] = {
+      ...this.movementsStore[index],
+      ...updateData,
+      updatedAt: new Date(),
+    };
+    return this.movementsStore[index];
+  }
+
+  async deleteStockMovement(id: string): Promise<boolean> {
+    const index = this.movementsStore.findIndex(movement => movement.id === id);
+    if (index === -1) return false;
+    
+    const movement = this.movementsStore[index];
+    
+    // Reverse the stock change
+    const productIndex = this.productsStore.findIndex(p => p.id === movement.productId);
+    if (productIndex !== -1) {
+      const currentStock = this.productsStore[productIndex].currentStock || 0;
+      const reversedStock = movement.type === 'entrada' 
+        ? currentStock - movement.quantity
+        : currentStock + movement.quantity;
+      
+      if (reversedStock < 0) {
+        throw new Error(`Não é possível excluir esta movimentação pois resultaria em estoque negativo. Estoque atual: ${currentStock}`);
+      }
+      
+      this.productsStore[productIndex] = {
+        ...this.productsStore[productIndex],
+        currentStock: reversedStock,
+        updatedAt: new Date(),
+      };
+    }
+    
+    this.movementsStore.splice(index, 1);
+    return true;
+  }
+}
+
+// Use MemStorage for the demo as per project guidelines
+export const storage = new MemStorage();
