@@ -74,8 +74,10 @@ export default function DemoEducation() {
   // Form states
   const [newStudent, setNewStudent] = useState<Partial<Student>>({});
   const [newCourse, setNewCourse] = useState<Partial<Course>>({});
+  const [newEvaluation, setNewEvaluation] = useState<Partial<Evaluation>>({});
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
+  const [editingEvaluation, setEditingEvaluation] = useState<Evaluation | null>(null);
 
   // Calculate dashboard data dynamically
   const educationData = {
@@ -85,7 +87,7 @@ export default function DemoEducation() {
     professorAtivos: Array.from(new Set(courses.map(c => c.professor))).length,
     aulasHoje: 23,
     avaliacoesPendentes: evaluations.filter(e => e.status === 'pendente').length,
-    taxaConclusao: `${Math.round(courses.reduce((acc, c) => acc + c.conclusao, 0) / courses.length)}%`
+    taxaConclusao: courses.length > 0 ? `${Math.round(courses.reduce((acc, c) => acc + c.conclusao, 0) / courses.length)}%` : '0%'
   };
 
   // Helper functions for CRUD operations
@@ -160,6 +162,35 @@ export default function DemoEducation() {
     toast({
       title: "Curso removido!",
       description: `${course?.nome} foi removido do catálogo.`,
+    });
+  };
+
+  const addEvaluation = (evaluation: Partial<Evaluation>) => {
+    const newEvaluation: Evaluation = {
+      id: Date.now(),
+      titulo: evaluation.titulo || '',
+      curso: evaluation.curso || '',
+      prazo: evaluation.prazo || '',
+      entregas: evaluation.entregas || 0,
+      total: evaluation.total || 0,
+      professor: evaluation.professor || '',
+      status: evaluation.status || 'pendente',
+      nota_media: evaluation.nota_media || 0
+    };
+    setEvaluations(prev => [...prev, newEvaluation]);
+    setNewEvaluation({});
+    toast({
+      title: "Avaliação criada!",
+      description: `${newEvaluation.titulo} foi adicionada ao sistema.`,
+    });
+  };
+
+  const updateEvaluation = (id: number, updates: Partial<Evaluation>) => {
+    setEvaluations(prev => prev.map(e => e.id === id ? { ...e, ...updates } : e));
+    setEditingEvaluation(null);
+    toast({
+      title: "Avaliação atualizada!",
+      description: "As informações foram atualizadas com sucesso.",
     });
   };
 
@@ -652,6 +683,15 @@ export default function DemoEducation() {
                               <Button 
                                 size="sm" 
                                 variant="outline"
+                                onClick={() => setEditingStudent(student)}
+                                data-testid={`button-edit-student-${student.id}`}
+                              >
+                                <i className="fas fa-edit mr-1"></i>
+                                Editar
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="outline"
                                 onClick={() => updateStudent(student.id, { status: student.status === 'ativo' ? 'inativo' : 'ativo' })}
                                 data-testid={`button-toggle-student-${student.id}`}
                               >
@@ -674,6 +714,87 @@ export default function DemoEducation() {
                     </Card>
                   ))}
                 </div>
+
+                {/* Edit Student Dialog */}
+                <Dialog open={!!editingStudent} onOpenChange={(open) => !open && setEditingStudent(null)}>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Editar Aluno</DialogTitle>
+                    </DialogHeader>
+                    {editingStudent && (
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="edit-nome">Nome Completo</Label>
+                          <Input
+                            id="edit-nome"
+                            value={editingStudent.nome || ''}
+                            onChange={(e) => setEditingStudent(prev => prev ? { ...prev, nome: e.target.value } : null)}
+                            data-testid="input-edit-student-name"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="edit-email">Email</Label>
+                          <Input
+                            id="edit-email"
+                            type="email"
+                            value={editingStudent.email || ''}
+                            onChange={(e) => setEditingStudent(prev => prev ? { ...prev, email: e.target.value } : null)}
+                            data-testid="input-edit-student-email"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="edit-curso">Curso</Label>
+                          <Select
+                            value={editingStudent.curso || ''}
+                            onValueChange={(value) => setEditingStudent(prev => prev ? { ...prev, curso: value } : null)}
+                          >
+                            <SelectTrigger data-testid="select-edit-student-course">
+                              <SelectValue placeholder="Selecione o curso" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Engenharia de Software">Engenharia de Software</SelectItem>
+                              <SelectItem value="Marketing Digital">Marketing Digital</SelectItem>
+                              <SelectItem value="Design Gráfico">Design Gráfico</SelectItem>
+                              <SelectItem value="Administração">Administração</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label htmlFor="edit-progresso">Progresso (%)</Label>
+                          <Input
+                            id="edit-progresso"
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={editingStudent.progresso || 0}
+                            onChange={(e) => setEditingStudent(prev => prev ? { ...prev, progresso: parseInt(e.target.value) || 0 } : null)}
+                            data-testid="input-edit-student-progress"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="edit-nota">Nota</Label>
+                          <Input
+                            id="edit-nota"
+                            type="number"
+                            min="0"
+                            max="10"
+                            step="0.1"
+                            value={editingStudent.nota || 0}
+                            onChange={(e) => setEditingStudent(prev => prev ? { ...prev, nota: parseFloat(e.target.value) || 0 } : null)}
+                            data-testid="input-edit-student-grade"
+                          />
+                        </div>
+                        <Button 
+                          onClick={() => updateStudent(editingStudent.id, editingStudent)}
+                          className="w-full bg-blue-600 hover:bg-blue-700"
+                          data-testid="button-save-edit-student"
+                        >
+                          Salvar Alterações
+                        </Button>
+                      </div>
+                    )}
+                  </DialogContent>
+                </Dialog>
               </div>
             )}
 
@@ -791,6 +912,15 @@ export default function DemoEducation() {
                             <Button 
                               size="sm" 
                               variant="outline"
+                              onClick={() => setEditingCourse(course)}
+                              data-testid={`button-edit-course-${course.id}`}
+                            >
+                              <i className="fas fa-edit mr-1"></i>
+                              Editar
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline"
                               onClick={() => updateCourse(course.id, { alunos: course.alunos + 1 })}
                               data-testid={`button-enroll-course-${course.id}`}
                             >
@@ -821,6 +951,77 @@ export default function DemoEducation() {
                     </Card>
                   ))}
                 </div>
+
+                {/* Edit Course Dialog */}
+                <Dialog open={!!editingCourse} onOpenChange={(open) => !open && setEditingCourse(null)}>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Editar Curso</DialogTitle>
+                    </DialogHeader>
+                    {editingCourse && (
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="edit-curso-nome">Nome do Curso</Label>
+                          <Input
+                            id="edit-curso-nome"
+                            value={editingCourse.nome || ''}
+                            onChange={(e) => setEditingCourse(prev => prev ? { ...prev, nome: e.target.value } : null)}
+                            data-testid="input-edit-course-name"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="edit-categoria">Categoria</Label>
+                          <Input
+                            id="edit-categoria"
+                            value={editingCourse.categoria || ''}
+                            onChange={(e) => setEditingCourse(prev => prev ? { ...prev, categoria: e.target.value } : null)}
+                            data-testid="input-edit-course-category"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="edit-professor-curso">Professor</Label>
+                          <Input
+                            id="edit-professor-curso"
+                            value={editingCourse.professor || ''}
+                            onChange={(e) => setEditingCourse(prev => prev ? { ...prev, professor: e.target.value } : null)}
+                            data-testid="input-edit-course-professor"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="edit-alunos-curso">Número de Alunos</Label>
+                          <Input
+                            id="edit-alunos-curso"
+                            type="number"
+                            min="0"
+                            value={editingCourse.alunos || 0}
+                            onChange={(e) => setEditingCourse(prev => prev ? { ...prev, alunos: parseInt(e.target.value) || 0 } : null)}
+                            data-testid="input-edit-course-students"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="edit-avaliacao-curso">Avaliação (1-5)</Label>
+                          <Input
+                            id="edit-avaliacao-curso"
+                            type="number"
+                            min="1"
+                            max="5"
+                            step="0.1"
+                            value={editingCourse.avaliacao || 0}
+                            onChange={(e) => setEditingCourse(prev => prev ? { ...prev, avaliacao: parseFloat(e.target.value) || 0 } : null)}
+                            data-testid="input-edit-course-rating"
+                          />
+                        </div>
+                        <Button 
+                          onClick={() => updateCourse(editingCourse.id, editingCourse)}
+                          className="w-full bg-purple-600 hover:bg-purple-700"
+                          data-testid="button-save-edit-course"
+                        >
+                          Salvar Alterações
+                        </Button>
+                      </div>
+                    )}
+                  </DialogContent>
+                </Dialog>
               </div>
             )}
 
@@ -829,6 +1030,84 @@ export default function DemoEducation() {
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 raleway">Centro de Avaliações</h2>
                   <div className="flex space-x-2">
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button className="bg-green-600 hover:bg-green-700" data-testid="button-add-evaluation">
+                          <i className="fas fa-plus mr-2"></i>
+                          Nova Avaliação
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Nova Avaliação</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="titulo-avaliacao">Título da Avaliação</Label>
+                            <Input
+                              id="titulo-avaliacao"
+                              value={newEvaluation.titulo || ''}
+                              onChange={(e) => setNewEvaluation(prev => ({ ...prev, titulo: e.target.value }))}
+                              data-testid="input-evaluation-title"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="curso-avaliacao">Curso</Label>
+                            <Select
+                              value={newEvaluation.curso || ''}
+                              onValueChange={(value) => setNewEvaluation(prev => ({ ...prev, curso: value }))}
+                            >
+                              <SelectTrigger data-testid="select-evaluation-course">
+                                <SelectValue placeholder="Selecione o curso" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Engenharia de Software">Engenharia de Software</SelectItem>
+                                <SelectItem value="Marketing Digital">Marketing Digital</SelectItem>
+                                <SelectItem value="Design Gráfico">Design Gráfico</SelectItem>
+                                <SelectItem value="Administração">Administração</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div>
+                            <Label htmlFor="prazo-avaliacao">Prazo</Label>
+                            <Input
+                              id="prazo-avaliacao"
+                              type="date"
+                              value={newEvaluation.prazo || ''}
+                              onChange={(e) => setNewEvaluation(prev => ({ ...prev, prazo: e.target.value }))}
+                              data-testid="input-evaluation-deadline"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="professor-avaliacao">Professor</Label>
+                            <Input
+                              id="professor-avaliacao"
+                              value={newEvaluation.professor || ''}
+                              onChange={(e) => setNewEvaluation(prev => ({ ...prev, professor: e.target.value }))}
+                              data-testid="input-evaluation-professor"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="total-avaliacao">Número Total de Alunos</Label>
+                            <Input
+                              id="total-avaliacao"
+                              type="number"
+                              min="1"
+                              value={newEvaluation.total || 0}
+                              onChange={(e) => setNewEvaluation(prev => ({ ...prev, total: parseInt(e.target.value) || 0 }))}
+                              data-testid="input-evaluation-total"
+                            />
+                          </div>
+                          <Button 
+                            onClick={() => addEvaluation(newEvaluation)}
+                            className="w-full bg-green-600 hover:bg-green-700"
+                            data-testid="button-save-evaluation"
+                          >
+                            Criar Avaliação
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                     <Button 
                       variant="outline"
                       onClick={() => {
@@ -923,6 +1202,15 @@ export default function DemoEducation() {
 
                           {/* Action Buttons */}
                           <div className="flex space-x-2 mt-4">
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => setEditingEvaluation(evaluation)}
+                              data-testid={`button-edit-evaluation-${evaluation.id}`}
+                            >
+                              <i className="fas fa-edit mr-1"></i>
+                              Editar
+                            </Button>
                             {evaluation.status === 'pendente' && evaluation.entregas > 0 && (
                               <Dialog>
                                 <DialogTrigger asChild>
@@ -1022,6 +1310,82 @@ export default function DemoEducation() {
                     </Card>
                   ))}
                 </div>
+
+                {/* Edit Evaluation Dialog */}
+                <Dialog open={!!editingEvaluation} onOpenChange={(open) => !open && setEditingEvaluation(null)}>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Editar Avaliação</DialogTitle>
+                    </DialogHeader>
+                    {editingEvaluation && (
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="edit-titulo-avaliacao">Título da Avaliação</Label>
+                          <Input
+                            id="edit-titulo-avaliacao"
+                            value={editingEvaluation.titulo || ''}
+                            onChange={(e) => setEditingEvaluation(prev => prev ? { ...prev, titulo: e.target.value } : null)}
+                            data-testid="input-edit-evaluation-title"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="edit-curso-avaliacao">Curso</Label>
+                          <Select
+                            value={editingEvaluation.curso || ''}
+                            onValueChange={(value) => setEditingEvaluation(prev => prev ? { ...prev, curso: value } : null)}
+                          >
+                            <SelectTrigger data-testid="select-edit-evaluation-course">
+                              <SelectValue placeholder="Selecione o curso" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Engenharia de Software">Engenharia de Software</SelectItem>
+                              <SelectItem value="Marketing Digital">Marketing Digital</SelectItem>
+                              <SelectItem value="Design Gráfico">Design Gráfico</SelectItem>
+                              <SelectItem value="Administração">Administração</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label htmlFor="edit-prazo-avaliacao">Prazo</Label>
+                          <Input
+                            id="edit-prazo-avaliacao"
+                            type="date"
+                            value={editingEvaluation.prazo || ''}
+                            onChange={(e) => setEditingEvaluation(prev => prev ? { ...prev, prazo: e.target.value } : null)}
+                            data-testid="input-edit-evaluation-deadline"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="edit-professor-avaliacao">Professor</Label>
+                          <Input
+                            id="edit-professor-avaliacao"
+                            value={editingEvaluation.professor || ''}
+                            onChange={(e) => setEditingEvaluation(prev => prev ? { ...prev, professor: e.target.value } : null)}
+                            data-testid="input-edit-evaluation-professor"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="edit-total-avaliacao">Número Total de Alunos</Label>
+                          <Input
+                            id="edit-total-avaliacao"
+                            type="number"
+                            min="1"
+                            value={editingEvaluation.total || 0}
+                            onChange={(e) => setEditingEvaluation(prev => prev ? { ...prev, total: parseInt(e.target.value) || 0 } : null)}
+                            data-testid="input-edit-evaluation-total"
+                          />
+                        </div>
+                        <Button 
+                          onClick={() => updateEvaluation(editingEvaluation.id, editingEvaluation)}
+                          className="w-full bg-green-600 hover:bg-green-700"
+                          data-testid="button-save-edit-evaluation"
+                        >
+                          Salvar Alterações
+                        </Button>
+                      </div>
+                    )}
+                  </DialogContent>
+                </Dialog>
               </div>
             )}
           </div>
