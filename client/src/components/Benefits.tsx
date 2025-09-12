@@ -14,7 +14,7 @@ export default function Benefits() {
     },
     {
       id: 'profit-growth',
-      icon: 'fas fa-chart-trend-up',
+      icon: 'fas fa-chart-line',
       title: 'Aumento de Lucros',
       description: 'Otimização de recursos e processos que resultam em aumento médio de 35% na margem de lucro'
     },
