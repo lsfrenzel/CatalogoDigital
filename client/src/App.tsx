@@ -26,6 +26,7 @@ function Router() {
       <Route path="/sistema/crm" component={SistemaCRM} />
       <Route path="/sistema/restaurant" component={SistemaRestaurant} />
       <Route path="/sistema/financial" component={SistemaFinancial} />
+      <Route path="/sistema/inventory" component={DemoInventory} />
       <Route path="/sistema-inventory" component={DemoInventory} />
       <Route path="/sistema/education" component={SistemaEducation} />
       <Route path="/demo/erp" component={DemoERP} />
