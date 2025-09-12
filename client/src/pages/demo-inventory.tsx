@@ -28,9 +28,14 @@ function CategoryForm({ onSubmit }: { onSubmit: (data: z.infer<typeof insertCate
     },
   });
 
+  const handleSubmit = (data: z.infer<typeof insertCategorySchema>) => {
+    console.log('CategoryForm: Submitting data:', data);
+    onSubmit(data);
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
         <FormField
           control={form.control}
           name="name"
@@ -57,7 +62,12 @@ function CategoryForm({ onSubmit }: { onSubmit: (data: z.infer<typeof insertCate
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full" data-testid="button-submit-categoria">
+        <Button 
+          type="submit" 
+          className="w-full" 
+          data-testid="button-submit-categoria"
+          onClick={() => console.log('CategoryForm: Submit button clicked', form.formState)}
+        >
           Adicionar Categoria
         </Button>
       </form>
@@ -763,20 +773,26 @@ export default function DemoInventory() {
 
   const createCategoryMutation = useMutation({
     mutationFn: async (data: z.infer<typeof insertCategorySchema>) => {
+      console.log('createCategoryMutation: Starting mutation with data:', data);
       const response = await fetch('/api/categories', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
+      console.log('createCategoryMutation: Response received:', response.status, response.ok);
       if (!response.ok) throw new Error('Erro ao criar categoria');
-      return response.json();
+      const result = await response.json();
+      console.log('createCategoryMutation: Response data:', result);
+      return result;
     },
     onSuccess: () => {
+      console.log('createCategoryMutation: Success callback triggered');
       queryClient.invalidateQueries({ queryKey: ['/api/categories'] });
       toast({ title: "Categoria criada com sucesso!" });
       setIsDialogOpen(null);
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('createCategoryMutation: Error callback triggered:', error);
       toast({ title: "Erro ao criar categoria", variant: "destructive" });
     },
   });
