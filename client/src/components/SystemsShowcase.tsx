@@ -104,7 +104,7 @@ export default function SystemsShowcase() {
           {systems.map((system) => (
             <Link 
               key={system.id}
-              href={system.id === 'ecommerce' ? '/sistema-ecommerce' : `/sistema/${system.id}`}
+              href={`/sistema/${system.id}`}
               className="fade-in hover-lift bg-card border border-border rounded-xl p-8 group block transition-all hover:scale-105 hover:shadow-xl"
               data-testid={`system-card-${system.id}`}
             >

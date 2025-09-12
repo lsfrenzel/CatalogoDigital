@@ -9,6 +9,15 @@ import CustomSystemsMessage from "@/components/CustomSystemsMessage";
 
 export default function Home() {
   useEffect(() => {
+    // Get all fade-in elements
+    const els = Array.from(document.querySelectorAll('.fade-in')) as HTMLElement[];
+    
+    // If IntersectionObserver is not available, show all elements
+    if (typeof window === 'undefined' || !('IntersectionObserver' in window)) {
+      els.forEach(el => el.classList.add('visible'));
+      return;
+    }
+
     // Intersection Observer for fade-in animations
     const observerOptions = {
       threshold: 0.1,
@@ -24,7 +33,7 @@ export default function Home() {
     }, observerOptions);
 
     // Observe all fade-in elements
-    document.querySelectorAll('.fade-in').forEach((el) => {
+    els.forEach((el) => {
       observer.observe(el);
     });
 
