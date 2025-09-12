@@ -96,9 +96,6 @@ export default function DemoFinancial() {
     { categoria: 'Lucro', atual: 222220, anterior: 140000, meta: 300000 }
   ];
 
-  // Dynamic financial data
-  const financialData = calculateFinancialData();
-
   // Utility to calculate status and days
   const calculateStatus = (vencimentoDate: Date) => {
     const hoje = new Date();
@@ -148,6 +145,9 @@ export default function DemoFinancial() {
       fluxoCaixa: lucroLiquido > 0 ? `+${((lucroLiquido/totalDespesas)*100).toFixed(1)}%` : `${((lucroLiquido/totalDespesas)*100).toFixed(1)}%`
     };
   };
+
+  // Dynamic financial data
+  const financialData = calculateFinancialData();
 
   // Add new transaction function
   const addTransaction = (transaction: any) => {
