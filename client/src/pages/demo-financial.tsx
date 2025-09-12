@@ -10,7 +10,32 @@ export default function DemoFinancial() {
   const [selectedPeriod, setSelectedPeriod] = useState('mes');
   const [selectedAccount, setSelectedAccount] = useState<any>(null);
   const [showAccountModal, setShowAccountModal] = useState(false);
+  const [showTransactionModal, setShowTransactionModal] = useState(false);
+  const [showReceivableModal, setShowReceivableModal] = useState(false);
+  const [showPayableModal, setShowPayableModal] = useState(false);
   const { toast } = useToast();
+
+  // Dynamic data states
+  const [contasReceber, setContasReceber] = useState([
+    { cliente: "TechCorp Ltda", valor: "R$ 45.000", vencimento: "15/11/2024", status: "vencendo", dias: 2 },
+    { cliente: "Innovation Hub", valor: "R$ 28.900", vencimento: "20/11/2024", status: "normal", dias: 7 },
+    { cliente: "Digital Solutions", valor: "R$ 67.500", vencimento: "25/11/2024", status: "normal", dias: 12 },
+    { cliente: "StartupXYZ", valor: "R$ 15.670", vencimento: "10/11/2024", status: "vencido", dias: -3 }
+  ]);
+
+  const [contasPagar, setContasPagar] = useState([
+    { fornecedor: "Energia Elétrica", valor: "R$ 3.450", vencimento: "18/11/2024", status: "vencendo", categoria: "Utilities" },
+    { fornecedor: "Telefonia/Internet", valor: "R$ 1.890", vencimento: "22/11/2024", status: "normal", categoria: "Telecomunicações" },
+    { fornecedor: "Aluguel Escritório", valor: "R$ 12.000", vencimento: "30/11/2024", status: "normal", categoria: "Imóveis" },
+    { fornecedor: "Fornecedor ABC", valor: "R$ 8.750", vencimento: "12/11/2024", status: "vencido", categoria: "Suprimentos" }
+  ]);
+
+  const [movimentacoes, setMovimentacoes] = useState([
+    { tipo: "entrada", descricao: "Pagamento - TechCorp Ltda", valor: "R$ 45.000", data: "13/11", categoria: "Vendas" },
+    { tipo: "saida", descricao: "Pagamento Salários", valor: "R$ 28.500", data: "10/11", categoria: "Folha de Pagamento" },
+    { tipo: "entrada", descricao: "Transferência Bancária", valor: "R$ 12.300", data: "08/11", categoria: "Transferências" },
+    { tipo: "saida", descricao: "Fornecedor Material", valor: "R$ 5.670", data: "07/11", categoria: "Compras" }
+  ]);
 
   // Open account detail modal
   const openAccountModal = (account: any) => {
@@ -71,36 +96,100 @@ export default function DemoFinancial() {
     { categoria: 'Lucro', atual: 222220, anterior: 140000, meta: 300000 }
   ];
 
-  const financialData = {
-    saldoTotal: "R$ 2.847.650",
-    receitasMes: "R$ 456.780",
-    despesasMes: "R$ 234.560",
-    lucroLiquido: "R$ 222.220",
-    contasReceber: "R$ 145.600",
-    contasPagar: "R$ 89.340",
-    fluxoCaixa: "+15.3%"
+  // Dynamic financial data
+  const financialData = calculateFinancialData();
+
+  // Utility to calculate status and days
+  const calculateStatus = (vencimentoDate: Date) => {
+    const hoje = new Date();
+    const diffTime = vencimentoDate.getTime() - hoje.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    const status = diffDays < 0 ? 'vencido' : diffDays <= 5 ? 'vencendo' : 'normal';
+    return { status, dias: diffDays };
   };
 
-  const contasReceber = [
-    { cliente: "TechCorp Ltda", valor: "R$ 45.000", vencimento: "15/11/2024", status: "vencendo", dias: 2 },
-    { cliente: "Innovation Hub", valor: "R$ 28.900", vencimento: "20/11/2024", status: "normal", dias: 7 },
-    { cliente: "Digital Solutions", valor: "R$ 67.500", vencimento: "25/11/2024", status: "normal", dias: 12 },
-    { cliente: "StartupXYZ", valor: "R$ 15.670", vencimento: "10/11/2024", status: "vencido", dias: -3 }
-  ];
+  // Utility to extract numeric value from BRL string
+  const extractValue = (valorStr: string) => {
+    return parseFloat(valorStr.replace('R$ ', '').replace(/\./g, '').replace(',', '.'));
+  };
 
-  const contasPagar = [
-    { fornecedor: "Energia Elétrica", valor: "R$ 3.450", vencimento: "18/11/2024", status: "vencendo", categoria: "Utilities" },
-    { fornecedor: "Telefonia/Internet", valor: "R$ 1.890", vencimento: "22/11/2024", status: "normal", categoria: "Telecomunicações" },
-    { fornecedor: "Aluguel Escritório", valor: "R$ 12.000", vencimento: "30/11/2024", status: "normal", categoria: "Imóveis" },
-    { fornecedor: "Fornecedor ABC", valor: "R$ 8.750", vencimento: "12/11/2024", status: "vencido", categoria: "Suprimentos" }
-  ];
+  // Utility to format BRL
+  const formatBRL = (value: number) => {
+    return `R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+  };
 
-  const movimentacoes = [
-    { tipo: "entrada", descricao: "Pagamento - TechCorp Ltda", valor: "R$ 45.000", data: "13/11", categoria: "Vendas" },
-    { tipo: "saida", descricao: "Pagamento Salários", valor: "R$ 28.500", data: "10/11", categoria: "Folha de Pagamento" },
-    { tipo: "entrada", descricao: "Transferência Bancária", valor: "R$ 12.300", data: "08/11", categoria: "Transferências" },
-    { tipo: "saida", descricao: "Fornecedor Material", valor: "R$ 5.670", data: "07/11", categoria: "Compras" }
-  ];
+  // Calculate dynamic financial data
+  const calculateFinancialData = () => {
+    const totalReceitas = movimentacoes
+      .filter(mov => mov.tipo === 'entrada')
+      .reduce((sum, mov) => sum + extractValue(mov.valor), 0);
+    
+    const totalDespesas = movimentacoes
+      .filter(mov => mov.tipo === 'saida')
+      .reduce((sum, mov) => sum + extractValue(mov.valor), 0);
+    
+    const totalReceber = contasReceber
+      .reduce((sum, conta) => sum + extractValue(conta.valor), 0);
+    
+    const totalPagar = contasPagar
+      .reduce((sum, conta) => sum + extractValue(conta.valor), 0);
+    
+    const saldoTotal = 2847650 + totalReceitas - totalDespesas; // Base + dynamic
+    const lucroLiquido = totalReceitas - totalDespesas;
+    
+    return {
+      saldoTotal: formatBRL(saldoTotal),
+      receitasMes: formatBRL(totalReceitas),
+      despesasMes: formatBRL(totalDespesas),
+      lucroLiquido: formatBRL(lucroLiquido),
+      contasReceber: formatBRL(totalReceber),
+      contasPagar: formatBRL(totalPagar),
+      fluxoCaixa: lucroLiquido > 0 ? `+${((lucroLiquido/totalDespesas)*100).toFixed(1)}%` : `${((lucroLiquido/totalDespesas)*100).toFixed(1)}%`
+    };
+  };
+
+  // Add new transaction function
+  const addTransaction = (transaction: any) => {
+    setMovimentacoes([transaction, ...movimentacoes]);
+    toast({
+      title: "Transação Adicionada",
+      description: `Nova transação de ${transaction.tipo} no valor de ${transaction.valor} foi registrada.`
+    });
+  };
+
+  // Add new receivable function
+  const addReceivable = (receivable: any) => {
+    setContasReceber([receivable, ...contasReceber]);
+    toast({
+      title: "Conta a Receber Adicionada",
+      description: `Nova conta a receber de ${receivable.cliente} no valor de ${receivable.valor} foi registrada.`
+    });
+  };
+
+  // Add new payable function
+  const addPayable = (payable: any) => {
+    setContasPagar([payable, ...contasPagar]);
+    toast({
+      title: "Conta a Pagar Adicionada",
+      description: `Nova conta a pagar para ${payable.fornecedor} no valor de ${payable.valor} foi registrada.`
+    });
+  };
+
+  // Export PDF function
+  const exportPDF = () => {
+    toast({
+      title: "Relatório Gerado",
+      description: "O relatório financeiro em PDF foi gerado e está sendo baixado."
+    });
+    // Simulate PDF download
+    setTimeout(() => {
+      const link = document.createElement('a');
+      link.href = 'data:application/pdf;base64,JVBERi0xLjQKJdPr6eEKMSAwIG9iago8PAovVHlwZSAvQ2F0YWxvZwovUGFnZXMgMiAwIFIKPj4KZW5kb2JqCjIgMCBvYmoKPDwKL1R5cGUgL1BhZ2VzCi9LaWRzIFszIDAgUl0KL0NvdW50IDEKL01lZGlhQm94IFswIDAgNjEyIDc5Ml0KPj4KZW5kb2JqCjMgMCBvYmoKPDwKL1R5cGUgL1BhZ2UKL1BhcmVudCAyIDAgUgovUmVzb3VyY2VzIDw8Cj4+Ci9Db250ZW50cyA0IDAgUgo+PgplbmRvYmoKNCAwIG9iago8PAovTGVuZ3RoIDQ0Cj4+CnN0cmVhbQpCVAovRjEgMTIgVGYKNzIgNzIwIFRkCihSZWxhdGNyaW8gRmluYW5jZWlybyBUZWNoU29sdXRpb25zKSBUagpFVAplbmRzdHJlYW0KZW5kb2JqCnhyZWYKMCA1CjAwMDAwMDAwMDAgNjU1MzUgZgowMDAwMDAwMDA5IDAwMDAwIG4KMDAwMDAwMDA1OCAwMDAwMCBuCjAwMDAwMDAxMTUgMDAwMDAgbgowMDAwMDAwMjA5IDAwMDAwIG4KdHJhaWxlcgo8PAovU2l6ZSA1Ci9Sb290IDEgMCBSCj4+CnN0YXJ0eHJlZgozMDcKJSVFT0Y=';
+      link.download = 'relatorio-financeiro-techsolutions.pdf';
+      link.click();
+    }, 1000);
+  };
 
   const indicators = [
     { nome: "ROI", valor: "23.5%", variacao: "+2.1%", status: "up" },
@@ -607,12 +696,7 @@ export default function DemoFinancial() {
                   </div>
                   <div className="flex items-center space-x-3">
                     <button 
-                      onClick={() => {
-                        toast({ 
-                          title: "Nova Transação", 
-                          description: "Funcionalidade para adicionar nova transação financeira em desenvolvimento."
-                        });
-                      }}
+                      onClick={() => setShowTransactionModal(true)}
                       className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition-colors" 
                       data-testid="button-add-transaction"
                     >
@@ -692,12 +776,7 @@ export default function DemoFinancial() {
                   </div>
                   <div className="flex items-center space-x-3">
                     <button 
-                      onClick={() => {
-                        toast({ 
-                          title: "Nova Conta a Receber", 
-                          description: "Modal para cadastrar nova conta a receber abriria aqui."
-                        });
-                      }}
+                      onClick={() => setShowReceivableModal(true)}
                       className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm transition-colors" 
                       data-testid="button-add-receivable"
                     >
@@ -705,12 +784,7 @@ export default function DemoFinancial() {
                       Nova Conta a Receber
                     </button>
                     <button 
-                      onClick={() => {
-                        toast({ 
-                          title: "Nova Conta a Pagar", 
-                          description: "Modal para cadastrar nova conta a pagar abriria aqui."
-                        });
-                      }}
+                      onClick={() => setShowPayableModal(true)}
                       className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm transition-colors" 
                       data-testid="button-add-payable"
                     >
@@ -837,12 +911,7 @@ export default function DemoFinancial() {
                   </div>
                   <div className="flex items-center space-x-3">
                     <button 
-                      onClick={() => {
-                        toast({ 
-                          title: "Exportar PDF", 
-                          description: "Relatório financeiro seria gerado e baixado em formato PDF."
-                        });
-                      }}
+                      onClick={exportPDF}
                       className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm transition-colors" 
                       data-testid="button-generate-report"
                     >
@@ -1030,6 +1099,279 @@ export default function DemoFinancial() {
                       </button>
                     </div>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* Transaction Modal */}
+            {showTransactionModal && (
+              <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" data-testid="transaction-modal">
+                <div className="bg-blue-800/90 backdrop-blur-sm rounded-xl border border-blue-600/20 max-w-lg w-full p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-bold text-white raleway">Nova Transação</h3>
+                    <button 
+                      onClick={() => setShowTransactionModal(false)}
+                      className="text-blue-200 hover:text-white transition-colors"
+                      data-testid="button-close-transaction-modal"
+                    >
+                      <i className="fas fa-times text-xl"></i>
+                    </button>
+                  </div>
+                  
+                  <form onSubmit={(e) => {
+                    e.preventDefault();
+                    const formData = new FormData(e.currentTarget);
+                    const transaction = {
+                      tipo: formData.get('tipo'),
+                      descricao: formData.get('descricao'),
+                      valor: formatBRL(parseFloat(formData.get('valor') as string)),
+                      data: new Date().toLocaleDateString('pt-BR').slice(0, 5),
+                      categoria: formData.get('categoria')
+                    };
+                    addTransaction(transaction);
+                    setShowTransactionModal(false);
+                  }} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-blue-200 text-sm mb-2">Tipo</label>
+                        <select name="tipo" required className="w-full bg-blue-700/30 border border-blue-600/30 rounded-lg px-3 py-2 text-white">
+                          <option value="entrada">Entrada</option>
+                          <option value="saida">Saída</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-blue-200 text-sm mb-2">Valor</label>
+                        <input 
+                          name="valor" 
+                          type="number" 
+                          step="0.01" 
+                          required 
+                          placeholder="0.00" 
+                          className="w-full bg-blue-700/30 border border-blue-600/30 rounded-lg px-3 py-2 text-white placeholder-blue-300"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-blue-200 text-sm mb-2">Descrição</label>
+                      <input 
+                        name="descricao" 
+                        type="text" 
+                        required 
+                        placeholder="Ex: Pagamento de cliente" 
+                        className="w-full bg-blue-700/30 border border-blue-600/30 rounded-lg px-3 py-2 text-white placeholder-blue-300"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-blue-200 text-sm mb-2">Categoria</label>
+                      <input 
+                        name="categoria" 
+                        type="text" 
+                        required 
+                        placeholder="Ex: Vendas, Compras, etc." 
+                        className="w-full bg-blue-700/30 border border-blue-600/30 rounded-lg px-3 py-2 text-white placeholder-blue-300"
+                      />
+                    </div>
+                    <div className="flex space-x-3 pt-4 border-t border-blue-600/30">
+                      <button 
+                        type="submit"
+                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-sm transition-colors"
+                        data-testid="button-save-transaction"
+                      >
+                        <i className="fas fa-plus mr-2"></i>
+                        Adicionar Transação
+                      </button>
+                      <button 
+                        type="button"
+                        onClick={() => setShowTransactionModal(false)}
+                        className="px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg text-sm transition-colors"
+                        data-testid="button-cancel-transaction"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* Receivable Modal */}
+            {showReceivableModal && (
+              <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" data-testid="receivable-modal">
+                <div className="bg-blue-800/90 backdrop-blur-sm rounded-xl border border-blue-600/20 max-w-lg w-full p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-bold text-white raleway">Nova Conta a Receber</h3>
+                    <button 
+                      onClick={() => setShowReceivableModal(false)}
+                      className="text-blue-200 hover:text-white transition-colors"
+                      data-testid="button-close-receivable-modal"
+                    >
+                      <i className="fas fa-times text-xl"></i>
+                    </button>
+                  </div>
+                  
+                  <form onSubmit={(e) => {
+                    e.preventDefault();
+                    const formData = new FormData(e.currentTarget);
+                    const vencimento = new Date(formData.get('vencimento') as string);
+                    const { status, dias } = calculateStatus(vencimento);
+                    
+                    const receivable = {
+                      cliente: formData.get('cliente'),
+                      valor: formatBRL(parseFloat(formData.get('valor') as string)),
+                      vencimento: vencimento.toLocaleDateString('pt-BR'),
+                      status,
+                      dias
+                    };
+                    addReceivable(receivable);
+                    setShowReceivableModal(false);
+                  }} className="space-y-4">
+                    <div>
+                      <label className="block text-blue-200 text-sm mb-2">Cliente</label>
+                      <input 
+                        name="cliente" 
+                        type="text" 
+                        required 
+                        placeholder="Nome do cliente" 
+                        className="w-full bg-blue-700/30 border border-blue-600/30 rounded-lg px-3 py-2 text-white placeholder-blue-300"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-blue-200 text-sm mb-2">Valor</label>
+                        <input 
+                          name="valor" 
+                          type="number" 
+                          step="0.01" 
+                          required 
+                          placeholder="0.00" 
+                          className="w-full bg-blue-700/30 border border-blue-600/30 rounded-lg px-3 py-2 text-white placeholder-blue-300"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-blue-200 text-sm mb-2">Vencimento</label>
+                        <input 
+                          name="vencimento" 
+                          type="date" 
+                          required 
+                          className="w-full bg-blue-700/30 border border-blue-600/30 rounded-lg px-3 py-2 text-white"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex space-x-3 pt-4 border-t border-blue-600/30">
+                      <button 
+                        type="submit"
+                        className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg text-sm transition-colors"
+                        data-testid="button-save-receivable"
+                      >
+                        <i className="fas fa-plus mr-2"></i>
+                        Adicionar Conta a Receber
+                      </button>
+                      <button 
+                        type="button"
+                        onClick={() => setShowReceivableModal(false)}
+                        className="px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg text-sm transition-colors"
+                        data-testid="button-cancel-receivable"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* Payable Modal */}
+            {showPayableModal && (
+              <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" data-testid="payable-modal">
+                <div className="bg-blue-800/90 backdrop-blur-sm rounded-xl border border-blue-600/20 max-w-lg w-full p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-bold text-white raleway">Nova Conta a Pagar</h3>
+                    <button 
+                      onClick={() => setShowPayableModal(false)}
+                      className="text-blue-200 hover:text-white transition-colors"
+                      data-testid="button-close-payable-modal"
+                    >
+                      <i className="fas fa-times text-xl"></i>
+                    </button>
+                  </div>
+                  
+                  <form onSubmit={(e) => {
+                    e.preventDefault();
+                    const formData = new FormData(e.currentTarget);
+                    const vencimento = new Date(formData.get('vencimento') as string);
+                    const { status } = calculateStatus(vencimento);
+                    
+                    const payable = {
+                      fornecedor: formData.get('fornecedor'),
+                      valor: formatBRL(parseFloat(formData.get('valor') as string)),
+                      vencimento: vencimento.toLocaleDateString('pt-BR'),
+                      status,
+                      categoria: formData.get('categoria')
+                    };
+                    addPayable(payable);
+                    setShowPayableModal(false);
+                  }} className="space-y-4">
+                    <div>
+                      <label className="block text-blue-200 text-sm mb-2">Fornecedor</label>
+                      <input 
+                        name="fornecedor" 
+                        type="text" 
+                        required 
+                        placeholder="Nome do fornecedor" 
+                        className="w-full bg-blue-700/30 border border-blue-600/30 rounded-lg px-3 py-2 text-white placeholder-blue-300"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-blue-200 text-sm mb-2">Valor</label>
+                        <input 
+                          name="valor" 
+                          type="number" 
+                          step="0.01" 
+                          required 
+                          placeholder="0.00" 
+                          className="w-full bg-blue-700/30 border border-blue-600/30 rounded-lg px-3 py-2 text-white placeholder-blue-300"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-blue-200 text-sm mb-2">Vencimento</label>
+                        <input 
+                          name="vencimento" 
+                          type="date" 
+                          required 
+                          className="w-full bg-blue-700/30 border border-blue-600/30 rounded-lg px-3 py-2 text-white"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-blue-200 text-sm mb-2">Categoria</label>
+                      <input 
+                        name="categoria" 
+                        type="text" 
+                        required 
+                        placeholder="Ex: Utilities, Suprimentos, etc." 
+                        className="w-full bg-blue-700/30 border border-blue-600/30 rounded-lg px-3 py-2 text-white placeholder-blue-300"
+                      />
+                    </div>
+                    <div className="flex space-x-3 pt-4 border-t border-blue-600/30">
+                      <button 
+                        type="submit"
+                        className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg text-sm transition-colors"
+                        data-testid="button-save-payable"
+                      >
+                        <i className="fas fa-plus mr-2"></i>
+                        Adicionar Conta a Pagar
+                      </button>
+                      <button 
+                        type="button"
+                        onClick={() => setShowPayableModal(false)}
+                        className="px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg text-sm transition-colors"
+                        data-testid="button-cancel-payable"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </form>
                 </div>
               </div>
             )}
