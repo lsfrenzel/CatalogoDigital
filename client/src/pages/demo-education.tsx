@@ -327,7 +327,7 @@ export default function DemoEducation() {
   return (
     <>
       <Header />
-      <div className="min-h-screen bg-white dark:bg-slate-900">
+      <div className="min-h-screen bg-green-900 dark:bg-green-950">
         {/* Demo Header */}
         <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 shadow-sm">
           <div className="max-w-7xl mx-auto px-6 py-4">
