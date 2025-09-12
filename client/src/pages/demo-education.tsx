@@ -45,6 +45,18 @@ interface Evaluation {
   nota_media: number;
 }
 
+interface Professor {
+  id: number;
+  nome: string;
+  email: string;
+  departamento: string;
+  disciplinas: string[];
+  telefone: string;
+  status: 'ativo' | 'inativo';
+  dataContratacao: string;
+  titulacao: string;
+}
+
 export default function DemoEducation() {
   const [selectedModule, setSelectedModule] = useState('dashboard');
   const { toast } = useToast();
@@ -71,20 +83,31 @@ export default function DemoEducation() {
     { id: 4, titulo: "Plano de Negócios", curso: "Administração", prazo: "25/11/2024", entregas: 23, total: 41, professor: "Prof. Carlos Lima", status: "pendente", nota_media: 0 }
   ]);
 
+  const [professors, setProfessors] = useState<Professor[]>([
+    { id: 1, nome: "João Silva", email: "joao.silva@universidade.edu", departamento: "Tecnologia", disciplinas: ["Engenharia de Software", "Banco de Dados"], telefone: "(11) 99999-0001", status: "ativo", dataContratacao: "2020-03-15", titulacao: "Doutor" },
+    { id: 2, nome: "Ana Costa", email: "ana.costa@universidade.edu", departamento: "Marketing", disciplinas: ["Marketing Digital", "Estratégia de Marketing"], telefone: "(11) 99999-0002", status: "ativo", dataContratacao: "2019-08-22", titulacao: "Mestre" },
+    { id: 3, nome: "Maria Santos", email: "maria.santos@universidade.edu", departamento: "Design", disciplinas: ["Design Gráfico", "UX/UI Design"], telefone: "(11) 99999-0003", status: "ativo", dataContratacao: "2021-01-10", titulacao: "Especialista" },
+    { id: 4, nome: "Carlos Lima", email: "carlos.lima@universidade.edu", departamento: "Negócios", disciplinas: ["Administração", "Gestão Empresarial"], telefone: "(11) 99999-0004", status: "ativo", dataContratacao: "2018-06-30", titulacao: "Doutor" },
+    { id: 5, nome: "Patricia Oliveira", email: "patricia.oliveira@universidade.edu", departamento: "Tecnologia", disciplinas: ["Programação Web", "Desenvolvimento Mobile"], telefone: "(11) 99999-0005", status: "inativo", dataContratacao: "2022-02-14", titulacao: "Mestre" }
+  ]);
+
   // Form states
   const [newStudent, setNewStudent] = useState<Partial<Student>>({});
   const [newCourse, setNewCourse] = useState<Partial<Course>>({});
   const [newEvaluation, setNewEvaluation] = useState<Partial<Evaluation>>({});
+  const [newProfessor, setNewProfessor] = useState<Partial<Professor>>({});
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
   const [editingEvaluation, setEditingEvaluation] = useState<Evaluation | null>(null);
+  const [editingProfessor, setEditingProfessor] = useState<Professor | null>(null);
 
   // Calculate dashboard data dynamically
   const educationData = {
     totalAlunos: students.length.toString(),
     alunosAtivos: students.filter(s => s.status === 'ativo').length.toString(),
     cursosDisponiveis: courses.filter(c => c.status === 'ativo').length,
-    professorAtivos: Array.from(new Set(courses.map(c => c.professor))).length,
+    professorAtivos: professors.filter(p => p.status === 'ativo').length,
+    totalProfessores: professors.length,
     aulasHoje: 23,
     avaliacoesPendentes: evaluations.filter(e => e.status === 'pendente').length,
     taxaConclusao: courses.length > 0 ? `${Math.round(courses.reduce((acc, c) => acc + c.conclusao, 0) / courses.length)}%` : '0%'
@@ -201,6 +224,45 @@ export default function DemoEducation() {
     toast({
       title: "Avaliação corrigida!",
       description: `Nota média atribuída: ${nota.toFixed(1)}`,
+    });
+  };
+
+  // Professor CRUD functions
+  const addProfessor = (professor: Partial<Professor>) => {
+    const newProfessor: Professor = {
+      id: Date.now(),
+      nome: professor.nome || '',
+      email: professor.email || '',
+      departamento: professor.departamento || '',
+      disciplinas: professor.disciplinas || [],
+      telefone: professor.telefone || '',
+      status: professor.status || 'ativo',
+      dataContratacao: professor.dataContratacao || new Date().toISOString().split('T')[0],
+      titulacao: professor.titulacao || ''
+    };
+    setProfessors(prev => [...prev, newProfessor]);
+    setNewProfessor({});
+    toast({
+      title: "Professor cadastrado!",
+      description: `${newProfessor.nome} foi adicionado ao quadro docente.`,
+    });
+  };
+
+  const updateProfessor = (id: number, updates: Partial<Professor>) => {
+    setProfessors(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
+    setEditingProfessor(null);
+    toast({
+      title: "Professor atualizado!",
+      description: "As informações foram atualizadas com sucesso.",
+    });
+  };
+
+  const deleteProfessor = (id: number) => {
+    const professor = professors.find(p => p.id === id);
+    setProfessors(prev => prev.filter(p => p.id !== id));
+    toast({
+      title: "Professor removido!",
+      description: `${professor?.nome} foi removido do quadro docente.`,
     });
   };
 
@@ -351,6 +413,18 @@ export default function DemoEducation() {
                 >
                   <i className="fas fa-clipboard-check w-4"></i>
                   <span>Avaliações</span>
+                </button>
+                <button
+                  onClick={() => setSelectedModule('professores')}
+                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                    selectedModule === 'professores' 
+                      ? 'bg-indigo-600 text-white' 
+                      : 'text-slate-600 dark:text-slate-400 hover:bg-indigo-50 dark:hover:bg-slate-700'
+                  }`}
+                  data-testid="nav-professors"
+                >
+                  <i className="fas fa-chalkboard-teacher w-4"></i>
+                  <span>Professores</span>
                 </button>
               </nav>
 
@@ -1379,6 +1453,292 @@ export default function DemoEducation() {
                           onClick={() => updateEvaluation(editingEvaluation.id, editingEvaluation)}
                           className="w-full bg-green-600 hover:bg-green-700"
                           data-testid="button-save-edit-evaluation"
+                        >
+                          Salvar Alterações
+                        </Button>
+                      </div>
+                    )}
+                  </DialogContent>
+                </Dialog>
+              </div>
+            )}
+
+            {/* Professores Section */}
+            {selectedModule === 'professores' && (
+              <div>
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 raleway">Gestão do Corpo Docente</h2>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button className="bg-indigo-600 hover:bg-indigo-700" data-testid="button-add-professor">
+                        <i className="fas fa-plus mr-2"></i>
+                        Cadastrar Professor
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Novo Professor</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="nome-professor">Nome Completo</Label>
+                          <Input
+                            id="nome-professor"
+                            value={newProfessor.nome || ''}
+                            onChange={(e) => setNewProfessor(prev => ({ ...prev, nome: e.target.value }))}
+                            data-testid="input-professor-name"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="email-professor">Email Institucional</Label>
+                          <Input
+                            id="email-professor"
+                            type="email"
+                            value={newProfessor.email || ''}
+                            onChange={(e) => setNewProfessor(prev => ({ ...prev, email: e.target.value }))}
+                            data-testid="input-professor-email"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="departamento-professor">Departamento</Label>
+                          <Select value={newProfessor.departamento} onValueChange={(value) => setNewProfessor(prev => ({ ...prev, departamento: value }))}>
+                            <SelectTrigger data-testid="select-professor-department">
+                              <SelectValue placeholder="Selecione o departamento" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Tecnologia">Tecnologia</SelectItem>
+                              <SelectItem value="Marketing">Marketing</SelectItem>
+                              <SelectItem value="Design">Design</SelectItem>
+                              <SelectItem value="Negócios">Negócios</SelectItem>
+                              <SelectItem value="Humanas">Ciências Humanas</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label htmlFor="telefone-professor">Telefone</Label>
+                          <Input
+                            id="telefone-professor"
+                            value={newProfessor.telefone || ''}
+                            onChange={(e) => setNewProfessor(prev => ({ ...prev, telefone: e.target.value }))}
+                            placeholder="(11) 99999-9999"
+                            data-testid="input-professor-phone"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="titulacao-professor">Titulação</Label>
+                          <Select value={newProfessor.titulacao} onValueChange={(value) => setNewProfessor(prev => ({ ...prev, titulacao: value }))}>
+                            <SelectTrigger data-testid="select-professor-degree">
+                              <SelectValue placeholder="Selecione a titulação" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Especialista">Especialista</SelectItem>
+                              <SelectItem value="Mestre">Mestre</SelectItem>
+                              <SelectItem value="Doutor">Doutor</SelectItem>
+                              <SelectItem value="Pós-doutor">Pós-doutor</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label htmlFor="data-contratacao">Data de Contratação</Label>
+                          <Input
+                            id="data-contratacao"
+                            type="date"
+                            value={newProfessor.dataContratacao || ''}
+                            onChange={(e) => setNewProfessor(prev => ({ ...prev, dataContratacao: e.target.value }))}
+                            data-testid="input-professor-hiring-date"
+                          />
+                        </div>
+                        <Button 
+                          onClick={() => addProfessor(newProfessor)}
+                          className="w-full bg-indigo-600 hover:bg-indigo-700"
+                          data-testid="button-save-professor"
+                        >
+                          Cadastrar Professor
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+
+                {/* Professor Cards Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {professors.map(professor => (
+                    <Card key={professor.id} className="bg-white dark:bg-slate-800 border border-indigo-200 dark:border-slate-700 shadow-lg hover:shadow-xl transition-shadow">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <CardTitle className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-1">
+                              {professor.nome}
+                            </CardTitle>
+                            <p className="text-sm text-slate-600 dark:text-slate-400">{professor.departamento}</p>
+                            <Badge 
+                              className={`mt-2 ${professor.status === 'ativo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
+                              data-testid={`status-professor-${professor.id}`}
+                            >
+                              {professor.status === 'ativo' ? 'Ativo' : 'Inativo'}
+                            </Badge>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-3">
+                          <div>
+                            <div className="flex items-center text-sm text-slate-600 dark:text-slate-400 mb-1">
+                              <i className="fas fa-envelope w-4 mr-2"></i>
+                              <span>{professor.email}</span>
+                            </div>
+                            <div className="flex items-center text-sm text-slate-600 dark:text-slate-400 mb-1">
+                              <i className="fas fa-phone w-4 mr-2"></i>
+                              <span>{professor.telefone}</span>
+                            </div>
+                            <div className="flex items-center text-sm text-slate-600 dark:text-slate-400 mb-1">
+                              <i className="fas fa-graduation-cap w-4 mr-2"></i>
+                              <span>{professor.titulacao}</span>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <h4 className="font-medium text-slate-800 dark:text-slate-200 mb-2">Disciplinas:</h4>
+                            <div className="flex flex-wrap gap-1">
+                              {professor.disciplinas.map((disciplina, idx) => (
+                                <Badge key={idx} variant="secondary" className="text-xs">
+                                  {disciplina}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between pt-3 border-t border-slate-200 dark:border-slate-600">
+                            <div className="text-xs text-slate-500 dark:text-slate-400">
+                              <i className="fas fa-calendar-alt mr-1"></i>
+                              Desde {new Date(professor.dataContratacao).toLocaleDateString('pt-BR')}
+                            </div>
+                            <div className="flex space-x-2">
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                onClick={() => setEditingProfessor(professor)}
+                                data-testid={`button-edit-professor-${professor.id}`}
+                              >
+                                <i className="fas fa-edit"></i>
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => deleteProfessor(professor.id)}
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                data-testid={`button-delete-professor-${professor.id}`}
+                              >
+                                <i className="fas fa-trash"></i>
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+
+                {/* Edit Professor Dialog */}
+                <Dialog open={!!editingProfessor} onOpenChange={(open) => !open && setEditingProfessor(null)}>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Editar Professor</DialogTitle>
+                    </DialogHeader>
+                    {editingProfessor && (
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="edit-nome-professor">Nome Completo</Label>
+                          <Input
+                            id="edit-nome-professor"
+                            value={editingProfessor.nome || ''}
+                            onChange={(e) => setEditingProfessor(prev => prev ? { ...prev, nome: e.target.value } : null)}
+                            data-testid="input-edit-professor-name"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="edit-email-professor">Email Institucional</Label>
+                          <Input
+                            id="edit-email-professor"
+                            type="email"
+                            value={editingProfessor.email || ''}
+                            onChange={(e) => setEditingProfessor(prev => prev ? { ...prev, email: e.target.value } : null)}
+                            data-testid="input-edit-professor-email"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="edit-departamento-professor">Departamento</Label>
+                          <Select
+                            value={editingProfessor.departamento || ''}
+                            onValueChange={(value) => setEditingProfessor(prev => prev ? { ...prev, departamento: value } : null)}
+                          >
+                            <SelectTrigger data-testid="select-edit-professor-department">
+                              <SelectValue placeholder="Selecione o departamento" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Tecnologia">Tecnologia</SelectItem>
+                              <SelectItem value="Marketing">Marketing</SelectItem>
+                              <SelectItem value="Design">Design</SelectItem>
+                              <SelectItem value="Negócios">Negócios</SelectItem>
+                              <SelectItem value="Humanas">Ciências Humanas</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label htmlFor="edit-telefone-professor">Telefone</Label>
+                          <Input
+                            id="edit-telefone-professor"
+                            value={editingProfessor.telefone || ''}
+                            onChange={(e) => setEditingProfessor(prev => prev ? { ...prev, telefone: e.target.value } : null)}
+                            data-testid="input-edit-professor-phone"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="edit-titulacao-professor">Titulação</Label>
+                          <Select
+                            value={editingProfessor.titulacao || ''}
+                            onValueChange={(value) => setEditingProfessor(prev => prev ? { ...prev, titulacao: value } : null)}
+                          >
+                            <SelectTrigger data-testid="select-edit-professor-degree">
+                              <SelectValue placeholder="Selecione a titulação" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Especialista">Especialista</SelectItem>
+                              <SelectItem value="Mestre">Mestre</SelectItem>
+                              <SelectItem value="Doutor">Doutor</SelectItem>
+                              <SelectItem value="Pós-doutor">Pós-doutor</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label htmlFor="edit-status-professor">Status</Label>
+                          <Select
+                            value={editingProfessor.status || ''}
+                            onValueChange={(value: 'ativo' | 'inativo') => setEditingProfessor(prev => prev ? { ...prev, status: value } : null)}
+                          >
+                            <SelectTrigger data-testid="select-edit-professor-status">
+                              <SelectValue placeholder="Selecione o status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="ativo">Ativo</SelectItem>
+                              <SelectItem value="inativo">Inativo</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label htmlFor="edit-data-contratacao">Data de Contratação</Label>
+                          <Input
+                            id="edit-data-contratacao"
+                            type="date"
+                            value={editingProfessor.dataContratacao || ''}
+                            onChange={(e) => setEditingProfessor(prev => prev ? { ...prev, dataContratacao: e.target.value } : null)}
+                            data-testid="input-edit-professor-hiring-date"
+                          />
+                        </div>
+                        <Button 
+                          onClick={() => updateProfessor(editingProfessor.id, editingProfessor)}
+                          className="w-full bg-indigo-600 hover:bg-indigo-700"
+                          data-testid="button-save-edit-professor"
                         >
                           Salvar Alterações
                         </Button>
