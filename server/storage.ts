@@ -53,343 +53,6 @@ export interface IStorage {
   deleteStockMovement(id: string): Promise<boolean>;
 }
 
-// Database storage implementation removed - using MemStorage for demo
-export class DatabaseStorage implements IStorage {
-  async getUser(id: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user || undefined;
-  }
-
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
-    return user || undefined;
-  }
-
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const [user] = await db
-      .insert(users)
-      .values(insertUser)
-      .returning();
-    return user;
-  }
-
-  async createContactSubmission(insertContact: InsertContact): Promise<ContactSubmission> {
-    const [contact] = await db
-      .insert(contactSubmissions)
-      .values({
-        ...insertContact,
-        phone: insertContact.phone || "",
-        systemOfInterest: insertContact.systemOfInterest || "",
-        message: insertContact.message || "",
-        acceptsMarketing: insertContact.acceptsMarketing || "false",
-      })
-      .returning();
-    return contact;
-  }
-
-  async getContactSubmissions(): Promise<ContactSubmission[]> {
-    const contacts = await db.select().from(contactSubmissions);
-    return contacts.sort(
-      (a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0)
-    );
-  }
-
-  // Suppliers implementation
-  async getSuppliers(): Promise<Supplier[]> {
-    const allSuppliers = await db.select().from(suppliers).orderBy(suppliers.name);
-    return allSuppliers;
-  }
-
-  async getSupplier(id: string): Promise<Supplier | undefined> {
-    const [supplier] = await db.select().from(suppliers).where(eq(suppliers.id, id));
-    return supplier || undefined;
-  }
-
-  async createSupplier(insertSupplier: InsertSupplier): Promise<Supplier> {
-    const [supplier] = await db
-      .insert(suppliers)
-      .values({
-        ...insertSupplier,
-        email: insertSupplier.email || "",
-        phone: insertSupplier.phone || "",
-        address: insertSupplier.address || "",
-        rating: insertSupplier.rating || "0",
-        deliveryDays: insertSupplier.deliveryDays || 0,
-        isActive: insertSupplier.isActive !== undefined ? insertSupplier.isActive : true,
-      })
-      .returning();
-    return supplier;
-  }
-
-  async updateSupplier(id: string, updateData: Partial<InsertSupplier>): Promise<Supplier | undefined> {
-    const [supplier] = await db
-      .update(suppliers)
-      .set(updateData)
-      .where(eq(suppliers.id, id))
-      .returning();
-    return supplier || undefined;
-  }
-
-  async deleteSupplier(id: string): Promise<boolean> {
-    const [deletedSupplier] = await db.delete(suppliers).where(eq(suppliers.id, id)).returning({ id: suppliers.id });
-    return !!deletedSupplier;
-  }
-
-  // Categories implementation
-  async getCategories(): Promise<Category[]> {
-    const allCategories = await db.select().from(categories).orderBy(categories.name);
-    return allCategories;
-  }
-
-  async getCategory(id: string): Promise<Category | undefined> {
-    const [category] = await db.select().from(categories).where(eq(categories.id, id));
-    return category || undefined;
-  }
-
-  async createCategory(insertCategory: InsertCategory): Promise<Category> {
-    const [category] = await db
-      .insert(categories)
-      .values({
-        ...insertCategory,
-        description: insertCategory.description || "",
-      })
-      .returning();
-    return category;
-  }
-
-  async updateCategory(id: string, updateData: Partial<InsertCategory>): Promise<Category | undefined> {
-    const [category] = await db
-      .update(categories)
-      .set(updateData)
-      .where(eq(categories.id, id))
-      .returning();
-    return category || undefined;
-  }
-
-  async deleteCategory(id: string): Promise<boolean> {
-    const [deletedCategory] = await db.delete(categories).where(eq(categories.id, id)).returning({ id: categories.id });
-    return !!deletedCategory;
-  }
-
-  // Products implementation
-  async getProducts(): Promise<Product[]> {
-    const allProducts = await db.select().from(products).orderBy(products.name);
-    return allProducts;
-  }
-
-  async getProduct(id: string): Promise<Product | undefined> {
-    const [product] = await db.select().from(products).where(eq(products.id, id));
-    return product || undefined;
-  }
-
-  async getProductByCode(code: string): Promise<Product | undefined> {
-    const [product] = await db.select().from(products).where(eq(products.code, code));
-    return product || undefined;
-  }
-
-  async createProduct(insertProduct: InsertProduct): Promise<Product> {
-    const [product] = await db
-      .insert(products)
-      .values({
-        ...insertProduct,
-        description: insertProduct.description || "",
-        categoryId: insertProduct.categoryId || null,
-        supplierId: insertProduct.supplierId || null,
-        price: insertProduct.price || "0",
-        currentStock: insertProduct.currentStock || 0,
-        minimumStock: insertProduct.minimumStock || 0,
-        unit: insertProduct.unit || "un",
-        isActive: insertProduct.isActive !== undefined ? insertProduct.isActive : true,
-        updatedAt: new Date(),
-      })
-      .returning();
-    return product;
-  }
-
-  async updateProduct(id: string, updateData: Partial<InsertProduct>): Promise<Product | undefined> {
-    const [product] = await db
-      .update(products)
-      .set({
-        ...updateData,
-        updatedAt: new Date(),
-      })
-      .where(eq(products.id, id))
-      .returning();
-    return product || undefined;
-  }
-
-  async deleteProduct(id: string): Promise<boolean> {
-    const [deletedProduct] = await db.delete(products).where(eq(products.id, id)).returning({ id: products.id });
-    return !!deletedProduct;
-  }
-
-  async updateProductStock(id: string, newStock: number): Promise<Product | undefined> {
-    const [product] = await db
-      .update(products)
-      .set({
-        currentStock: newStock,
-        updatedAt: new Date(),
-      })
-      .where(eq(products.id, id))
-      .returning();
-    return product || undefined;
-  }
-
-  async getLowStockProducts(): Promise<Product[]> {
-    const lowStockProducts = await db
-      .select()
-      .from(products)
-      .where(
-        and(
-          sql`${products.currentStock} <= ${products.minimumStock}`,
-          eq(products.isActive, true)
-        )
-      )
-      .orderBy(products.name);
-    return lowStockProducts;
-  }
-
-  // Stock Movements implementation
-  async getStockMovements(): Promise<StockMovement[]> {
-    const allMovements = await db
-      .select()
-      .from(stockMovements)
-      .orderBy(desc(stockMovements.createdAt));
-    return allMovements;
-  }
-
-  async getStockMovement(id: string): Promise<StockMovement | undefined> {
-    const [movement] = await db
-      .select()
-      .from(stockMovements)
-      .where(eq(stockMovements.id, id));
-    return movement || undefined;
-  }
-
-  async getProductMovements(productId: string): Promise<StockMovement[]> {
-    const movements = await db
-      .select()
-      .from(stockMovements)
-      .where(eq(stockMovements.productId, productId))
-      .orderBy(desc(stockMovements.createdAt));
-    return movements;
-  }
-
-  async createStockMovement(insertMovement: InsertStockMovement): Promise<StockMovement> {
-    // Calculate total value if not provided
-    const unitPrice = parseFloat(insertMovement.unitPrice || "0");
-    const totalValue = insertMovement.totalValue || (unitPrice * insertMovement.quantity).toString();
-
-    // Get current product to validate stock for outbound movements
-    const currentProduct = await this.getProduct(insertMovement.productId);
-    if (!currentProduct) {
-      throw new Error("Produto não encontrado");
-    }
-
-    const currentStock = currentProduct.currentStock || 0;
-    const newStock = insertMovement.type === "entrada" 
-      ? currentStock + insertMovement.quantity
-      : currentStock - insertMovement.quantity;
-
-    // Validate that outbound movements don't result in negative stock
-    if (insertMovement.type === "saida" && newStock < 0) {
-      throw new Error(`Estoque insuficiente. Estoque atual: ${currentStock}, tentativa de saída: ${insertMovement.quantity}`);
-    }
-
-    // Use transaction to ensure atomicity
-    return await db.transaction(async (tx) => {
-      // Insert the stock movement
-      const [movement] = await tx
-        .insert(stockMovements)
-        .values({
-          ...insertMovement,
-          unitPrice: insertMovement.unitPrice || "0",
-          totalValue,
-          reason: insertMovement.reason || "",
-          responsible: insertMovement.responsible || "",
-          notes: insertMovement.notes || "",
-        })
-        .returning();
-
-      // Update product stock
-      await tx
-        .update(products)
-        .set({
-          currentStock: newStock,
-          updatedAt: new Date(),
-        })
-        .where(eq(products.id, insertMovement.productId));
-
-      return movement;
-    });
-  }
-
-  async updateStockMovement(id: string, updateData: Partial<InsertStockMovement>): Promise<StockMovement | undefined> {
-    // For simplicity, we don't allow updating the core movement data (productId, type, quantity)
-    // as this would require complex stock recalculation. Only allow updating metadata.
-    const allowedFields = {
-      reason: updateData.reason,
-      responsible: updateData.responsible,
-      notes: updateData.notes,
-    };
-
-    const [movement] = await db
-      .update(stockMovements)
-      .set(allowedFields)
-      .where(eq(stockMovements.id, id))
-      .returning();
-    return movement || undefined;
-  }
-
-  async deleteStockMovement(id: string): Promise<boolean> {
-    // Get the movement before deleting to reverse stock changes
-    const movement = await this.getStockMovement(id);
-    if (!movement) {
-      return false;
-    }
-
-    const currentProduct = await this.getProduct(movement.productId);
-    if (!currentProduct) {
-      throw new Error("Produto associado não encontrado");
-    }
-
-    const currentStock = currentProduct.currentStock || 0;
-    // Reverse the stock movement
-    const reversedStock = movement.type === "entrada" 
-      ? currentStock - movement.quantity
-      : currentStock + movement.quantity;
-
-    // Validate that reversing the movement won't result in negative stock
-    if (reversedStock < 0) {
-      throw new Error(`Não é possível excluir esta movimentação pois resultaria em estoque negativo. Estoque atual: ${currentStock}`);
-    }
-
-    // Use transaction to ensure atomicity
-    return await db.transaction(async (tx) => {
-      // Delete the stock movement
-      const [deletedMovement] = await tx
-        .delete(stockMovements)
-        .where(eq(stockMovements.id, id))
-        .returning({ id: stockMovements.id });
-
-      if (!deletedMovement) {
-        return false;
-      }
-
-      // Update product stock (reverse the movement)
-      await tx
-        .update(products)
-        .set({
-          currentStock: reversedStock,
-          updatedAt: new Date(),
-        })
-        .where(eq(products.id, movement.productId));
-
-      return true;
-    });
-  }
-}
-
 // In-memory storage implementation
 export class MemStorage implements IStorage {
   private users: User[] = [];
@@ -398,6 +61,313 @@ export class MemStorage implements IStorage {
   private categoriesStore: Category[] = [];
   private productsStore: Product[] = [];
   private movementsStore: StockMovement[] = [];
+
+  constructor() {
+    this.initializeSampleData();
+  }
+
+  private initializeSampleData() {
+    // Sample categories
+    this.categoriesStore = [
+      {
+        id: "cat-1",
+        name: "Eletrônicos",
+        description: "Equipamentos eletrônicos e acessórios",
+        createdAt: new Date('2024-01-15'),
+      },
+      {
+        id: "cat-2", 
+        name: "Escritório",
+        description: "Material de escritório e papelaria",
+        createdAt: new Date('2024-01-16'),
+      },
+      {
+        id: "cat-3",
+        name: "Ferramentas",
+        description: "Ferramentas e equipamentos industriais",
+        createdAt: new Date('2024-01-17'),
+      }
+    ];
+
+    // Sample suppliers
+    this.suppliersStore = [
+      {
+        id: "sup-1",
+        name: "TechSupplies Ltda",
+        email: "contato@techsupplies.com.br",
+        phone: "(11) 3456-7890",
+        address: "Rua das Tecnologias, 123 - São Paulo, SP",
+        rating: "4.8",
+        deliveryDays: 5,
+        isActive: true,
+        createdAt: new Date('2024-01-10'),
+      },
+      {
+        id: "sup-2",
+        name: "OfficeMax Distribuidora",
+        email: "vendas@officemax.com.br", 
+        phone: "(11) 2345-6789",
+        address: "Av. Comercial, 456 - São Paulo, SP",
+        rating: "4.5",
+        deliveryDays: 3,
+        isActive: true,
+        createdAt: new Date('2024-01-11'),
+      },
+      {
+        id: "sup-3",
+        name: "Ferramenta Pro Industrial",
+        email: "industrial@ferramentapro.com.br",
+        phone: "(11) 4567-8901",
+        address: "Rua Industrial, 789 - Santo André, SP",
+        rating: "4.7",
+        deliveryDays: 7,
+        isActive: true,
+        createdAt: new Date('2024-01-12'),
+      }
+    ];
+
+    // Sample products
+    this.productsStore = [
+      {
+        id: "prod-1",
+        code: "NTB001",
+        name: "Notebook Dell Inspiron 15",
+        description: "Notebook para uso corporativo com Intel i5, 8GB RAM, 256GB SSD",
+        categoryId: "cat-1",
+        supplierId: "sup-1", 
+        price: "2899.99",
+        currentStock: 15,
+        minimumStock: 5,
+        unit: "un",
+        isActive: true,
+        createdAt: new Date('2024-01-20'),
+        updatedAt: new Date('2024-12-10'),
+      },
+      {
+        id: "prod-2",
+        code: "MSE002",
+        name: "Mouse Óptico Logitech",
+        description: "Mouse óptico sem fio com receptor USB",
+        categoryId: "cat-1",
+        supplierId: "sup-1",
+        price: "89.90",
+        currentStock: 45,
+        minimumStock: 10,
+        unit: "un",
+        isActive: true,
+        createdAt: new Date('2024-01-21'),
+        updatedAt: new Date('2024-12-08'),
+      },
+      {
+        id: "prod-3",
+        code: "PPL003",
+        name: "Papel A4 - Resma 500 folhas",
+        description: "Papel sulfite branco A4 75g - pacote com 500 folhas",
+        categoryId: "cat-2",
+        supplierId: "sup-2",
+        price: "24.90",
+        currentStock: 120,
+        minimumStock: 20,
+        unit: "resma",
+        isActive: true,
+        createdAt: new Date('2024-01-22'),
+        updatedAt: new Date('2024-12-05'),
+      },
+      {
+        id: "prod-4",
+        code: "CAN004",
+        name: "Caneta Esferográfica Azul",
+        description: "Caneta esferográfica ponta média cor azul",
+        categoryId: "cat-2", 
+        supplierId: "sup-2",
+        price: "1.50",
+        currentStock: 8,
+        minimumStock: 50,
+        unit: "un",
+        isActive: true,
+        createdAt: new Date('2024-01-23'),
+        updatedAt: new Date('2024-12-07'),
+      },
+      {
+        id: "prod-5",
+        code: "FUR005",
+        name: "Furadeira Elétrica 550W",
+        description: "Furadeira elétrica 550W com maleta e brocas",
+        categoryId: "cat-3",
+        supplierId: "sup-3",
+        price: "189.99",
+        currentStock: 12,
+        minimumStock: 3,
+        unit: "un",
+        isActive: true,
+        createdAt: new Date('2024-01-24'),
+        updatedAt: new Date('2024-12-09'),
+      },
+      {
+        id: "prod-6",
+        code: "CHV006",
+        name: "Chave de Fenda Phillips",
+        description: "Conjunto de chaves Phillips tamanhos variados",
+        categoryId: "cat-3",
+        supplierId: "sup-3",
+        price: "35.90",
+        currentStock: 2,
+        minimumStock: 8,
+        unit: "conjunto",
+        isActive: true,
+        createdAt: new Date('2024-01-25'),
+        updatedAt: new Date('2024-12-06'),
+      }
+    ];
+
+    // Sample stock movements
+    this.movementsStore = [
+      {
+        id: "mov-1",
+        productId: "prod-1",
+        type: "entrada",
+        quantity: 20,
+        unitPrice: "2800.00",
+        totalValue: "56000.00",
+        reason: "Compra para estoque",
+        responsible: "João Silva",
+        notes: "Lote inicial - pedido #001",
+        createdAt: new Date('2024-01-20'),
+      },
+      {
+        id: "mov-2",
+        productId: "prod-1",
+        type: "saida",
+        quantity: 5,
+        unitPrice: "2899.99",
+        totalValue: "14499.95",
+        reason: "Venda departamento TI",
+        responsible: "Maria Santos",
+        notes: "Venda interna - setor financeiro",
+        createdAt: new Date('2024-12-10'),
+      },
+      {
+        id: "mov-3",
+        productId: "prod-2",
+        type: "entrada",
+        quantity: 50,
+        unitPrice: "75.00",
+        totalValue: "3750.00",
+        reason: "Reposição estoque",
+        responsible: "Carlos Lima",
+        notes: "Pedido #002 - promoção fornecedor",
+        createdAt: new Date('2024-01-21'),
+      },
+      {
+        id: "mov-4",
+        productId: "prod-2",
+        type: "saida",
+        quantity: 5,
+        unitPrice: "89.90",
+        totalValue: "449.50",
+        reason: "Venda balcão",
+        responsible: "Ana Costa",
+        notes: "Cliente pessoa física",
+        createdAt: new Date('2024-12-08'),
+      },
+      {
+        id: "mov-5",
+        productId: "prod-3",
+        type: "entrada",
+        quantity: 150,
+        unitPrice: "20.00",
+        totalValue: "3000.00",
+        reason: "Compra em grande volume",
+        responsible: "Pedro Oliveira",
+        notes: "Desconto por quantidade - 20% off",
+        createdAt: new Date('2024-01-22'),
+      },
+      {
+        id: "mov-6",
+        productId: "prod-3",
+        type: "saida",
+        quantity: 30,
+        unitPrice: "24.90",
+        totalValue: "747.00",
+        reason: "Uso interno",
+        responsible: "Lucia Ferreira",
+        notes: "Consumo departamento administrativo",
+        createdAt: new Date('2024-12-05'),
+      },
+      {
+        id: "mov-7",
+        productId: "prod-4",
+        type: "entrada",
+        quantity: 100,
+        unitPrice: "1.20",
+        totalValue: "120.00",
+        reason: "Compra regular",
+        responsible: "Roberto Alves",
+        notes: "Material básico de escritório",
+        createdAt: new Date('2024-01-23'),
+      },
+      {
+        id: "mov-8",
+        productId: "prod-4",
+        type: "saida",
+        quantity: 92,
+        unitPrice: "1.50",
+        totalValue: "138.00",
+        reason: "Distribuição departamentos",
+        responsible: "Sandra Rocha",
+        notes: "Distribuição mensal para todos os setores",
+        createdAt: new Date('2024-12-07'),
+      },
+      {
+        id: "mov-9",
+        productId: "prod-5",
+        type: "entrada",
+        quantity: 15,
+        unitPrice: "170.00",
+        totalValue: "2550.00",
+        reason: "Estoque manutenção",
+        responsible: "José Santos",
+        notes: "Ferramentas para equipe técnica",
+        createdAt: new Date('2024-01-24'),
+      },
+      {
+        id: "mov-10",
+        productId: "prod-5",
+        type: "saida",
+        quantity: 3,
+        unitPrice: "189.99",
+        totalValue: "569.97",
+        reason: "Empréstimo técnico",
+        responsible: "Fernando Lima",
+        notes: "Empréstimo para obra externa",
+        createdAt: new Date('2024-12-09'),
+      },
+      {
+        id: "mov-11",
+        productId: "prod-6",
+        type: "entrada",
+        quantity: 10,
+        unitPrice: "30.00",
+        totalValue: "300.00",
+        reason: "Kit ferramentas",
+        responsible: "Marcos Silva",
+        notes: "Complemento kit manutenção",
+        createdAt: new Date('2024-01-25'),
+      },
+      {
+        id: "mov-12",
+        productId: "prod-6",
+        type: "saida",
+        quantity: 8,
+        unitPrice: "35.90",
+        totalValue: "287.20",
+        reason: "Venda técnicos",
+        responsible: "Patricia Gomes",
+        notes: "Venda para técnicos externos",
+        createdAt: new Date('2024-12-06'),
+      }
+    ];
+  }
 
   // Helper method to generate IDs
   private generateId(): string {
@@ -417,8 +387,6 @@ export class MemStorage implements IStorage {
     const user: User = {
       ...insertUser,
       id: this.generateId(),
-      createdAt: new Date(),
-      updatedAt: new Date(),
     };
     this.users.push(user);
     return user;
@@ -433,7 +401,6 @@ export class MemStorage implements IStorage {
       message: insertContact.message || "",
       acceptsMarketing: insertContact.acceptsMarketing || "false",
       createdAt: new Date(),
-      updatedAt: new Date(),
     };
     this.contacts.push(contact);
     return contact;
@@ -465,7 +432,6 @@ export class MemStorage implements IStorage {
       deliveryDays: insertSupplier.deliveryDays || 0,
       isActive: insertSupplier.isActive !== undefined ? insertSupplier.isActive : true,
       createdAt: new Date(),
-      updatedAt: new Date(),
     };
     this.suppliersStore.push(supplier);
     return supplier;
@@ -478,7 +444,6 @@ export class MemStorage implements IStorage {
     this.suppliersStore[index] = {
       ...this.suppliersStore[index],
       ...updateData,
-      updatedAt: new Date(),
     };
     return this.suppliersStore[index];
   }
@@ -505,7 +470,6 @@ export class MemStorage implements IStorage {
       id: this.generateId(),
       description: insertCategory.description || "",
       createdAt: new Date(),
-      updatedAt: new Date(),
     };
     this.categoriesStore.push(category);
     return category;
@@ -518,7 +482,6 @@ export class MemStorage implements IStorage {
     this.categoriesStore[index] = {
       ...this.categoriesStore[index],
       ...updateData,
-      updatedAt: new Date(),
     };
     return this.categoriesStore[index];
   }
@@ -555,6 +518,8 @@ export class MemStorage implements IStorage {
       isActive: insertProduct.isActive !== undefined ? insertProduct.isActive : true,
       createdAt: new Date(),
       updatedAt: new Date(),
+      categoryId: insertProduct.categoryId || null,
+      supplierId: insertProduct.supplierId || null,
     };
     this.productsStore.push(product);
     return product;
@@ -618,11 +583,12 @@ export class MemStorage implements IStorage {
     const movement: StockMovement = {
       ...insertMovement,
       id: this.generateId(),
-      reason: insertMovement.reason || "",
-      responsible: insertMovement.responsible || "",
-      notes: insertMovement.notes || "",
+      reason: insertMovement.reason || null,
+      responsible: insertMovement.responsible || null,
+      notes: insertMovement.notes || null,
+      unitPrice: insertMovement.unitPrice || null,
+      totalValue: insertMovement.totalValue || null,
       createdAt: new Date(),
-      updatedAt: new Date(),
     };
     
     // Update product stock
@@ -651,7 +617,6 @@ export class MemStorage implements IStorage {
     this.movementsStore[index] = {
       ...this.movementsStore[index],
       ...updateData,
-      updatedAt: new Date(),
     };
     return this.movementsStore[index];
   }
