@@ -105,7 +105,7 @@ function ProductForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="code"
@@ -162,7 +162,7 @@ function ProductForm({
           )}
         />
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="categoryId"
@@ -214,7 +214,7 @@ function ProductForm({
           />
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           <FormField
             control={form.control}
             name="price"
@@ -315,7 +315,7 @@ function SupplierForm({
           )}
         />
         
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="email"
@@ -359,7 +359,7 @@ function SupplierForm({
           )}
         />
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="rating"
@@ -447,7 +447,7 @@ function MovementForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="productId"
@@ -496,7 +496,7 @@ function MovementForm({
           />
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           <FormField
             control={form.control}
             name="quantity"
@@ -560,7 +560,7 @@ function MovementForm({
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="reason"
