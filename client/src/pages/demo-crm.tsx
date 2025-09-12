@@ -1,7 +1,5 @@
 import { useState } from "react";
-import { Link } from "wouter";
-import Header from "@/components/Header";
-import CustomSystemsMessage from "@/components/CustomSystemsMessage";
+import AppShell from "@/components/layout/AppShell";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area, FunnelChart, Funnel, LabelList } from 'recharts';
 
 interface Lead {
@@ -50,6 +48,45 @@ interface Activity {
 
 export default function DemoCRM() {
   const [selectedModule, setSelectedModule] = useState('dashboard');
+  
+  // Navigation items for AppShell
+  const navItems = [
+    {
+      id: 'dashboard',
+      label: 'Dashboard',
+      icon: 'fas fa-chart-pie',
+      onClick: () => setSelectedModule('dashboard'),
+      isActive: selectedModule === 'dashboard'
+    },
+    {
+      id: 'clientes',
+      label: 'Clientes',
+      icon: 'fas fa-heart',
+      onClick: () => setSelectedModule('clientes'),
+      isActive: selectedModule === 'clientes'
+    },
+    {
+      id: 'vendas',
+      label: 'Vendas',
+      icon: 'fas fa-user-plus',
+      onClick: () => setSelectedModule('leads'),
+      isActive: selectedModule === 'leads'
+    },
+    {
+      id: 'oportunidades',
+      label: 'Oportunidades',
+      icon: 'fas fa-chart-line',
+      onClick: () => setSelectedModule('pipeline'),
+      isActive: selectedModule === 'pipeline'
+    },
+    {
+      id: 'relatorios',
+      label: 'Relatórios',
+      icon: 'fas fa-file-chart-line',
+      onClick: () => setSelectedModule('relatorios'),
+      isActive: selectedModule === 'relatorios'
+    }
+  ];
   
   // Estados para dados dinâmicos
   const [leads, setLeads] = useState<Lead[]>([
@@ -245,128 +282,17 @@ export default function DemoCRM() {
   };
 
   return (
-    <>
-      <Header />
-      <div className="min-h-screen bg-black">
-        {/* Custom Systems Message */}
-        <div className="bg-black/90 border-b border-slate-800">
-          <div className="max-w-7xl mx-auto px-6 py-4">
-            <CustomSystemsMessage variant="compact" />
-          </div>
-        </div>
-        
-        {/* Demo Header */}
-        <div className="bg-zinc-900 border-b border-zinc-700 shadow-sm">
-          <div className="max-w-7xl mx-auto px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <Link 
-                  href="/sistema/crm"
-                  className="text-blue-400 hover:text-blue-300 flex items-center"
-                >
-                  <i className="fas fa-arrow-left mr-2"></i>
-                  Voltar
-                </Link>
-                <div className="w-px h-6 bg-zinc-600"></div>
-                <h1 className="text-2xl font-bold text-white raleway">CRM Demo - Sistema Empresarial</h1>
-              </div>
-              <div className="bg-blue-900/30 text-blue-400 px-3 py-1 rounded-full text-sm font-medium">
-                <i className="fas fa-circle text-blue-500 mr-2 text-xs"></i>
-                Ambiente de Vendas
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex">
-          {/* Sidebar */}
-          <div className="w-64 bg-zinc-900 border-r border-zinc-700 min-h-screen shadow-lg">
-            <div className="p-4">
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                  <i className="fas fa-users text-white"></i>
-                </div>
-                <div>
-                  <h2 className="font-semibold text-white">Sistema CRM</h2>
-                  <p className="text-sm text-blue-400">Sales Edition</p>
-                </div>
-              </div>
-
-              <nav className="space-y-2">
-                <button
-                  onClick={() => setSelectedModule('dashboard')}
-                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                    selectedModule === 'dashboard' 
-                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white' 
-                      : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'
-                  }`}
-                  data-testid="button-dashboard"
-                >
-                  <i className="fas fa-chart-pie w-4"></i>
-                  <span>Dashboard</span>
-                </button>
-                <button
-                  onClick={() => setSelectedModule('leads')}
-                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                    selectedModule === 'leads' 
-                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white' 
-                      : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'
-                  }`}
-                  data-testid="button-leads"
-                >
-                  <i className="fas fa-user-plus w-4"></i>
-                  <span>Leads</span>
-                </button>
-                <button
-                  onClick={() => setSelectedModule('pipeline')}
-                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                    selectedModule === 'pipeline' 
-                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white' 
-                      : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'
-                  }`}
-                  data-testid="button-pipeline"
-                >
-                  <i className="fas fa-chart-line w-4"></i>
-                  <span>Pipeline</span>
-                </button>
-                <button
-                  onClick={() => setSelectedModule('clientes')}
-                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                    selectedModule === 'clientes' 
-                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white' 
-                      : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'
-                  }`}
-                  data-testid="button-clientes"
-                >
-                  <i className="fas fa-heart w-4"></i>
-                  <span>Clientes</span>
-                </button>
-              </nav>
-
-              <div className="mt-8 p-3 bg-zinc-800 rounded-lg">
-                <h3 className="font-medium text-white mb-2">Vendedor</h3>
-                <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-medium">VS</span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-white">Vendedor Silva</p>
-                    <p className="text-xs text-blue-400">Gerente Comercial</p>
-                  </div>
-                </div>
-                <div className="mt-2 pt-2 border-t border-zinc-600">
-                  <p className="text-xs text-zinc-400">Meta Mensal</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-white">78%</span>
-                    <span className="text-xs text-green-400">+23.5%</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Main Content */}
-          <div className="flex-1 p-6 bg-black">
+    <AppShell
+      title="CRMProfessional - TechSolutions"
+      subtitle="Customer Edition"
+      systemIcon="fas fa-users"
+      systemColor="from-green-600 to-green-500"
+      backHref="/sistema/crm"
+      statusBadge="Sistema de CRM"
+      navItems={navItems}
+      currentUser="Vendedor Silva"
+    >
+      <div>
             {selectedModule === 'dashboard' && (
               <div>
                 <div className="mb-6">
@@ -1051,9 +977,108 @@ export default function DemoCRM() {
                 </div>
               </div>
             )}
-          </div>
-        </div>
+
+            {selectedModule === 'relatorios' && (
+              <div>
+                <div className="mb-6">
+                  <h2 className="text-2xl font-bold text-white mb-2 raleway">Relatórios de Vendas</h2>
+                  <p className="text-zinc-400">Análises e relatórios detalhados do desempenho comercial</p>
+                </div>
+
+                {/* Summary Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+                  <div className="bg-zinc-900 p-4 sm:p-6 rounded-xl border border-zinc-700 shadow-lg">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-lg flex items-center justify-center">
+                        <i className="fas fa-chart-line text-white text-sm sm:text-base"></i>
+                      </div>
+                    </div>
+                    <h3 className="text-lg sm:text-2xl font-bold text-white mb-1" data-testid="text-total-vendas">
+                      R$ {totalRevenue.toLocaleString('pt-BR')}
+                    </h3>
+                    <p className="text-zinc-400 text-xs sm:text-sm">Vendas Este Mês</p>
+                  </div>
+
+                  <div className="bg-zinc-900 p-4 sm:p-6 rounded-xl border border-zinc-700 shadow-lg">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-lg flex items-center justify-center">
+                        <i className="fas fa-percentage text-white text-sm sm:text-base"></i>
+                      </div>
+                    </div>
+                    <h3 className="text-lg sm:text-2xl font-bold text-white mb-1" data-testid="text-conversao-rate">
+                      {conversionRate}%
+                    </h3>
+                    <p className="text-zinc-400 text-xs sm:text-sm">Taxa de Conversão</p>
+                  </div>
+
+                  <div className="bg-zinc-900 p-4 sm:p-6 rounded-xl border border-zinc-700 shadow-lg">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-400 to-pink-500 rounded-lg flex items-center justify-center">
+                        <i className="fas fa-users text-white text-sm sm:text-base"></i>
+                      </div>
+                    </div>
+                    <h3 className="text-lg sm:text-2xl font-bold text-white mb-1" data-testid="text-leads-mes">
+                      {leads.length}
+                    </h3>
+                    <p className="text-zinc-400 text-xs sm:text-sm">Leads Este Mês</p>
+                  </div>
+
+                  <div className="bg-zinc-900 p-4 sm:p-6 rounded-xl border border-zinc-700 shadow-lg">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-orange-400 to-red-500 rounded-lg flex items-center justify-center">
+                        <i className="fas fa-trophy text-white text-sm sm:text-base"></i>
+                      </div>
+                    </div>
+                    <h3 className="text-lg sm:text-2xl font-bold text-white mb-1" data-testid="text-ticket-medio">
+                      R$ {avgTicket.toLocaleString('pt-BR')}
+                    </h3>
+                    <p className="text-zinc-400 text-xs sm:text-sm">Ticket Médio</p>
+                  </div>
+                </div>
+
+                {/* Team Performance Report */}
+                <div className="bg-zinc-900 rounded-xl border border-zinc-700 p-4 sm:p-6">
+                  <h3 className="text-lg sm:text-xl font-semibold text-white mb-4 sm:mb-6 raleway">Performance da Equipe</h3>
+                  <div className="overflow-x-auto">
+                    <table className="w-full min-w-[600px]">
+                      <thead>
+                        <tr className="border-b border-zinc-700">
+                          <th className="text-left py-3 text-white text-sm sm:text-base">Vendedor</th>
+                          <th className="text-left py-3 text-white text-sm sm:text-base">Receita</th>
+                          <th className="text-left py-3 text-white text-sm sm:text-base">Leads</th>
+                          <th className="text-left py-3 text-white text-sm sm:text-base">Oportunidades</th>
+                          <th className="text-left py-3 text-white text-sm sm:text-base">Taxa Conv.</th>
+                          <th className="text-left py-3 text-white text-sm sm:text-base">Meta</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {teamPerformance.map((member, index) => (
+                          <tr key={member.name} className="border-b border-zinc-800" data-testid={`row-performance-${index}`}>
+                            <td className="py-3 text-white font-medium text-sm sm:text-base">{member.name}</td>
+                            <td className="py-3 text-white font-semibold text-sm sm:text-base">R$ {member.revenue.toLocaleString('pt-BR')}</td>
+                            <td className="py-3 text-zinc-400 text-sm sm:text-base">{member.leads}</td>
+                            <td className="py-3 text-zinc-400 text-sm sm:text-base">{member.opportunities}</td>
+                            <td className="py-3 text-green-400 text-sm sm:text-base">{member.conversionRate}%</td>
+                            <td className="py-3 text-sm sm:text-base">
+                              <div className="flex items-center space-x-2">
+                                <div className="w-20 sm:w-24 bg-zinc-800 rounded-full h-2">
+                                  <div 
+                                    className="bg-gradient-to-r from-green-400 to-emerald-500 h-2 rounded-full" 
+                                    style={{width: `${Math.min(member.goalProgress, 100)}%`}}
+                                  ></div>
+                                </div>
+                                <span className="text-xs text-zinc-400">{member.goalProgress.toFixed(0)}%</span>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
       </div>
-    </>
+    </AppShell>
   );
 }

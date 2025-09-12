@@ -1,12 +1,50 @@
 import { useState } from "react";
-import { Link } from "wouter";
-import Header from "@/components/Header";
+import AppShell from "@/components/layout/AppShell";
 import CustomSystemsMessage from "@/components/CustomSystemsMessage";
 import { useToast } from "@/hooks/use-toast";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
 
 export default function DemoFinancial() {
   const [selectedModule, setSelectedModule] = useState('dashboard');
+
+  // Navigation items for AppShell
+  const navItems = [
+    {
+      id: 'dashboard',
+      label: 'Dashboard',
+      icon: 'fas fa-chart-pie',
+      onClick: () => setSelectedModule('dashboard'),
+      isActive: selectedModule === 'dashboard'
+    },
+    {
+      id: 'receitas',
+      label: 'Receitas',
+      icon: 'fas fa-arrow-up',
+      onClick: () => setSelectedModule('receitas'),
+      isActive: selectedModule === 'receitas'
+    },
+    {
+      id: 'despesas',
+      label: 'Despesas',
+      icon: 'fas fa-arrow-down',
+      onClick: () => setSelectedModule('despesas'),
+      isActive: selectedModule === 'despesas'
+    },
+    {
+      id: 'investimentos',
+      label: 'Investimentos',
+      icon: 'fas fa-chart-line',
+      onClick: () => setSelectedModule('investimentos'),
+      isActive: selectedModule === 'investimentos'
+    },
+    {
+      id: 'relatorios',
+      label: 'Relatórios',
+      icon: 'fas fa-file-chart-column',
+      onClick: () => setSelectedModule('relatorios'),
+      isActive: selectedModule === 'relatorios'
+    }
+  ];
   const [selectedPeriod, setSelectedPeriod] = useState('mes');
   const [selectedAccount, setSelectedAccount] = useState<any>(null);
   const [showAccountModal, setShowAccountModal] = useState(false);
@@ -390,126 +428,20 @@ export default function DemoFinancial() {
   ];
 
   return (
-    <>
-      <Header />
-      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900">
-        {/* Demo Header */}
-        <div className="bg-blue-800/90 backdrop-blur-sm border-b border-blue-700 shadow-lg">
-          <div className="max-w-7xl mx-auto px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <Link 
-                  href="/sistema/financial"
-                  className="text-blue-200 hover:text-white flex items-center transition-colors"
-                  data-testid="link-back"
-                >
-                  <i className="fas fa-arrow-left mr-2"></i>
-                  Voltar
-                </Link>
-                <div className="w-px h-6 bg-blue-600"></div>
-                <h1 className="text-2xl font-bold text-white raleway">FinanceMax - TechSolutions</h1>
-              </div>
-              <div className="bg-blue-600/30 backdrop-blur-sm text-blue-100 px-3 py-1 rounded-full text-sm font-medium">
-                <i className="fas fa-circle text-green-400 mr-2 text-xs"></i>
-                Sistema Contábil
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex">
-          {/* Sidebar */}
-          <div className="w-64 bg-blue-800/50 backdrop-blur-sm border-r border-blue-700 min-h-screen shadow-lg">
-            <div className="p-4">
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
-                  <i className="fas fa-chart-bar text-white"></i>
-                </div>
-                <div>
-                  <h2 className="font-semibold text-white">FinanceMax</h2>
-                  <p className="text-sm text-blue-300">Contabilidade Pro</p>
-                </div>
-              </div>
-
-              <nav className="space-y-2">
-                <button
-                  onClick={() => setSelectedModule('dashboard')}
-                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                    selectedModule === 'dashboard' 
-                      ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white' 
-                      : 'text-blue-200 hover:bg-blue-700/30'
-                  }`}
-                  data-testid="button-dashboard"
-                >
-                  <i className="fas fa-chart-pie w-4"></i>
-                  <span>Dashboard</span>
-                </button>
-                <button
-                  onClick={() => setSelectedModule('fluxo')}
-                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                    selectedModule === 'fluxo' 
-                      ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white' 
-                      : 'text-blue-200 hover:bg-blue-700/30'
-                  }`}
-                  data-testid="button-fluxo"
-                >
-                  <i className="fas fa-exchange-alt w-4"></i>
-                  <span>Fluxo de Caixa</span>
-                </button>
-                <button
-                  onClick={() => setSelectedModule('contas')}
-                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                    selectedModule === 'contas' 
-                      ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white' 
-                      : 'text-blue-200 hover:bg-blue-700/30'
-                  }`}
-                  data-testid="button-contas"
-                >
-                  <i className="fas fa-file-invoice-dollar w-4"></i>
-                  <span>Contas</span>
-                </button>
-                <button
-                  onClick={() => setSelectedModule('relatorios')}
-                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                    selectedModule === 'relatorios' 
-                      ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white' 
-                      : 'text-blue-200 hover:bg-blue-700/30'
-                  }`}
-                  data-testid="button-relatorios"
-                >
-                  <i className="fas fa-chart-line w-4"></i>
-                  <span>Relatórios</span>
-                </button>
-              </nav>
-
-              <div className="mt-8 p-3 bg-gradient-to-br from-blue-700/30 to-indigo-700/30 rounded-lg border border-blue-600/20">
-                <h3 className="font-medium text-white mb-2">Período Fiscal</h3>
-                <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-medium">N</span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-white">Novembro 2024</p>
-                    <p className="text-xs text-blue-300">Regime de Competência</p>
-                  </div>
-                </div>
-                <div className="mt-2 pt-2 border-t border-blue-600/30">
-                  <p className="text-xs text-blue-300">Resultado</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-white">+15.3%</span>
-                    <span className="text-xs text-green-400">Positivo</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Main Content */}
-          <div className="flex-1 p-6">
-            {/* Custom Systems Message */}
-            <div className="mb-6">
-              <CustomSystemsMessage variant="compact" />
-            </div>
+    <AppShell
+      title="FinancePro - TechSolutions"
+      subtitle="Financial Edition"
+      systemIcon="fas fa-chart-bar"
+      systemColor="from-purple-600 to-purple-500"
+      backHref="/sistema/financial"
+      statusBadge="Sistema Financeiro"
+      navItems={navItems}
+      currentUser="Período Fiscal: Nov 2024"
+    >
+      {/* Custom Systems Message */}
+      <div className="mb-6">
+        <CustomSystemsMessage variant="compact" />
+      </div>
             {selectedModule === 'dashboard' && (
               <div>
                 <div className="mb-6 flex items-center justify-between">
@@ -547,7 +479,7 @@ export default function DemoFinancial() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                   <div 
                     className="bg-blue-800/30 backdrop-blur-sm p-6 rounded-xl border border-blue-600/20 shadow-lg hover:bg-blue-800/40 transition-all cursor-pointer"
-                    onClick={() => setSelectedModule('fluxo')}
+                    onClick={() => setSelectedModule('receitas')}
                     data-testid="card-saldo-total"
                   >
                     <div className="flex items-center justify-between mb-4">
@@ -566,7 +498,7 @@ export default function DemoFinancial() {
 
                   <div 
                     className="bg-blue-800/30 backdrop-blur-sm p-6 rounded-xl border border-blue-600/20 shadow-lg hover:bg-blue-800/40 transition-all cursor-pointer"
-                    onClick={() => setSelectedModule('contas')}
+                    onClick={() => setSelectedModule('receitas')}
                     data-testid="card-receitas"
                   >
                     <div className="flex items-center justify-between mb-4">
@@ -878,12 +810,12 @@ export default function DemoFinancial() {
               </div>
             )}
 
-            {selectedModule === 'fluxo' && (
+            {selectedModule === 'receitas' && (
               <div>
                 <div className="mb-6 flex items-center justify-between">
                   <div>
-                    <h2 className="text-2xl font-bold text-white mb-2 raleway">Fluxo de Caixa</h2>
-                    <p className="text-blue-200">Controle de entradas e saídas financeiras</p>
+                    <h2 className="text-2xl font-bold text-white mb-2 raleway">Receitas</h2>
+                    <p className="text-blue-200">Controle de receitas e contas a receber</p>
                   </div>
                   <div className="flex items-center space-x-3">
                     <button 
@@ -958,12 +890,12 @@ export default function DemoFinancial() {
               </div>
             )}
 
-            {selectedModule === 'contas' && (
+            {selectedModule === 'despesas' && (
               <div>
                 <div className="mb-6 flex items-center justify-between">
                   <div>
-                    <h2 className="text-2xl font-bold text-white mb-2 raleway">Gestão de Contas</h2>
-                    <p className="text-blue-200">Controle de contas a pagar e receber</p>
+                    <h2 className="text-2xl font-bold text-white mb-2 raleway">Despesas</h2>
+                    <p className="text-blue-200">Controle de despesas e contas a pagar</p>
                   </div>
                   <div className="flex items-center space-x-3">
                     <button 
@@ -1087,6 +1019,96 @@ export default function DemoFinancial() {
                           </div>
                         </div>
                       ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {selectedModule === 'investimentos' && (
+              <div>
+                <div className="mb-6 flex items-center justify-between">
+                  <div>
+                    <h2 className="text-2xl font-bold text-white mb-2 raleway">Investimentos</h2>
+                    <p className="text-blue-200">Controle e acompanhamento de investimentos</p>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <button 
+                      onClick={() => toast({title: "Em Desenvolvimento", description: "Módulo de investimentos em breve!"})}
+                      className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm transition-colors" 
+                      data-testid="button-add-investment"
+                    >
+                      <i className="fas fa-plus mr-2"></i>
+                      Novo Investimento
+                    </button>
+                  </div>
+                </div>
+
+                {/* Investment Portfolio */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                  <div className="bg-blue-800/30 backdrop-blur-sm p-6 rounded-xl border border-blue-600/20 shadow-lg">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-purple-500 rounded-lg flex items-center justify-center">
+                        <i className="fas fa-chart-pie text-white"></i>
+                      </div>
+                      <span className="text-purple-400 text-sm font-medium">+8.5%</span>
+                    </div>
+                    <h3 className="text-2xl font-bold text-white mb-1">R$ 125.450</h3>
+                    <p className="text-blue-200 text-sm">Portfolio Total</p>
+                  </div>
+                  
+                  <div className="bg-blue-800/30 backdrop-blur-sm p-6 rounded-xl border border-blue-600/20 shadow-lg">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-500 rounded-lg flex items-center justify-center">
+                        <i className="fas fa-arrow-trend-up text-white"></i>
+                      </div>
+                      <span className="text-green-400 text-sm font-medium">+15.2%</span>
+                    </div>
+                    <h3 className="text-2xl font-bold text-white mb-1">R$ 18.750</h3>
+                    <p className="text-blue-200 text-sm">Rendimento Mês</p>
+                  </div>
+                  
+                  <div className="bg-blue-800/30 backdrop-blur-sm p-6 rounded-xl border border-blue-600/20 shadow-lg">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-500 rounded-lg flex items-center justify-center">
+                        <i className="fas fa-coins text-white"></i>
+                      </div>
+                      <span className="text-blue-400 text-sm font-medium">7 ativos</span>
+                    </div>
+                    <h3 className="text-2xl font-bold text-white mb-1">67%</h3>
+                    <p className="text-blue-200 text-sm">Diversificação</p>
+                  </div>
+                </div>
+
+                {/* Investment Breakdown */}
+                <div className="bg-blue-800/30 backdrop-blur-sm rounded-xl border border-blue-600/20 shadow-lg p-6 mb-6">
+                  <h3 className="text-lg font-semibold text-white mb-4 raleway">Distribuição de Investimentos</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      {[
+                        { tipo: "Renda Fixa", valor: "R$ 45.200", percent: "36%", color: "bg-blue-500" },
+                        { tipo: "Ações", valor: "R$ 38.900", percent: "31%", color: "bg-green-500" },
+                        { tipo: "Fundos", valor: "R$ 28.750", percent: "23%", color: "bg-purple-500" },
+                        { tipo: "Cripto", valor: "R$ 12.600", percent: "10%", color: "bg-yellow-500" }
+                      ].map((item, index) => (
+                        <div key={index} className="flex items-center justify-between p-3 bg-blue-700/20 rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <div className={`w-3 h-3 rounded-full ${item.color}`}></div>
+                            <span className="text-white font-medium">{item.tipo}</span>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-white font-semibold">{item.valor}</div>
+                            <div className="text-blue-300 text-sm">{item.percent}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex items-center justify-center">
+                      <div className="text-center text-blue-200">
+                        <i className="fas fa-chart-pie text-6xl mb-4 text-purple-400"></i>
+                        <p className="text-lg font-medium">Portfolio bem diversificado</p>
+                        <p className="text-sm">Baixo risco, bom potencial de retorno</p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1566,9 +1588,6 @@ export default function DemoFinancial() {
                 </div>
               </div>
             )}
-          </div>
-        </div>
-      </div>
-    </>
+    </AppShell>
   );
 }

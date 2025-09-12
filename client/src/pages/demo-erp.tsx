@@ -1,8 +1,6 @@
-import { useState, useEffect } from "react";
-import { Link } from "wouter";
-import Header from "@/components/Header";
-import CustomSystemsMessage from "@/components/CustomSystemsMessage";
+import { useState } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
+import AppShell from "@/components/layout/AppShell";
 
 interface Sale {
   id: string;
@@ -149,118 +147,49 @@ export default function DemoERP() {
     ));
   };
 
+  // Create navigation items
+  const navItems = [
+    {
+      id: 'dashboard',
+      label: 'Dashboard',
+      icon: 'fas fa-tachometer-alt',
+      onClick: () => setSelectedModule('dashboard'),
+      isActive: selectedModule === 'dashboard'
+    },
+    {
+      id: 'vendas',
+      label: 'Vendas',
+      icon: 'fas fa-chart-line',
+      onClick: () => setSelectedModule('vendas'),
+      isActive: selectedModule === 'vendas'
+    },
+    {
+      id: 'estoque',
+      label: 'Estoque',
+      icon: 'fas fa-boxes',
+      onClick: () => setSelectedModule('estoque'),
+      isActive: selectedModule === 'estoque'
+    },
+    {
+      id: 'financeiro',
+      label: 'Financeiro',
+      icon: 'fas fa-calculator',
+      onClick: () => setSelectedModule('financeiro'),
+      isActive: selectedModule === 'financeiro'
+    }
+  ];
+
   return (
-    <>
-      <Header />
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
-        {/* Demo Header */}
-        <div className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
-          <div className="max-w-7xl mx-auto px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <Link 
-                  href="/sistema/erp"
-                  className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 flex items-center"
-                >
-                  <i className="fas fa-arrow-left mr-2"></i>
-                  Voltar
-                </Link>
-                <div className="w-px h-6 bg-slate-300 dark:bg-slate-600"></div>
-                <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 raleway">ERP Demo - Sistema Empresarial</h1>
-              </div>
-              <div className="bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400 px-3 py-1 rounded-full text-sm font-medium">
-                <i className="fas fa-circle text-green-500 mr-2 text-xs"></i>
-                Ambiente de Demonstração
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex">
-          {/* Sidebar */}
-          <div className="w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 min-h-screen">
-            <div className="p-4">
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <i className="fas fa-chart-line text-white"></i>
-                </div>
-                <div>
-                  <h2 className="font-semibold text-slate-900 dark:text-slate-100">Sistema ERP</h2>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">Versão 2.1.0</p>
-                </div>
-              </div>
-
-              <nav className="space-y-2">
-                <button
-                  onClick={() => setSelectedModule('dashboard')}
-                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                    selectedModule === 'dashboard' 
-                      ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' 
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
-                  }`}
-                  data-testid="button-dashboard"
-                >
-                  <i className="fas fa-tachometer-alt w-4"></i>
-                  <span>Dashboard</span>
-                </button>
-                <button
-                  onClick={() => setSelectedModule('vendas')}
-                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                    selectedModule === 'vendas' 
-                      ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' 
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
-                  }`}
-                  data-testid="button-vendas"
-                >
-                  <i className="fas fa-chart-line w-4"></i>
-                  <span>Vendas</span>
-                </button>
-                <button
-                  onClick={() => setSelectedModule('estoque')}
-                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                    selectedModule === 'estoque' 
-                      ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' 
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
-                  }`}
-                  data-testid="button-estoque"
-                >
-                  <i className="fas fa-boxes w-4"></i>
-                  <span>Estoque</span>
-                </button>
-                <button
-                  onClick={() => setSelectedModule('financeiro')}
-                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                    selectedModule === 'financeiro' 
-                      ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' 
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
-                  }`}
-                  data-testid="button-financeiro"
-                >
-                  <i className="fas fa-calculator w-4"></i>
-                  <span>Financeiro</span>
-                </button>
-              </nav>
-
-              <div className="mt-8 p-3 bg-slate-100 dark:bg-slate-700 rounded-lg">
-                <h3 className="font-medium text-slate-900 dark:text-slate-100 mb-2">Usuário Logado</h3>
-                <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-medium">AD</span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100">Admin Demo</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">Gerente Geral</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Main Content */}
-          <div className="flex-1 p-6">
-            <div className="mb-6">
-              <CustomSystemsMessage variant="compact" className="mb-4" />
-            </div>
+    <AppShell
+      title="ERPSystem Pro - TechSolutions"
+      subtitle="Enterprise Edition"
+      systemIcon="fas fa-chart-line"
+      systemColor="from-blue-600 to-blue-500"
+      backHref="/sistema/erp"
+      statusBadge="Sistema Empresarial"
+      navItems={navItems}
+      currentUser="Admin Demo"
+    >
             
             {selectedModule === 'dashboard' && (
               <div>
@@ -337,7 +266,7 @@ export default function DemoERP() {
                 </div>
 
                 {/* Charts */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                   <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
                     <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4 raleway">Evolução de Vendas</h3>
                     <ResponsiveContainer width="100%" height={300}>
@@ -367,7 +296,7 @@ export default function DemoERP() {
                 </div>
 
                 {/* Recent Data and Category Chart */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
                     <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4 raleway">Vendas Recentes</h3>
                     <div className="space-y-4">
@@ -530,7 +459,7 @@ export default function DemoERP() {
                 {/* Add New Product Form */}
                 <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 mb-6">
                   <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">Novo Produto</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
                     <input
                       type="text"
                       placeholder="Nome do Produto"
@@ -649,7 +578,7 @@ export default function DemoERP() {
                 {/* Add New Transaction Form */}
                 <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 mb-6">
                   <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">Nova Transação</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                     <select
                       value={newTransaction.tipo}
                       onChange={(e) => setNewTransaction({...newTransaction, tipo: e.target.value as 'receita' | 'despesa'})}
@@ -783,9 +712,6 @@ export default function DemoERP() {
                 </div>
               </div>
             )}
-          </div>
-        </div>
-      </div>
-    </>
+    </AppShell>
   );
 }

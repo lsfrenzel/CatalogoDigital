@@ -1,11 +1,50 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import Header from "@/components/Header";
+import AppShell from "@/components/layout/AppShell";
 import CustomSystemsMessage from "@/components/CustomSystemsMessage";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, PieChart, Pie, Cell, LineChart, Line, AreaChart, Area } from 'recharts';
 
 export default function DemoRestaurant() {
   const [selectedModule, setSelectedModule] = useState('dashboard');
+  
+  // Navigation items for AppShell
+  const navItems = [
+    {
+      id: 'dashboard',
+      label: 'Dashboard',
+      icon: 'fas fa-tachometer-alt',
+      onClick: () => setSelectedModule('dashboard'),
+      isActive: selectedModule === 'dashboard'
+    },
+    {
+      id: 'pedidos',
+      label: 'Pedidos',
+      icon: 'fas fa-receipt',
+      onClick: () => setSelectedModule('pedidos'),
+      isActive: selectedModule === 'pedidos'
+    },
+    {
+      id: 'cardapio',
+      label: 'Cardápio',
+      icon: 'fas fa-book-open',
+      onClick: () => setSelectedModule('cardapio'),
+      isActive: selectedModule === 'cardapio'
+    },
+    {
+      id: 'mesas',
+      label: 'Mesas',
+      icon: 'fas fa-chair',
+      onClick: () => setSelectedModule('mesas'),
+      isActive: selectedModule === 'mesas'
+    },
+    {
+      id: 'relatorios',
+      label: 'Relatórios',
+      icon: 'fas fa-chart-line',
+      onClick: () => setSelectedModule('relatorios'),
+      isActive: selectedModule === 'relatorios'
+    }
+  ];
   
   // Estados avançados
   const [alertas, setAlertas] = useState([
@@ -112,351 +151,247 @@ export default function DemoRestaurant() {
   const COLORS = ['#EF4444', '#10B981', '#3B82F6', '#F59E0B', '#8B5CF6'];
 
   return (
-    <>
-      <Header />
-      <div className="min-h-screen bg-gradient-to-br from-amber-950 via-orange-950 to-red-950">
-        {/* Demo Header */}
-        <div className="bg-amber-950/90 border-b border-amber-900 shadow-sm">
-          <div className="max-w-7xl mx-auto px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <Link 
-                  href="/sistema/restaurant"
-                  className="text-amber-200 hover:text-amber-100 flex items-center"
-                >
-                  <i className="fas fa-arrow-left mr-2"></i>
-                  Voltar
-                </Link>
-                <div className="w-px h-6 bg-amber-600"></div>
-                <h1 className="text-2xl font-bold text-amber-100 raleway">RestaurantOS - Bella Vista</h1>
-              </div>
-              <div className="bg-amber-900 text-amber-100 px-3 py-1 rounded-full text-sm font-medium">
-                <i className="fas fa-circle text-green-400 mr-2 text-xs"></i>
-                Sistema em Funcionamento
-              </div>
-            </div>
+    <AppShell
+      title="RestaurantePro - TechSolutions"
+      subtitle="Food Service Edition"
+      systemIcon="fas fa-utensils"
+      systemColor="from-orange-600 to-orange-500"
+      backHref="/sistema/restaurant"
+      statusBadge="Sistema Restaurante"
+      navItems={navItems}
+      currentUser="Turno Jantar - 19:30 às 23:00"
+    >
+      {/* Alertas e Notificações */}
+      <div className="bg-orange-950/80 border-b border-orange-900 mb-6 rounded-lg">
+        <div className="p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold text-orange-100 flex items-center">
+              <i className="fas fa-bell mr-2 text-orange-400"></i>
+              Central de Alertas
+            </h3>
+            <span className="text-xs text-orange-400 bg-orange-900/50 px-2 py-1 rounded-full">
+              {alertas.filter(a => a.urgente).length} urgentes
+            </span>
           </div>
-        </div>
-
-        <div className="flex">
-          {/* Sidebar */}
-          <div className="w-64 bg-amber-950/90 border-r border-amber-900 min-h-screen shadow-lg">
-            <div className="p-4">
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="w-10 h-10 bg-gradient-to-br from-amber-600 to-orange-700 rounded-lg flex items-center justify-center">
-                  <i className="fas fa-utensils text-white"></i>
-                </div>
-                <div>
-                  <h2 className="font-semibold text-amber-100">RestaurantOS</h2>
-                  <p className="text-sm text-amber-300">Bella Vista</p>
-                </div>
-              </div>
-
-              <nav className="space-y-2">
-                <button
-                  onClick={() => setSelectedModule('dashboard')}
-                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                    selectedModule === 'dashboard' 
-                      ? 'bg-gradient-to-r from-amber-600 to-orange-700 text-white' 
-                      : 'text-amber-300 hover:bg-amber-900/60'
-                  }`}
-                  data-testid="button-dashboard"
-                >
-                  <i className="fas fa-tachometer-alt w-4"></i>
-                  <span>Dashboard</span>
-                </button>
-                <button
-                  onClick={() => setSelectedModule('mesas')}
-                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                    selectedModule === 'mesas' 
-                      ? 'bg-gradient-to-r from-amber-600 to-orange-700 text-white' 
-                      : 'text-amber-300 hover:bg-amber-900/60'
-                  }`}
-                  data-testid="button-mesas"
-                >
-                  <i className="fas fa-chair w-4"></i>
-                  <span>Mesas</span>
-                </button>
-                <button
-                  onClick={() => setSelectedModule('cozinha')}
-                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                    selectedModule === 'cozinha' 
-                      ? 'bg-gradient-to-r from-amber-600 to-orange-700 text-white' 
-                      : 'text-amber-300 hover:bg-amber-900/60'
-                  }`}
-                  data-testid="button-cozinha"
-                >
-                  <i className="fas fa-fire w-4"></i>
-                  <span>Cozinha</span>
-                </button>
-                <button
-                  onClick={() => setSelectedModule('cardapio')}
-                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                    selectedModule === 'cardapio' 
-                      ? 'bg-gradient-to-r from-amber-600 to-orange-700 text-white' 
-                      : 'text-amber-300 hover:bg-amber-900/60'
-                  }`}
-                  data-testid="button-cardapio"
-                >
-                  <i className="fas fa-book-open w-4"></i>
-                  <span>Cardápio</span>
-                </button>
-              </nav>
-
-              <div className="mt-8 p-3 bg-gradient-to-br from-amber-900 to-orange-900 rounded-lg border border-amber-800">
-                <h3 className="font-medium text-amber-100 mb-2">Turno Atual</h3>
-                <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 bg-gradient-to-br from-amber-600 to-orange-700 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-medium">J</span>
+          <div className="flex space-x-3 overflow-x-auto pb-2 snap-x">
+            {alertas.map((alerta) => (
+              <div key={alerta.id} className={`snap-start shrink-0 p-3 rounded-lg border transition-all hover:scale-105 ${
+                alerta.urgente ? 'bg-red-950/70 border-red-800 animate-pulse' : 'bg-orange-950/60 border-orange-800'
+              }`} data-testid={`alerta-${alerta.id}`}>
+                <div className="flex items-center space-x-3">
+                  <i className={`fas fa-${alerta.tipo === 'pedido' ? 'clock' : alerta.tipo === 'estoque' ? 'box' : 'calendar'} text-sm ${
+                    alerta.urgente ? 'text-red-400' : 'text-orange-400'
+                  }`}></i>
+                  <div className="flex-1">
+                    <p className="text-xs text-orange-200 font-medium">{alerta.mensagem}</p>
+                    <p className="text-xs text-orange-400 mt-1">{alerta.tempo} atrás</p>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-amber-100">Jantar</p>
-                    <p className="text-xs text-amber-300">19:30 - 23:00</p>
-                  </div>
-                </div>
-                <div className="mt-2 pt-2 border-t border-amber-700">
-                  <p className="text-xs text-amber-300">Ocupação</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-amber-100">{ocupacaoPercent}%</span>
-                    <span className="text-xs text-green-400">{mesas.length} mesas</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Main Content */}
-          <div className="flex-1 bg-gradient-to-br from-amber-950 to-orange-950">
-            {/* Alertas e Notificações */}
-            <div className="bg-amber-950/80 border-b border-amber-900">
-              <div className="p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-semibold text-amber-100 flex items-center">
-                    <i className="fas fa-bell mr-2 text-amber-400"></i>
-                    Central de Alertas
-                  </h3>
-                  <span className="text-xs text-amber-400 bg-amber-900/50 px-2 py-1 rounded-full">
-                    {alertas.filter(a => a.urgente).length} urgentes
-                  </span>
-                </div>
-                <div className="flex space-x-3 overflow-x-auto pb-2 snap-x">
-                  {alertas.map((alerta) => (
-                    <div key={alerta.id} className={`snap-start shrink-0 p-3 rounded-lg border transition-all hover:scale-105 ${
-                      alerta.urgente ? 'bg-red-950/70 border-red-800 animate-pulse' : 'bg-amber-950/60 border-amber-800'
-                    }`} data-testid={`alerta-${alerta.id}`}>
-                      <div className="flex items-center space-x-3">
-                        <i className={`fas fa-${alerta.tipo === 'pedido' ? 'clock' : alerta.tipo === 'estoque' ? 'box' : 'calendar'} text-sm ${
-                          alerta.urgente ? 'text-red-400' : 'text-amber-400'
-                        }`}></i>
-                        <div className="flex-1">
-                          <p className="text-xs text-amber-200 font-medium">{alerta.mensagem}</p>
-                          <p className="text-xs text-amber-400 mt-1">{alerta.tempo} atrás</p>
-                        </div>
-                        <button 
-                          onClick={() => setAlertas(prev => prev.filter(a => a.id !== alerta.id))}
-                          className="text-amber-400 hover:text-amber-200 text-sm font-bold transition-colors"
-                          data-testid={`button-dismiss-${alerta.id}`}
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    </div>
-                  ))}
                   <button 
-                    className="snap-start shrink-0 p-3 border-2 border-dashed border-amber-800 rounded-lg text-amber-400 hover:bg-amber-950/30 transition-colors"
-                    onClick={() => {
-                      const novoAlerta = {
-                        id: Math.max(...alertas.map(a => a.id)) + 1,
-                        tipo: 'pedido',
-                        mensagem: `Mesa ${Math.floor(Math.random() * 12) + 1} precisa de atenção`,
-                        tempo: 'agora',
-                        urgente: Math.random() > 0.5
-                      };
-                      setAlertas(prev => [...prev, novoAlerta]);
-                    }}
-                    data-testid="button-add-alert"
+                    onClick={() => setAlertas(prev => prev.filter(a => a.id !== alerta.id))}
+                    className="text-orange-400 hover:text-orange-200 text-sm font-bold transition-colors"
+                    data-testid={`button-dismiss-${alerta.id}`}
                   >
-                    <i className="fas fa-plus text-sm mr-2"></i>
-                    <span className="text-xs">Simular Alerta</span>
+                    ✕
                   </button>
                 </div>
               </div>
+            ))}
+            <button 
+              className="snap-start shrink-0 p-3 border-2 border-dashed border-orange-800 rounded-lg text-orange-400 hover:bg-orange-950/30 transition-colors"
+              onClick={() => {
+                const novoAlerta = {
+                  id: Math.max(...alertas.map(a => a.id)) + 1,
+                  tipo: 'pedido',
+                  mensagem: `Mesa ${Math.floor(Math.random() * 12) + 1} precisa de atenção`,
+                  tempo: 'agora',
+                  urgente: Math.random() > 0.5
+                };
+                setAlertas(prev => [...prev, novoAlerta]);
+              }}
+              data-testid="button-add-alert"
+            >
+              <i className="fas fa-plus text-sm mr-2"></i>
+              <span className="text-xs">Simular Alerta</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Custom Systems Message */}
+      <div className="mb-6">
+        <CustomSystemsMessage variant="compact" />
+      </div>
+
+      <>
+        {selectedModule === 'dashboard' && (
+        <div>
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-white mb-2 raleway">Dashboard do Restaurante</h2>
+            <p className="text-gray-300">Visão geral das operações do turno atual</p>
+          </div>
+
+          {/* KPI Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="bg-orange-950/80 p-6 rounded-xl border border-orange-900 shadow-lg hover:shadow-xl transition-shadow" data-testid="card-vendas">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-lg flex items-center justify-center">
+                  <i className="fas fa-dollar-sign text-white"></i>
+                </div>
+                <span className="text-green-400 text-sm font-medium">+18.5%</span>
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-1" data-testid="text-vendas-total">
+                R$ {totalVendas.toLocaleString('pt-BR')}
+              </h3>
+              <p className="text-gray-300 text-sm">Vendas do Turno</p>
             </div>
 
-            <div className="p-6">
-              {/* Custom Systems Message */}
-              <div className="mb-6">
-                <CustomSystemsMessage variant="compact" />
+            <div className="bg-orange-950/80 p-6 rounded-xl border border-orange-900 shadow-lg hover:shadow-xl transition-shadow" data-testid="card-pedidos">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-lg flex items-center justify-center">
+                  <i className="fas fa-receipt text-white"></i>
+                </div>
+                <span className="text-blue-400 text-sm font-medium">+{totalPedidos}</span>
               </div>
-              {selectedModule === 'dashboard' && (
-              <div>
-                <div className="mb-6">
-                  <h2 className="text-2xl font-bold text-amber-100 mb-2 raleway">Dashboard do Restaurante</h2>
-                  <p className="text-amber-300">Visão geral das operações do turno atual</p>
+              <h3 className="text-2xl font-bold text-white mb-1" data-testid="text-pedidos-total">
+                {totalPedidos}
+              </h3>
+              <p className="text-gray-300 text-sm">Pedidos Atendidos</p>
+            </div>
+
+            <div className="bg-orange-950/80 p-6 rounded-xl border border-orange-900 shadow-lg hover:shadow-xl transition-shadow" data-testid="card-mesas">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-red-500 rounded-lg flex items-center justify-center">
+                  <i className="fas fa-chair text-white"></i>
                 </div>
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-1" data-testid="text-mesas-livres">
+                {mesasLivres}
+              </h3>
+              <p className="text-gray-300 text-sm">Mesas Livres</p>
+              <p className="text-orange-400 text-xs mt-2">{ocupacaoPercent}% ocupação</p>
+            </div>
 
-                {/* KPI Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                  <div className="bg-amber-950/80 p-6 rounded-xl border border-amber-900 shadow-lg hover:shadow-xl transition-shadow" data-testid="card-vendas">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-lg flex items-center justify-center">
-                        <i className="fas fa-dollar-sign text-white"></i>
-                      </div>
-                      <span className="text-green-400 text-sm font-medium">+18.5%</span>
-                    </div>
-                    <h3 className="text-2xl font-bold text-amber-100 mb-1" data-testid="text-vendas-total">
-                      R$ {totalVendas.toLocaleString('pt-BR')}
-                    </h3>
-                    <p className="text-amber-300 text-sm">Vendas do Turno</p>
-                  </div>
-
-                  <div className="bg-amber-950/80 p-6 rounded-xl border border-amber-900 shadow-lg hover:shadow-xl transition-shadow" data-testid="card-pedidos">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-lg flex items-center justify-center">
-                        <i className="fas fa-receipt text-white"></i>
-                      </div>
-                      <span className="text-blue-400 text-sm font-medium">+{totalPedidos}</span>
-                    </div>
-                    <h3 className="text-2xl font-bold text-amber-100 mb-1" data-testid="text-pedidos-total">
-                      {totalPedidos}
-                    </h3>
-                    <p className="text-amber-300 text-sm">Pedidos Atendidos</p>
-                  </div>
-
-                  <div className="bg-amber-950/80 p-6 rounded-xl border border-amber-900 shadow-lg hover:shadow-xl transition-shadow" data-testid="card-mesas">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-red-500 rounded-lg flex items-center justify-center">
-                        <i className="fas fa-chair text-white"></i>
-                      </div>
-                    </div>
-                    <h3 className="text-2xl font-bold text-amber-100 mb-1" data-testid="text-mesas-livres">
-                      {mesasLivres}
-                    </h3>
-                    <p className="text-amber-300 text-sm">Mesas Livres</p>
-                    <p className="text-amber-400 text-xs mt-2">{ocupacaoPercent}% ocupação</p>
-                  </div>
-
-                  <div className="bg-amber-950/80 p-6 rounded-xl border border-amber-900 shadow-lg hover:shadow-xl transition-shadow" data-testid="card-tempo">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-500 rounded-lg flex items-center justify-center">
-                        <i className="fas fa-clock text-white"></i>
-                      </div>
-                    </div>
-                    <h3 className="text-2xl font-bold text-amber-100 mb-1" data-testid="text-tempo-medio">
-                      {tempoMedio}min
-                    </h3>
-                    <p className="text-amber-300 text-sm">Tempo Médio</p>
-                    <p className="text-purple-400 text-xs mt-2">Por pedido</p>
-                  </div>
+            <div className="bg-orange-950/80 p-6 rounded-xl border border-orange-900 shadow-lg hover:shadow-xl transition-shadow" data-testid="card-tempo">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-500 rounded-lg flex items-center justify-center">
+                  <i className="fas fa-clock text-white"></i>
                 </div>
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-1" data-testid="text-tempo-medio">
+                {tempoMedio}min
+              </h3>
+              <p className="text-gray-300 text-sm">Tempo Médio</p>
+              <p className="text-purple-400 text-xs mt-2">Por pedido</p>
+            </div>
+          </div>
 
-                {/* Gráfico Layout de Mesas */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                  <div className="bg-amber-950/80 rounded-xl border border-amber-900 p-6">
-                    <h3 className="text-lg font-semibold text-amber-100 mb-4 raleway">Layout do Restaurante</h3>
-                    <div className="grid grid-cols-4 gap-3 max-w-md mx-auto">
-                      {mesas.map((mesa) => (
-                        <div 
-                          key={mesa.numero}
-                          className={`relative w-16 h-16 rounded-lg border-2 flex items-center justify-center text-sm font-bold cursor-pointer transition-all duration-200 hover:scale-105 ${
-                            mesa.status === 'ocupada' ? 'bg-red-600 border-red-500 text-white' :
-                            mesa.status === 'livre' ? 'bg-green-600 border-green-500 text-white hover:bg-green-500' :
-                            mesa.status === 'reservada' ? 'bg-blue-600 border-blue-500 text-white' :
-                            'bg-yellow-600 border-yellow-500 text-white'
-                          }`}
-                          title={`Mesa ${mesa.numero} - ${mesa.status}${mesa.pedido ? ` - R$ ${mesa.pedido}` : ''}`}
-                          data-testid={`mesa-layout-${mesa.numero}`}
-                          onClick={() => {
-                            const novoStatus = mesa.status === 'livre' ? 'ocupada' : 
-                                            mesa.status === 'ocupada' ? 'conta' : 
-                                            mesa.status === 'conta' ? 'livre' : mesa.status;
-                            setMesas(prev => prev.map(m => 
-                              m.numero === mesa.numero 
-                                ? { ...m, status: novoStatus, pedido: novoStatus === 'ocupada' ? Math.floor(Math.random() * 200) + 50 : novoStatus === 'livre' ? 0 : m.pedido }
-                                : m
-                            ));
-                          }}
-                        >
-                          {mesa.numero}
-                          {mesa.status === 'ocupada' && (
-                            <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-400 rounded-full border border-white"></div>
-                          )}
-                          {mesa.status === 'reservada' && (
-                            <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-400 rounded-full border border-white"></div>
-                          )}
-                          {mesa.status === 'conta' && (
-                            <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full border border-white"></div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                    <div className="flex items-center justify-center space-x-4 mt-4 text-xs">
-                      <div className="flex items-center space-x-1">
-                        <div className="w-3 h-3 bg-green-600 rounded"></div>
-                        <span className="text-amber-300">Livre</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <div className="w-3 h-3 bg-red-600 rounded"></div>
-                        <span className="text-amber-300">Ocupada</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <div className="w-3 h-3 bg-blue-600 rounded"></div>
-                        <span className="text-amber-300">Reservada</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <div className="w-3 h-3 bg-yellow-600 rounded"></div>
-                        <span className="text-amber-300">Conta</span>
-                      </div>
-                    </div>
+          {/* Gráfico Layout de Mesas */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div className="bg-orange-950/80 rounded-xl border border-orange-900 p-6">
+              <h3 className="text-lg font-semibold text-white mb-4 raleway">Layout do Restaurante</h3>
+              <div className="grid grid-cols-4 gap-3 max-w-md mx-auto">
+                {mesas.map((mesa) => (
+                  <div 
+                    key={mesa.numero}
+                    className={`relative w-16 h-16 rounded-lg border-2 flex items-center justify-center text-sm font-bold cursor-pointer transition-all duration-200 hover:scale-105 ${
+                      mesa.status === 'ocupada' ? 'bg-red-600 border-red-500 text-white' :
+                      mesa.status === 'livre' ? 'bg-green-600 border-green-500 text-white hover:bg-green-500' :
+                      mesa.status === 'reservada' ? 'bg-blue-600 border-blue-500 text-white' :
+                      'bg-yellow-600 border-yellow-500 text-white'
+                    }`}
+                    title={`Mesa ${mesa.numero} - ${mesa.status}${mesa.pedido ? ` - R$ ${mesa.pedido}` : ''}`}
+                    data-testid={`mesa-layout-${mesa.numero}`}
+                    onClick={() => {
+                      const novoStatus = mesa.status === 'livre' ? 'ocupada' : 
+                                      mesa.status === 'ocupada' ? 'conta' : 
+                                      mesa.status === 'conta' ? 'livre' : mesa.status;
+                      setMesas(prev => prev.map(m => 
+                        m.numero === mesa.numero 
+                          ? { ...m, status: novoStatus, pedido: novoStatus === 'ocupada' ? Math.floor(Math.random() * 200) + 50 : novoStatus === 'livre' ? 0 : m.pedido }
+                          : m
+                      ));
+                    }}
+                  >
+                    {mesa.numero}
+                    {mesa.status === 'ocupada' && (
+                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-400 rounded-full border border-white"></div>
+                    )}
+                    {mesa.status === 'reservada' && (
+                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-400 rounded-full border border-white"></div>
+                    )}
+                    {mesa.status === 'conta' && (
+                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full border border-white"></div>
+                    )}
                   </div>
-
-                  <div className="bg-amber-950/80 rounded-xl border border-amber-900 p-6">
-                    <h3 className="text-lg font-semibold text-amber-100 mb-4 raleway">Status das Mesas</h3>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <PieChart>
-                        <Pie
-                          data={statusMesasData}
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={80}
-                          fill="#8884d8"
-                          dataKey="value"
-                          label={({ name, value }) => `${name}: ${value}`}
-                        >
-                          {statusMesasData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Pie>
-                        <Tooltip 
-                          contentStyle={{ backgroundColor: '#C2410C', border: '1px solid #EA580C', borderRadius: '8px' }}
-                          labelStyle={{ color: '#FED7AA' }}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
+                ))}
+              </div>
+              <div className="flex items-center justify-center space-x-4 mt-4 text-xs">
+                <div className="flex items-center space-x-1">
+                  <div className="w-3 h-3 bg-green-600 rounded"></div>
+                  <span className="text-gray-300">Livre</span>
                 </div>
+                <div className="flex items-center space-x-1">
+                  <div className="w-3 h-3 bg-red-600 rounded"></div>
+                  <span className="text-gray-300">Ocupada</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <div className="w-3 h-3 bg-blue-600 rounded"></div>
+                  <span className="text-gray-300">Reservada</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <div className="w-3 h-3 bg-yellow-600 rounded"></div>
+                  <span className="text-gray-300">Conta</span>
+                </div>
+              </div>
+            </div>
 
-                {/* Gráficos de Performance */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                  <div className="bg-orange-800 rounded-xl border border-orange-700 p-6">
-                    <h3 className="text-lg font-semibold text-orange-100 mb-4 raleway">Vendas por Hora</h3>
-                    <ResponsiveContainer width="100%" height={250}>
-                      <AreaChart data={vendasDiariasData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#C2410C" />
-                        <XAxis dataKey="hora" stroke="#FED7AA" />
-                        <YAxis stroke="#FED7AA" />
-                        <Tooltip 
-                          formatter={(value: number) => [`R$ ${value.toFixed(0)}`, 'Vendas']}
-                          contentStyle={{ backgroundColor: '#C2410C', border: '1px solid #EA580C', borderRadius: '8px' }}
-                          labelStyle={{ color: '#FED7AA' }}
-                        />
-                        <Area type="monotone" dataKey="vendas" stroke="#10B981" fill="#10B981" fillOpacity={0.3} />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </div>
+            <div className="bg-orange-950/80 rounded-xl border border-orange-900 p-6">
+              <h3 className="text-lg font-semibold text-white mb-4 raleway">Status das Mesas</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={statusMesasData}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                    label={({ name, value }) => `${name}: ${value}`}
+                  >
+                    {statusMesasData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#C2410C', border: '1px solid #EA580C', borderRadius: '8px' }}
+                    labelStyle={{ color: '#FED7AA' }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
 
-                  <div className="bg-orange-800 rounded-xl border border-orange-700 p-6">
-                    <h3 className="text-lg font-semibold text-orange-100 mb-4 raleway">Performance da Equipe</h3>
+          {/* Gráficos de Performance */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div className="bg-orange-950/80 rounded-xl border border-orange-900 p-6">
+              <h3 className="text-lg font-semibold text-white mb-4 raleway">Vendas por Hora</h3>
+              <ResponsiveContainer width="100%" height={250}>
+                <AreaChart data={vendasDiariasData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#C2410C" />
+                  <XAxis dataKey="hora" stroke="#FED7AA" />
+                  <YAxis stroke="#FED7AA" />
+                  <Tooltip 
+                    formatter={(value: number) => [`R$ ${value.toFixed(0)}`, 'Vendas']}
+                    contentStyle={{ backgroundColor: '#C2410C', border: '1px solid #EA580C', borderRadius: '8px' }}
+                    labelStyle={{ color: '#FED7AA' }}
+                  />
+                  <Area type="monotone" dataKey="vendas" stroke="#10B981" fill="#10B981" fillOpacity={0.3} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div className="bg-orange-950/80 rounded-xl border border-orange-900 p-6">
+              <h3 className="text-lg font-semibold text-white mb-4 raleway">Performance da Equipe</h3>
                     <ResponsiveContainer width="100%" height={250}>
                       <BarChart data={performanceFuncionarios}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#C2410C" />
@@ -981,12 +916,281 @@ export default function DemoRestaurant() {
                     ))}
                   </div>
                 </div>
+          </div>
+        )}
+
+        {selectedModule === 'pedidos' && (
+        <div>
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-white mb-2 raleway">Gestão de Pedidos</h2>
+            <p className="text-gray-300">Controle de pedidos em tempo real</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div className="bg-orange-950/80 rounded-xl border border-orange-900 p-6">
+              <h3 className="text-lg font-semibold text-white mb-4 raleway">Pedidos da Cozinha</h3>
+              <div className="space-y-4">
+                {pedidosCozinha.map((pedido) => (
+                  <div key={pedido.id} className={`p-4 rounded-lg border ${
+                    pedido.status === 'pronto' ? 'bg-green-950/50 border-green-800' :
+                    pedido.status === 'preparando' ? 'bg-orange-950/50 border-orange-800' :
+                    'bg-gray-950/50 border-gray-800'
+                  }`} data-testid={`pedido-${pedido.id}`}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-medium text-white">Mesa {pedido.mesa}</span>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        pedido.status === 'pronto' ? 'bg-green-600 text-green-100' :
+                        pedido.status === 'preparando' ? 'bg-orange-600 text-orange-100' :
+                        'bg-gray-600 text-gray-100'
+                      }`}>
+                        {pedido.status}
+                      </span>
+                    </div>
+                    <p className="text-gray-300 text-sm mb-2">{pedido.item} x{pedido.quantidade}</p>
+                    <p className="text-orange-400 text-sm">Tempo: {pedido.tempo}</p>
+                  </div>
+                ))}
               </div>
-              )}
+            </div>
+            
+            <div className="bg-orange-950/80 rounded-xl border border-orange-900 p-6">
+              <h3 className="text-lg font-semibold text-white mb-4 raleway">Novo Pedido</h3>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Mesa</label>
+                    <select 
+                      value={novoPedido.mesa}
+                      onChange={(e) => setNovoPedido(prev => ({ ...prev, mesa: e.target.value }))}
+                      className="w-full px-3 py-2 bg-orange-900/50 border border-orange-800 rounded-lg text-white"
+                      data-testid="select-mesa-pedido"
+                    >
+                      <option value="">Selecione a mesa</option>
+                      {mesas.filter(m => m.status === 'ocupada').map((mesa) => (
+                        <option key={mesa.numero} value={mesa.numero}>Mesa {mesa.numero}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Quantidade</label>
+                    <input
+                      type="number"
+                      value={novoPedido.quantidade}
+                      onChange={(e) => setNovoPedido(prev => ({ ...prev, quantidade: parseInt(e.target.value) }))}
+                      className="w-full px-3 py-2 bg-orange-900/50 border border-orange-800 rounded-lg text-white"
+                      min="1"
+                      data-testid="input-quantidade-pedido"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Prato</label>
+                  <select
+                    value={novoPedido.prato}
+                    onChange={(e) => setNovoPedido(prev => ({ ...prev, prato: e.target.value }))}
+                    className="w-full px-3 py-2 bg-orange-900/50 border border-orange-800 rounded-lg text-white"
+                    data-testid="select-prato-pedido"
+                  >
+                    <option value="">Selecione o prato</option>
+                    {pratosPopulares.filter(p => p.disponivel).map((prato) => (
+                      <option key={prato.nome} value={prato.nome}>{prato.nome} - R$ {prato.valor.toFixed(2)}</option>
+                    ))}
+                  </select>
+                </div>
+                <button 
+                  onClick={() => {
+                    if (novoPedido.mesa && novoPedido.prato) {
+                      const novoPedidoItem = {
+                        id: Math.max(...pedidosCozinha.map(p => p.id)) + 1,
+                        mesa: parseInt(novoPedido.mesa),
+                        item: novoPedido.prato,
+                        quantidade: novoPedido.quantidade,
+                        tempo: '0min',
+                        status: 'pendente' as const,
+                        prioridade: 'normal' as const
+                      };
+                      setPedidosCozinha(prev => [...prev, novoPedidoItem]);
+                      setNovoPedido({ mesa: '', prato: '', quantidade: 1 });
+                    }
+                  }}
+                  className="w-full bg-gradient-to-r from-orange-600 to-orange-500 text-white px-4 py-2 rounded-lg font-medium hover:from-orange-700 hover:to-orange-600 transition-all"
+                  data-testid="button-criar-pedido"
+                >
+                  Criar Pedido
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </>
+      )}
+
+      {selectedModule === 'cardapio' && (
+        <div>
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-white mb-2 raleway">Gerenciar Cardápio</h2>
+            <p className="text-gray-300">Controle de pratos e disponibilidade</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {pratosPopulares.map((prato, index) => (
+              <div key={index} className="bg-orange-950/80 rounded-xl border border-orange-900 shadow-lg overflow-hidden" data-testid={`card-prato-${index}`}>
+                <div className="h-48 bg-gradient-to-br from-orange-900 to-red-900 relative overflow-hidden">
+                  {(() => {
+                    const safeSrc = prato.imagem || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300&h=200&fit=crop';
+                    return (
+                      <img 
+                        src={safeSrc} 
+                        alt={`Imagem de ${prato.nome}`}
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 border border-orange-600"
+                        onError={(e) => {
+                          e.currentTarget.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300&h=200&fit=crop';
+                        }}
+                        data-testid={`img-prato-${index}`}
+                      />
+                    );
+                  })()} 
+                </div>
+                <div className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-medium text-white">{prato.nome}</h4>
+                    <button 
+                      onClick={() => {
+                        setPratosPopulares(prev => prev.map((p, i) => 
+                          i === index ? { ...p, disponivel: !p.disponivel } : p
+                        ));
+                      }}
+                      className={`text-xs px-2 py-1 rounded-full ${
+                        prato.disponivel ? 'bg-green-600 text-green-100' : 'bg-red-600 text-red-100'
+                      }`}
+                      data-testid={`button-toggle-${index}`}
+                    >
+                      {prato.disponivel ? 'Disponível' : 'Indisponível'}
+                    </button>
+                  </div>
+                  <p className="text-sm text-gray-300 mb-2">{prato.categoria}</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-lg font-bold text-white">R$ {prato.valor.toFixed(2).replace('.', ',')}</span>
+                    <span className="text-sm text-orange-400">{prato.vendas} vendas</span>
+                  </div>
+                  <div className="mt-2 text-xs text-orange-400">
+                    <i className="fas fa-box mr-1"></i>
+                    Estoque: {prato.estoque}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {selectedModule === 'mesas' && (
+        <div>
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-white mb-2 raleway">Controle de Mesas</h2>
+            <p className="text-gray-300">Gestão em tempo real das mesas do restaurante</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {mesas.map((mesa) => (
+              <div key={mesa.numero} className={`p-6 rounded-xl border shadow-lg transition-all hover:scale-105 cursor-pointer ${
+                mesa.status === 'ocupada' ? 'bg-red-950/80 border-red-900' :
+                mesa.status === 'livre' ? 'bg-green-950/80 border-green-900' :
+                mesa.status === 'reservada' ? 'bg-blue-950/80 border-blue-900' :
+                'bg-yellow-950/80 border-yellow-900'
+              }`} data-testid={`mesa-card-${mesa.numero}`}>
+                <div className="text-center">
+                  <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center text-2xl font-bold ${
+                    mesa.status === 'ocupada' ? 'bg-red-600 text-white' :
+                    mesa.status === 'livre' ? 'bg-green-600 text-white' :
+                    mesa.status === 'reservada' ? 'bg-blue-600 text-white' :
+                    'bg-yellow-600 text-white'
+                  }`}>
+                    {mesa.numero}
+                  </div>
+                  <h3 className="text-lg font-semibold text-white mb-2">Mesa {mesa.numero}</h3>
+                  <p className="text-sm text-gray-300 mb-2 capitalize">{mesa.status}</p>
+                  {mesa.status === 'ocupada' && (
+                    <>
+                      <p className="text-sm text-gray-400">Garçom: {mesa.garcom}</p>
+                      <p className="text-sm text-orange-400">R$ {mesa.pedido}</p>
+                      <p className="text-xs text-gray-400">{mesa.tempo}</p>
+                      <p className="text-xs text-gray-400">{mesa.pessoas} pessoas</p>
+                    </>
+                  )}
+                  {mesa.status === 'reservada' && (
+                    <>
+                      <p className="text-sm text-gray-400">Garçom: {mesa.garcom}</p>
+                      <p className="text-sm text-blue-400">Horário: {mesa.tempo}</p>
+                      <p className="text-xs text-gray-400">{mesa.pessoas} pessoas</p>
+                    </>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {selectedModule === 'relatorios' && (
+        <div>
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-white mb-2 raleway">Relatórios e Analytics</h2>
+            <p className="text-gray-300">Métricas de performance e vendas</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div className="bg-orange-950/80 rounded-xl border border-orange-900 p-6">
+              <h3 className="text-lg font-semibold text-white mb-4 raleway">Performance da Equipe</h3>
+              <div className="space-y-4">
+                {funcionarios.map((funcionario, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 bg-orange-900/50 rounded-lg" data-testid={`funcionario-${index}`}>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-orange-600 to-orange-500 rounded-full flex items-center justify-center">
+                        <span className="text-white text-sm font-medium">{funcionario.nome[0]}</span>
+                      </div>
+                      <div>
+                        <p className="font-medium text-white">{funcionario.nome}</p>
+                        <p className="text-sm text-gray-400">{funcionario.cargo}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium text-white">R$ {funcionario.vendas}</p>
+                      <p className="text-xs text-orange-400">Comissão: R$ {funcionario.comissao.toFixed(2)}</p>
+                      <p className="text-xs text-gray-400">{funcionario.horasTrabalhadas}h trabalhadas</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div className="bg-orange-950/80 rounded-xl border border-orange-900 p-6">
+              <h3 className="text-lg font-semibold text-white mb-4 raleway">Vendas por Categoria</h3>
+              <ResponsiveContainer width="100%" height={250}>
+                <PieChart>
+                  <Pie
+                    data={pratosCategoriaData}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                    label={({ name, value }) => `${name}: ${value}`}
+                  >
+                    {pratosCategoriaData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#C2410C', border: '1px solid #EA580C', borderRadius: '8px' }}
+                    labelStyle={{ color: '#FED7AA' }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+      )}
+      </>
+    </AppShell>
   );
 }

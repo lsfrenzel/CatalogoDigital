@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
-import Header from "@/components/Header";
+import AppShell from "@/components/layout/AppShell";
 import CustomSystemsMessage from "@/components/CustomSystemsMessage";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -61,6 +61,52 @@ interface Professor {
 export default function DemoEducation() {
   const [selectedModule, setSelectedModule] = useState('dashboard');
   const { toast } = useToast();
+
+  // Navigation items for AppShell
+  const navItems = [
+    {
+      id: 'dashboard',
+      label: 'Dashboard',
+      icon: 'fas fa-chart-pie',
+      onClick: () => setSelectedModule('dashboard'),
+      isActive: selectedModule === 'dashboard'
+    },
+    {
+      id: 'alunos',
+      label: 'Alunos',
+      icon: 'fas fa-users',
+      onClick: () => setSelectedModule('alunos'),
+      isActive: selectedModule === 'alunos'
+    },
+    {
+      id: 'cursos',
+      label: 'Cursos',
+      icon: 'fas fa-book',
+      onClick: () => setSelectedModule('cursos'),
+      isActive: selectedModule === 'cursos'
+    },
+    {
+      id: 'professores',
+      label: 'Professores',
+      icon: 'fas fa-chalkboard-teacher',
+      onClick: () => setSelectedModule('professores'),
+      isActive: selectedModule === 'professores'
+    },
+    {
+      id: 'avaliacoes',
+      label: 'Avaliações',
+      icon: 'fas fa-clipboard-check',
+      onClick: () => setSelectedModule('avaliacoes'),
+      isActive: selectedModule === 'avaliacoes'
+    },
+    {
+      id: 'relatorios',
+      label: 'Relatórios',
+      icon: 'fas fa-chart-line',
+      onClick: () => setSelectedModule('relatorios'),
+      isActive: selectedModule === 'relatorios'
+    }
+  ];
 
   // State for data management
   const [students, setStudents] = useState<Student[]>([
@@ -365,137 +411,20 @@ export default function DemoEducation() {
   ];
 
   return (
-    <>
-      <Header />
-      <div className="min-h-screen bg-green-900 dark:bg-green-950">
-        {/* Demo Header */}
-        <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 shadow-sm">
-          <div className="max-w-7xl mx-auto px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <Link 
-                  href="/sistema/education"
-                  className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 flex items-center"
-                >
-                  <i className="fas fa-arrow-left mr-2"></i>
-                  Voltar
-                </Link>
-                <div className="w-px h-6 bg-indigo-300 dark:bg-slate-600"></div>
-                <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 raleway">EduPlatform - TechSolutions</h1>
-              </div>
-              <div className="bg-indigo-100 dark:bg-indigo-900/20 text-indigo-800 dark:text-indigo-400 px-3 py-1 rounded-full text-sm font-medium">
-                <i className="fas fa-circle text-indigo-500 mr-2 text-xs"></i>
-                Ambiente Acadêmico
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex">
-          {/* Sidebar */}
-          <div className="w-64 bg-white dark:bg-slate-800 border-r border-gray-200 dark:border-slate-700 min-h-screen shadow-lg">
-            <div className="p-4">
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
-                  <i className="fas fa-graduation-cap text-white"></i>
-                </div>
-                <div>
-                  <h2 className="font-semibold text-slate-900 dark:text-slate-100">EduPlatform</h2>
-                  <p className="text-sm text-indigo-600 dark:text-indigo-400">Learning Management</p>
-                </div>
-              </div>
-
-              <nav className="space-y-2">
-                <button
-                  onClick={() => setSelectedModule('dashboard')}
-                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                    selectedModule === 'dashboard' 
-                      ? 'bg-indigo-600 text-white' 
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-indigo-50 dark:hover:bg-slate-700'
-                  }`}
-                  data-testid="nav-dashboard"
-                >
-                  <i className="fas fa-chart-pie w-4"></i>
-                  <span>Dashboard</span>
-                </button>
-                <button
-                  onClick={() => setSelectedModule('alunos')}
-                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                    selectedModule === 'alunos' 
-                      ? 'bg-indigo-600 text-white' 
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-indigo-50 dark:hover:bg-slate-700'
-                  }`}
-                  data-testid="nav-students"
-                >
-                  <i className="fas fa-users w-4"></i>
-                  <span>Alunos</span>
-                </button>
-                <button
-                  onClick={() => setSelectedModule('cursos')}
-                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                    selectedModule === 'cursos' 
-                      ? 'bg-indigo-600 text-white' 
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-indigo-50 dark:hover:bg-slate-700'
-                  }`}
-                  data-testid="nav-courses"
-                >
-                  <i className="fas fa-book w-4"></i>
-                  <span>Cursos</span>
-                </button>
-                <button
-                  onClick={() => setSelectedModule('avaliacoes')}
-                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                    selectedModule === 'avaliacoes' 
-                      ? 'bg-indigo-600 text-white' 
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-indigo-50 dark:hover:bg-slate-700'
-                  }`}
-                  data-testid="nav-evaluations"
-                >
-                  <i className="fas fa-clipboard-check w-4"></i>
-                  <span>Avaliações</span>
-                </button>
-                <button
-                  onClick={() => setSelectedModule('professores')}
-                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                    selectedModule === 'professores' 
-                      ? 'bg-indigo-600 text-white' 
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-indigo-50 dark:hover:bg-slate-700'
-                  }`}
-                  data-testid="nav-professors"
-                >
-                  <i className="fas fa-chalkboard-teacher w-4"></i>
-                  <span>Professores</span>
-                </button>
-              </nav>
-
-              <div className="mt-8 p-3 bg-slate-100 dark:bg-slate-700 rounded-lg">
-                <h3 className="font-medium text-slate-900 dark:text-slate-100 mb-2">Período Letivo</h3>
-                <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-medium">2</span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100">2º Semestre 2024</p>
-                    <p className="text-xs text-indigo-600 dark:text-indigo-400">Novembro</p>
-                  </div>
-                </div>
-                <div className="mt-2 pt-2 border-t border-indigo-200 dark:border-slate-500">
-                  <p className="text-xs text-slate-600 dark:text-slate-400">Progresso Médio</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">87.3%</span>
-                    <span className="text-xs text-green-600 dark:text-green-400">+5.2%</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Main Content */}
-          <div className="flex-1 p-6">
-            {/* Custom Systems Message */}
-            <div className="mb-6">
-              <CustomSystemsMessage variant="compact" />
-            </div>
+    <AppShell
+      title="EduSoftware - TechSolutions"
+      subtitle="Education Edition"
+      systemIcon="fas fa-graduation-cap"
+      systemColor="from-indigo-600 to-indigo-500"
+      backHref="/sistema/education"
+      statusBadge="Sistema Educacional"
+      navItems={navItems}
+      currentUser="Período Letivo 2024.2"
+    >
+      {/* Custom Systems Message */}
+      <div className="mb-6">
+        <CustomSystemsMessage variant="compact" />
+      </div>
             {selectedModule === 'dashboard' && (
               <div>
                 <div className="mb-6">
@@ -1895,9 +1824,107 @@ export default function DemoEducation() {
                 </Dialog>
               </div>
             )}
+
+      {selectedModule === 'relatorios' && (
+        <div>
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2 raleway">Relatórios Acadêmicos</h2>
+            <p className="text-slate-600 dark:text-slate-400">Análises e relatórios do sistema educacional</p>
+          </div>
+
+          {/* Reports Overview Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-indigo-200 dark:border-slate-700 shadow-lg">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+                  <i className="fas fa-chart-line text-white"></i>
+                </div>
+                <span className="text-blue-600 dark:text-blue-400 text-sm font-medium">Mensal</span>
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-1">Performance Acadêmica</h3>
+              <p className="text-slate-600 dark:text-slate-400 text-sm">Análise de desempenho dos alunos</p>
+              <p className="text-blue-600 dark:text-blue-400 text-xs mt-2">Taxa média: 87.3%</p>
+            </div>
+
+            <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-indigo-200 dark:border-slate-700 shadow-lg">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center">
+                  <i className="fas fa-users text-white"></i>
+                </div>
+                <span className="text-green-600 dark:text-green-400 text-sm font-medium">Semanal</span>
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-1">Engajamento</h3>
+              <p className="text-slate-600 dark:text-slate-400 text-sm">Participação em aulas e atividades</p>
+              <p className="text-green-600 dark:text-green-400 text-xs mt-2">Média: 92.1%</p>
+            </div>
+
+            <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-indigo-200 dark:border-slate-700 shadow-lg">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center">
+                  <i className="fas fa-graduation-cap text-white"></i>
+                </div>
+                <span className="text-purple-600 dark:text-purple-400 text-sm font-medium">Anual</span>
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-1">Taxa de Conclusão</h3>
+              <p className="text-slate-600 dark:text-slate-400 text-sm">Cursos concluídos vs iniciados</p>
+              <p className="text-purple-600 dark:text-purple-400 text-xs mt-2">88.5% de sucesso</p>
+            </div>
+          </div>
+
+          {/* Quick Reports */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-indigo-200 dark:border-slate-700 shadow-lg p-6">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4 raleway flex items-center">
+              <i className="fas fa-file-alt text-indigo-600 mr-2"></i>
+              Relatórios Disponíveis
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Button className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 h-auto" data-testid="button-academic-performance">
+                <div className="flex items-center space-x-3">
+                  <i className="fas fa-chart-bar text-blue-600"></i>
+                  <div className="text-left">
+                    <p className="font-medium text-slate-900 dark:text-slate-100">Performance Acadêmica</p>
+                    <p className="text-xs text-slate-600 dark:text-slate-400">Notas e aproveitamento por curso</p>
+                  </div>
+                </div>
+                <i className="fas fa-download text-slate-400"></i>
+              </Button>
+              
+              <Button className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 h-auto" data-testid="button-attendance">
+                <div className="flex items-center space-x-3">
+                  <i className="fas fa-calendar-check text-green-600"></i>
+                  <div className="text-left">
+                    <p className="font-medium text-slate-900 dark:text-slate-100">Relatório de Frequência</p>
+                    <p className="text-xs text-slate-600 dark:text-slate-400">Presença em aulas e atividades</p>
+                  </div>
+                </div>
+                <i className="fas fa-download text-slate-400"></i>
+              </Button>
+              
+              <Button className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 h-auto" data-testid="button-professor-performance">
+                <div className="flex items-center space-x-3">
+                  <i className="fas fa-chalkboard-teacher text-purple-600"></i>
+                  <div className="text-left">
+                    <p className="font-medium text-slate-900 dark:text-slate-100">Desempenho Docente</p>
+                    <p className="text-xs text-slate-600 dark:text-slate-400">Avaliações e carga horária</p>
+                  </div>
+                </div>
+                <i className="fas fa-download text-slate-400"></i>
+              </Button>
+              
+              <Button className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 h-auto" data-testid="button-financial">
+                <div className="flex items-center space-x-3">
+                  <i className="fas fa-dollar-sign text-orange-600"></i>
+                  <div className="text-left">
+                    <p className="font-medium text-slate-900 dark:text-slate-100">Relatório Financeiro</p>
+                    <p className="text-xs text-slate-600 dark:text-slate-400">Matrículas e receitas por curso</p>
+                  </div>
+                </div>
+                <i className="fas fa-download text-slate-400"></i>
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
-    </>
+      )}
+    </AppShell>
   );
 }
