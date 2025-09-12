@@ -272,14 +272,101 @@ export default function DemoFinancial() {
           return line;
         }).join('\n');
         
-        // For a real implementation, you would use a PDF library like jsPDF
-        // but for demo purposes, we'll create a downloadable text file with PDF extension
-        const blob = new Blob([pdfContent], { type: 'application/pdf' });
+        // Create a properly formatted HTML report that can be viewed and printed as PDF
+        const htmlContent = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório Financeiro TechSolutions</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
+        .header { text-align: center; border-bottom: 2px solid #3B82F6; padding-bottom: 20px; margin-bottom: 30px; }
+        .section { margin: 25px 0; }
+        .section h2 { color: #1e40af; border-left: 4px solid #3B82F6; padding-left: 10px; }
+        .summary { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin: 20px 0; }
+        .summary-item { background: #f8fafc; padding: 15px; border-radius: 5px; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #f5f5f5; font-weight: bold; }
+        .entrada { color: #10b981; } .saida { color: #ef4444; }
+        .status-vencido { color: #ef4444; font-weight: bold; }
+        .status-vencendo { color: #f59e0b; font-weight: bold; }
+        .status-normal { color: #10b981; font-weight: bold; }
+        @media print { body { margin: 20px; } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>RELATÓRIO FINANCEIRO</h1>
+        <h2>TechSolutions</h2>
+        <p><strong>Data:</strong> ${new Date().toLocaleDateString('pt-BR')} | <strong>Período:</strong> ${selectedPeriod === 'mes' ? 'Mensal' : selectedPeriod === 'trimestre' ? 'Trimestral' : 'Anual'}</p>
+    </div>
+
+    <div class="section">
+        <h2>RESUMO FINANCEIRO</h2>
+        <div class="summary">
+            <div class="summary-item"><strong>Saldo Total:</strong> ${financialData.saldoTotal}</div>
+            <div class="summary-item"><strong>Receitas:</strong> ${financialData.receitasMes}</div>
+            <div class="summary-item"><strong>Despesas:</strong> ${financialData.despesasMes}</div>
+            <div class="summary-item"><strong>Lucro Líquido:</strong> ${financialData.lucroLiquido}</div>
+            <div class="summary-item"><strong>A Receber:</strong> ${financialData.contasReceber}</div>
+            <div class="summary-item"><strong>A Pagar:</strong> ${financialData.contasPagar}</div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>FLUXO DE CAIXA</h2>
+        <table>
+            <tr><th>Período</th><th>Entradas</th><th>Saídas</th><th>Saldo</th></tr>
+            ${cashFlowData.map(item => `<tr><td>${item.mes}</td><td class="entrada">R$ ${item.entradas.toLocaleString('pt-BR')}</td><td class="saida">R$ ${item.saidas.toLocaleString('pt-BR')}</td><td><strong>R$ ${item.saldo.toLocaleString('pt-BR')}</strong></td></tr>`).join('')}
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>INDICADORES FINANCEIROS</h2>
+        <div class="summary">
+            ${indicators.map(ind => `<div class="summary-item"><strong>${ind.nome}:</strong> ${ind.valor} (${ind.variacao})</div>`).join('')}
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>CONTAS A RECEBER</h2>
+        <table>
+            <tr><th>Cliente</th><th>Valor</th><th>Vencimento</th><th>Status</th></tr>
+            ${contasReceber.map(c => `<tr><td>${c.cliente}</td><td><strong>${c.valor}</strong></td><td>${c.vencimento}</td><td class="status-${c.status}">${c.status === 'vencido' ? 'Vencida' : c.status === 'vencendo' ? 'Vencendo' : 'No Prazo'}</td></tr>`).join('')}
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>CONTAS A PAGAR</h2>
+        <table>
+            <tr><th>Fornecedor</th><th>Valor</th><th>Vencimento</th><th>Categoria</th><th>Status</th></tr>
+            ${contasPagar.map(c => `<tr><td>${c.fornecedor}</td><td><strong>${c.valor}</strong></td><td>${c.vencimento}</td><td>${c.categoria}</td><td class="status-${c.status}">${c.status === 'vencido' ? 'Vencida' : c.status === 'vencendo' ? 'Vencendo' : 'No Prazo'}</td></tr>`).join('')}
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>MOVIMENTAÇÕES RECENTES</h2>
+        <table>
+            <tr><th>Tipo</th><th>Descrição</th><th>Valor</th><th>Data</th><th>Categoria</th></tr>
+            ${movimentacoes.map(m => `<tr><td class="${m.tipo}">${m.tipo.toUpperCase()}</td><td>${m.descricao}</td><td><strong>${m.valor}</strong></td><td>${m.data}</td><td>${m.categoria}</td></tr>`).join('')}
+        </table>
+    </div>
+
+    <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; color: #666;">
+        <p><strong>Relatório gerado automaticamente pelo FinanceMax TechSolutions</strong></p>
+        <p><em>Para salvar como PDF: Pressione Ctrl+P e selecione "Salvar como PDF"</em></p>
+    </div>
+</body>
+</html>`;
+        
+        const blob = new Blob([htmlContent], { type: 'text/html' });
         const url = URL.createObjectURL(blob);
         
         const link = document.createElement('a');
         link.href = url;
-        link.download = `relatorio-financeiro-completo-${new Date().toISOString().slice(0, 10)}.pdf`;
+        link.download = `relatorio-financeiro-completo-${new Date().toISOString().slice(0, 10)}.html`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -289,8 +376,8 @@ export default function DemoFinancial() {
       createDetailedPDF();
       
       toast({
-        title: "Relatório Completo Gerado",
-        description: `Relatório com ${contasReceber.length} contas a receber, ${contasPagar.length} contas a pagar, ${movimentacoes.length} movimentações e todos os gráficos foi baixado.`
+        title: "Relatório HTML Gerado",
+        description: `Relatório completo baixado! Abra o arquivo .html no navegador e pressione Ctrl+P para salvar como PDF.`
       });
     }, 1500);
   };
