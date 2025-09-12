@@ -33,8 +33,10 @@ Configure as seguintes variáveis de ambiente no Railway Dashboard:
 
 ```bash
 NODE_ENV=production
-PORT=3000  # Railway define automaticamente
+NIXPACKS_NODE_VERSION=20  # Garante Node.js 20 para suporte ao import.meta.dirname
 ```
+
+**Nota**: Não configure PORT manualmente - Railway define automaticamente a porta.
 
 ### Variáveis Opcionais (se usar banco de dados):
 
