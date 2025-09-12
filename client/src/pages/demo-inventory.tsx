@@ -67,25 +67,27 @@ function CategoryForm({ onSubmit }: { onSubmit: (data: z.infer<typeof insertCate
 function ProductForm({ 
   onSubmit, 
   suppliers, 
-  categories 
+  categories,
+  defaultValues
 }: { 
   onSubmit: (data: z.infer<typeof insertProductSchema>) => void;
   suppliers: Supplier[];
   categories: Category[];
+  defaultValues?: Partial<z.infer<typeof insertProductSchema>>;
 }) {
   const form = useForm<z.infer<typeof insertProductSchema>>({
     resolver: zodResolver(insertProductSchema),
     defaultValues: {
-      code: "",
-      name: "",
-      description: "",
-      categoryId: "",
-      supplierId: "",
-      price: "0",
-      currentStock: 0,
-      minimumStock: 0,
-      unit: "un",
-      isActive: true,
+      code: defaultValues?.code || "",
+      name: defaultValues?.name || "",
+      description: defaultValues?.description || "",
+      categoryId: defaultValues?.categoryId || "",
+      supplierId: defaultValues?.supplierId || "",
+      price: defaultValues?.price || "0",
+      currentStock: defaultValues?.currentStock || 0,
+      minimumStock: defaultValues?.minimumStock || 0,
+      unit: defaultValues?.unit || "un",
+      isActive: defaultValues?.isActive ?? true,
     },
   });
 
@@ -265,17 +267,23 @@ function ProductForm({
   );
 }
 
-function SupplierForm({ onSubmit }: { onSubmit: (data: z.infer<typeof insertSupplierSchema>) => void }) {
+function SupplierForm({ 
+  onSubmit,
+  defaultValues 
+}: { 
+  onSubmit: (data: z.infer<typeof insertSupplierSchema>) => void;
+  defaultValues?: Partial<z.infer<typeof insertSupplierSchema>>;
+}) {
   const form = useForm<z.infer<typeof insertSupplierSchema>>({
     resolver: zodResolver(insertSupplierSchema),
     defaultValues: {
-      name: "",
-      email: "",
-      phone: "",
-      address: "",
-      rating: "5",
-      deliveryDays: 7,
-      isActive: true,
+      name: defaultValues?.name || "",
+      email: defaultValues?.email || "",
+      phone: defaultValues?.phone || "",
+      address: defaultValues?.address || "",
+      rating: defaultValues?.rating || "5",
+      deliveryDays: defaultValues?.deliveryDays || 7,
+      isActive: defaultValues?.isActive ?? true,
     },
   });
 
@@ -594,6 +602,8 @@ function MovementForm({
 export default function DemoInventory() {
   const [selectedModule, setSelectedModule] = useState('dashboard');
   const [isDialogOpen, setIsDialogOpen] = useState<string | null>(null);
+  const [editingItem, setEditingItem] = useState<any>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{type: string, id: string, name: string} | null>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -699,6 +709,125 @@ export default function DemoInventory() {
     },
     onError: () => {
       toast({ title: "Erro ao registrar movimentação", variant: "destructive" });
+    },
+  });
+
+  // Update mutations
+  const updateSupplierMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<z.infer<typeof insertSupplierSchema>> }) => {
+      const response = await fetch(`/api/suppliers/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error('Erro ao atualizar fornecedor');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/suppliers'] });
+      setEditingItem(null);
+      setIsDialogOpen(null);
+      toast({ title: "Fornecedor atualizado com sucesso!" });
+    },
+    onError: () => {
+      toast({ title: "Erro ao atualizar fornecedor", variant: "destructive" });
+    },
+  });
+
+  const updateProductMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<z.infer<typeof insertProductSchema>> }) => {
+      const response = await fetch(`/api/products/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error('Erro ao atualizar produto');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/products'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/products/low-stock'] });
+      setEditingItem(null);
+      setIsDialogOpen(null);
+      toast({ title: "Produto atualizado com sucesso!" });
+    },
+    onError: () => {
+      toast({ title: "Erro ao atualizar produto", variant: "destructive" });
+    },
+  });
+
+  const updateMovementMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<z.infer<typeof insertStockMovementSchema>> }) => {
+      const response = await fetch(`/api/movements/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error('Erro ao atualizar movimentação');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/movements'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/products'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/products/low-stock'] });
+      setEditingItem(null);
+      setIsDialogOpen(null);
+      toast({ title: "Movimentação atualizada com sucesso!" });
+    },
+    onError: () => {
+      toast({ title: "Erro ao atualizar movimentação", variant: "destructive" });
+    },
+  });
+
+  // Delete mutations
+  const deleteSupplierMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await fetch(`/api/suppliers/${id}`, { method: 'DELETE' });
+      if (!response.ok) throw new Error('Erro ao excluir fornecedor');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/suppliers'] });
+      setDeleteConfirm(null);
+      toast({ title: "Fornecedor excluído com sucesso!" });
+    },
+    onError: () => {
+      toast({ title: "Erro ao excluir fornecedor", variant: "destructive" });
+    },
+  });
+
+  const deleteProductMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await fetch(`/api/products/${id}`, { method: 'DELETE' });
+      if (!response.ok) throw new Error('Erro ao excluir produto');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/products'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/products/low-stock'] });
+      setDeleteConfirm(null);
+      toast({ title: "Produto excluído com sucesso!" });
+    },
+    onError: () => {
+      toast({ title: "Erro ao excluir produto", variant: "destructive" });
+    },
+  });
+
+  const deleteMovementMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await fetch(`/api/movements/${id}`, { method: 'DELETE' });
+      if (!response.ok) throw new Error('Erro ao excluir movimentação');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/movements'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/products'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/products/low-stock'] });
+      setDeleteConfirm(null);
+      toast({ title: "Movimentação excluída com sucesso!" });
+    },
+    onError: () => {
+      toast({ title: "Erro ao excluir movimentação", variant: "destructive" });
     },
   });
 
@@ -1037,7 +1166,12 @@ export default function DemoInventory() {
                       </DialogContent>
                     </Dialog>
                     
-                    <Dialog open={isDialogOpen === 'produto'} onOpenChange={(open) => setIsDialogOpen(open ? 'produto' : null)}>
+                    <Dialog open={isDialogOpen === 'produto'} onOpenChange={(open) => {
+                      if (!open) {
+                        setEditingItem(null);
+                        setIsDialogOpen(null);
+                      }
+                    }}>
                       <DialogTrigger asChild>
                         <Button className="bg-green-600 hover:bg-green-700" data-testid="button-add-produto">
                           <i className="fas fa-plus mr-2"></i>
@@ -1046,9 +1180,20 @@ export default function DemoInventory() {
                       </DialogTrigger>
                       <DialogContent>
                         <DialogHeader>
-                          <DialogTitle>Adicionar Produto</DialogTitle>
+                          <DialogTitle>{editingItem ? 'Editar Produto' : 'Adicionar Produto'}</DialogTitle>
                         </DialogHeader>
-                        <ProductForm onSubmit={createProductMutation.mutate} suppliers={suppliers} categories={categories} />
+                        <ProductForm 
+                          onSubmit={(data) => {
+                            if (editingItem) {
+                              updateProductMutation.mutate({ id: editingItem.id, data });
+                            } else {
+                              createProductMutation.mutate(data);
+                            }
+                          }} 
+                          suppliers={suppliers} 
+                          categories={categories}
+                          defaultValues={editingItem || undefined}
+                        />
                       </DialogContent>
                     </Dialog>
                   </div>
@@ -1073,15 +1218,40 @@ export default function DemoInventory() {
                               {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(parseFloat(product.price || '0'))}
                             </p>
                           </div>
-                          <div className="text-right">
-                            <p className="font-semibold text-slate-900 dark:text-slate-100">{product.currentStock || 0} unidades</p>
-                            <span className={`text-xs px-2 py-1 rounded-full ${
-                              (product.currentStock || 0) <= (product.minimumStock || 0) ? 
-                                'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400' :
-                                'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400'
-                            }`}>
-                              Mín: {product.minimumStock || 0}
-                            </span>
+                          <div className="flex items-center space-x-4">
+                            <div className="text-right">
+                              <p className="font-semibold text-slate-900 dark:text-slate-100">{product.currentStock || 0} unidades</p>
+                              <span className={`text-xs px-2 py-1 rounded-full ${
+                                (product.currentStock || 0) <= (product.minimumStock || 0) ? 
+                                  'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400' :
+                                  'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                              }`}>
+                                Mín: {product.minimumStock || 0}
+                              </span>
+                            </div>
+                            <div className="flex space-x-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setEditingItem(product);
+                                  setIsDialogOpen('produto');
+                                }}
+                                className="h-8 w-8 p-0 border-blue-300 hover:bg-blue-50 dark:border-blue-600 dark:hover:bg-blue-900/20"
+                                data-testid={`button-edit-product-${product.id}`}
+                              >
+                                <i className="fas fa-edit text-blue-600 dark:text-blue-400 text-sm"></i>
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setDeleteConfirm({ type: 'produto', id: product.id, name: product.name })}
+                                className="h-8 w-8 p-0 border-red-300 hover:bg-red-50 dark:border-red-600 dark:hover:bg-red-900/20"
+                                data-testid={`button-delete-product-${product.id}`}
+                              >
+                                <i className="fas fa-trash text-red-600 dark:text-red-400 text-sm"></i>
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       )) : (
@@ -1126,7 +1296,12 @@ export default function DemoInventory() {
               <div>
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 raleway">Movimentações</h2>
-                  <Dialog open={isDialogOpen === 'movimentacao'} onOpenChange={(open) => setIsDialogOpen(open ? 'movimentacao' : null)}>
+                  <Dialog open={isDialogOpen === 'movimentacao'} onOpenChange={(open) => {
+                    if (!open) {
+                      setEditingItem(null);
+                      setIsDialogOpen(null);
+                    }
+                  }}>
                     <DialogTrigger asChild>
                       <Button className="bg-purple-600 hover:bg-purple-700" data-testid="button-add-movimentacao">
                         <i className="fas fa-plus mr-2"></i>
@@ -1135,9 +1310,19 @@ export default function DemoInventory() {
                     </DialogTrigger>
                     <DialogContent className="max-w-2xl">
                       <DialogHeader>
-                        <DialogTitle>Registrar Movimentação</DialogTitle>
+                        <DialogTitle>{editingItem ? 'Editar Movimentação' : 'Registrar Movimentação'}</DialogTitle>
                       </DialogHeader>
-                      <MovementForm onSubmit={createMovementMutation.mutate} products={products} />
+                      <MovementForm 
+                        onSubmit={(data) => {
+                          if (editingItem) {
+                            updateMovementMutation.mutate({ id: editingItem.id, data });
+                          } else {
+                            createMovementMutation.mutate(data);
+                          }
+                        }} 
+                        products={products}
+                        defaultValues={editingItem || undefined}
+                      />
                     </DialogContent>
                   </Dialog>
                 </div>
@@ -1185,6 +1370,29 @@ export default function DemoInventory() {
                               </p>
                             </div>
                           </div>
+                          <div className="flex space-x-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setEditingItem(movement);
+                                setIsDialogOpen('movimentacao');
+                              }}
+                              className="h-8 w-8 p-0 border-blue-300 hover:bg-blue-50 dark:border-blue-600 dark:hover:bg-blue-900/20"
+                              data-testid={`button-edit-movement-${movement.id}`}
+                            >
+                              <i className="fas fa-edit text-blue-600 dark:text-blue-400 text-sm"></i>
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setDeleteConfirm({ type: 'movimentacao', id: movement.id, name: `${movement.type} - ${product?.name}` })}
+                              className="h-8 w-8 p-0 border-red-300 hover:bg-red-50 dark:border-red-600 dark:hover:bg-red-900/20"
+                              data-testid={`button-delete-movement-${movement.id}`}
+                            >
+                              <i className="fas fa-trash text-red-600 dark:text-red-400 text-sm"></i>
+                            </Button>
+                          </div>
                         </div>
                       );
                     }) : (
@@ -1203,7 +1411,12 @@ export default function DemoInventory() {
               <div>
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 raleway">Gestão de Fornecedores</h2>
-                  <Dialog open={isDialogOpen === 'fornecedor'} onOpenChange={(open) => setIsDialogOpen(open ? 'fornecedor' : null)}>
+                  <Dialog open={isDialogOpen === 'fornecedor'} onOpenChange={(open) => {
+                    if (!open) {
+                      setEditingItem(null);
+                      setIsDialogOpen(null);
+                    }
+                  }}>
                     <DialogTrigger asChild>
                       <Button className="bg-orange-600 hover:bg-orange-700" data-testid="button-add-fornecedor">
                         <i className="fas fa-plus mr-2"></i>
@@ -1212,9 +1425,18 @@ export default function DemoInventory() {
                     </DialogTrigger>
                     <DialogContent>
                       <DialogHeader>
-                        <DialogTitle>Adicionar Fornecedor</DialogTitle>
+                        <DialogTitle>{editingItem ? 'Editar Fornecedor' : 'Adicionar Fornecedor'}</DialogTitle>
                       </DialogHeader>
-                      <SupplierForm onSubmit={createSupplierMutation.mutate} />
+                      <SupplierForm 
+                        onSubmit={(data) => {
+                          if (editingItem) {
+                            updateSupplierMutation.mutate({ id: editingItem.id, data });
+                          } else {
+                            createSupplierMutation.mutate(data);
+                          }
+                        }}
+                        defaultValues={editingItem || undefined}
+                      />
                     </DialogContent>
                   </Dialog>
                 </div>
@@ -1233,13 +1455,38 @@ export default function DemoInventory() {
                       <div key={index} className="bg-white dark:bg-slate-800 rounded-xl border border-slate-300 dark:border-slate-700 shadow-lg p-6 hover:shadow-xl transition-shadow">
                         <div className="flex items-center justify-between mb-4">
                           <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{supplier.name}</h3>
-                          <div className="flex items-center space-x-1">
-                            {[...Array(5)].map((_, i) => (
-                              <i key={i} className={`fas fa-star text-sm ${
-                                i < Math.floor(parseFloat(supplier.rating || '0')) ? 'text-yellow-500' : 'text-slate-300 dark:text-slate-600'
-                              }`}></i>
-                            ))}
-                            <span className="text-sm text-slate-600 dark:text-slate-400 ml-1">{supplier.rating || '0'}</span>
+                          <div className="flex items-center space-x-3">
+                            <div className="flex items-center space-x-1">
+                              {[...Array(5)].map((_, i) => (
+                                <i key={i} className={`fas fa-star text-sm ${
+                                  i < Math.floor(parseFloat(supplier.rating || '0')) ? 'text-yellow-500' : 'text-slate-300 dark:text-slate-600'
+                                }`}></i>
+                              ))}
+                              <span className="text-sm text-slate-600 dark:text-slate-400 ml-1">{supplier.rating || '0'}</span>
+                            </div>
+                            <div className="flex space-x-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setEditingItem(supplier);
+                                  setIsDialogOpen('fornecedor');
+                                }}
+                                className="h-8 w-8 p-0 border-blue-300 hover:bg-blue-50 dark:border-blue-600 dark:hover:bg-blue-900/20"
+                                data-testid={`button-edit-supplier-${supplier.id}`}
+                              >
+                                <i className="fas fa-edit text-blue-600 dark:text-blue-400 text-sm"></i>
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setDeleteConfirm({ type: 'fornecedor', id: supplier.id, name: supplier.name })}
+                                className="h-8 w-8 p-0 border-red-300 hover:bg-red-50 dark:border-red-600 dark:hover:bg-red-900/20"
+                                data-testid={`button-delete-supplier-${supplier.id}`}
+                              >
+                                <i className="fas fa-trash text-red-600 dark:text-red-400 text-sm"></i>
+                              </Button>
+                            </div>
                           </div>
                         </div>
                         
@@ -1300,6 +1547,50 @@ export default function DemoInventory() {
           </div>
         </div>
       </div>
+      
+      {/* Confirmação de exclusão */}
+      <Dialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmar Exclusão</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-slate-700 dark:text-slate-300">
+              Tem certeza que deseja excluir <span className="font-semibold">{deleteConfirm?.name}</span>?
+            </p>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
+              Esta ação não pode ser desfeita.
+            </p>
+          </div>
+          <div className="flex justify-end space-x-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setDeleteConfirm(null)}
+              data-testid="button-cancel-delete"
+            >
+              Cancelar
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={() => {
+                if (!deleteConfirm) return;
+                
+                if (deleteConfirm.type === 'produto') {
+                  deleteProductMutation.mutate(deleteConfirm.id);
+                } else if (deleteConfirm.type === 'fornecedor') {
+                  deleteSupplierMutation.mutate(deleteConfirm.id);
+                } else if (deleteConfirm.type === 'movimentacao') {
+                  deleteMovementMutation.mutate(deleteConfirm.id);
+                }
+              }}
+              data-testid="button-confirm-delete"
+            >
+              <i className="fas fa-trash mr-2"></i>
+              Excluir
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
