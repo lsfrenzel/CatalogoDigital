@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 interface Student {
   id: number;
@@ -100,6 +101,45 @@ export default function DemoEducation() {
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
   const [editingEvaluation, setEditingEvaluation] = useState<Evaluation | null>(null);
   const [editingProfessor, setEditingProfessor] = useState<Professor | null>(null);
+
+  // Calculate occupation rates for professors
+  const MAX_DISCIPLINAS_POR_PROFESSOR = 5; // Capacidade máxima de disciplinas por professor
+  
+  const calculateProfessorOccupation = () => {
+    const activeProfessors = professors.filter(p => p.status === 'ativo');
+    return activeProfessors.map(professor => {
+      const ocupacaoRaw = (professor.disciplinas.length / MAX_DISCIPLINAS_POR_PROFESSOR) * 100;
+      const ocupacao = Math.min(Math.max(Math.round(ocupacaoRaw), 0), 100); // Limita entre 0-100%
+      return {
+        nome: professor.nome.split(' ')[0], // Primeiro nome para simplificar
+        ocupacao,
+        disciplinas: professor.disciplinas.length,
+        maxDisciplinas: MAX_DISCIPLINAS_POR_PROFESSOR
+      };
+    });
+  };
+  
+  const calculateAverageOccupation = () => {
+    const activeProfessors = professors.filter(p => p.status === 'ativo');
+    if (activeProfessors.length === 0) return 0;
+    
+    const totalOccupation = activeProfessors.reduce((acc, professor) => {
+      const ocupacaoRaw = (professor.disciplinas.length / MAX_DISCIPLINAS_POR_PROFESSOR) * 100;
+      const ocupacao = Math.min(Math.max(ocupacaoRaw, 0), 100); // Limita entre 0-100%
+      return acc + ocupacao;
+    }, 0);
+    
+    return Math.round(totalOccupation / activeProfessors.length);
+  };
+  
+  const professorOccupationData = calculateProfessorOccupation();
+  const averageOccupation = calculateAverageOccupation();
+  
+  // Data for average occupation pie chart
+  const averageOccupationPieData = [
+    { name: 'Ocupado', value: averageOccupation, color: '#10b981' },
+    { name: 'Disponível', value: 100 - averageOccupation, color: '#e5e7eb' }
+  ];
 
   // Calculate dashboard data dynamically
   const educationData = {
@@ -509,6 +549,113 @@ export default function DemoEducation() {
                     <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-1">{educationData.avaliacoesPendentes}</h3>
                     <p className="text-slate-600 dark:text-slate-400 text-sm">Avaliações</p>
                     <p className="text-orange-600 dark:text-orange-400 text-xs mt-2">Para correção</p>
+                  </div>
+                </div>
+
+                {/* Professor Occupation Charts */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                  {/* Individual Professor Occupation Rates */}
+                  <div className="bg-white dark:bg-slate-800 rounded-xl border border-indigo-200 dark:border-slate-700 shadow-lg p-6">
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4 raleway flex items-center">
+                      <i className="fas fa-chart-bar text-indigo-600 mr-2"></i>
+                      Taxa de Ocupação por Professor
+                    </h3>
+                    <div className="h-64" data-testid="chart-professor-occupation">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={professorOccupationData}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                          <XAxis 
+                            dataKey="nome" 
+                            stroke="#6b7280" 
+                            fontSize={12}
+                          />
+                          <YAxis 
+                            stroke="#6b7280" 
+                            fontSize={12}
+                            domain={[0, 100]}
+                            tickFormatter={(value) => `${value}%`}
+                          />
+                          <Tooltip 
+                            formatter={(value: number, name) => [`${value}%`, 'Taxa de Ocupação']}
+                            labelFormatter={(name) => `Professor: ${name}`}
+                            contentStyle={{
+                              backgroundColor: 'white',
+                              border: '1px solid #e5e7eb',
+                              borderRadius: '8px',
+                              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                            }}
+                          />
+                          <Bar 
+                            dataKey="ocupacao" 
+                            fill="#3b82f6"
+                            radius={[4, 4, 0, 0]}
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div className="mt-4 text-sm text-slate-600 dark:text-slate-400">
+                      <p>Capacidade máxima: {MAX_DISCIPLINAS_POR_PROFESSOR} disciplinas por professor</p>
+                    </div>
+                  </div>
+
+                  {/* Average Occupation Rate */}
+                  <div className="bg-white dark:bg-slate-800 rounded-xl border border-indigo-200 dark:border-slate-700 shadow-lg p-6">
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4 raleway flex items-center">
+                      <i className="fas fa-chart-pie text-purple-600 mr-2"></i>
+                      Média de Ocupação Geral
+                    </h3>
+                    <div className="h-64 flex items-center justify-center">
+                      <div data-testid="chart-average-occupation" className="relative">
+                        <ResponsiveContainer width={200} height={200}>
+                          <PieChart>
+                            <Pie
+                              data={averageOccupationPieData}
+                              cx={100}
+                              cy={100}
+                              innerRadius={60}
+                              outerRadius={90}
+                              dataKey="value"
+                              startAngle={90}
+                              endAngle={-270}
+                            >
+                              {averageOccupationPieData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.color} />
+                              ))}
+                            </Pie>
+                            <Tooltip 
+                              formatter={(value: number) => [`${value}%`]}
+                              contentStyle={{
+                                backgroundColor: 'white',
+                                border: '1px solid #e5e7eb',
+                                borderRadius: '8px',
+                                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                              }}
+                            />
+                          </PieChart>
+                        </ResponsiveContainer>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="text-center">
+                            <div className="text-3xl font-bold text-slate-900 dark:text-slate-100">{averageOccupation}%</div>
+                            <div className="text-sm text-slate-600 dark:text-slate-400">Média</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-4">
+                      <div className="flex justify-center space-x-6">
+                        <div className="flex items-center">
+                          <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                          <span className="text-sm text-slate-600 dark:text-slate-400">Ocupado</span>
+                        </div>
+                        <div className="flex items-center">
+                          <div className="w-3 h-3 bg-gray-300 rounded-full mr-2"></div>
+                          <span className="text-sm text-slate-600 dark:text-slate-400">Disponível</span>
+                        </div>
+                      </div>
+                      <div className="mt-2 text-center text-xs text-slate-500 dark:text-slate-500">
+                        Baseado em {professors.filter(p => p.status === 'ativo').length} professores ativos
+                      </div>
+                    </div>
                   </div>
                 </div>
 
